@@ -177,6 +177,13 @@ export default function DisputeStatus() {
         actor_type: 'customer',
       });
 
+      // Restore the order to a normal state so escrow can resume
+      await supabase
+        .from('orders')
+        .update({ status: 'pending' })
+        .eq('id', dispute.order_id)
+        .eq('status', 'disputed');
+
       toast({ title: 'Dispute Withdrawn' });
       navigate(`/orders/${dispute.order_id}`);
     } catch (error) {

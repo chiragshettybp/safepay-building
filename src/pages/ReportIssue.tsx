@@ -202,13 +202,6 @@ export default function ReportIssue() {
       }
 
       await supabase.from('orders').update({ status: 'disputed' }).eq('id', order.id);
-      await supabase.from('notifications').insert({ 
-        user_id: user.id, 
-        type: 'warning', 
-        title: 'Issue Reported', 
-        message: `Issue for order #${order.order_number} submitted`, 
-        link: `/orders/${order.id}` 
-      });
 
       // Add dispute update
       await supabase.from('dispute_updates').insert({

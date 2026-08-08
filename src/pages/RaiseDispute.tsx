@@ -189,20 +189,11 @@ export default function RaiseDispute() {
         actor_type: 'system',
       });
 
-      // Update order status
+      // Update order status (triggers customer + merchant notifications)
       await supabase
         .from('orders')
         .update({ status: 'disputed' })
         .eq('id', order.id);
-
-      // Create notification
-      await supabase.from('notifications').insert({
-        user_id: user.id,
-        type: 'warning',
-        title: 'Dispute Created',
-        message: `Dispute for order #${order.order_number} has been submitted`,
-        link: `/disputes/${dispute.id}`,
-      });
 
       toast({
         title: 'Dispute Created',

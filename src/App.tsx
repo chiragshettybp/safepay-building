@@ -163,7 +163,7 @@ const App = () => (
             <Route path="/dispute/:orderId" element={
               <ProtectedRoute><RaiseDispute /></ProtectedRoute>
             } />
-            <Route path="/dispute/:orderId/upload/:disputeId" element={
+            <Route path="/disputes/:disputeId/upload" element={
               <ProtectedRoute><UploadProof /></ProtectedRoute>
             } />
             <Route path="/disputes" element={

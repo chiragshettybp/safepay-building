@@ -42,7 +42,28 @@ interface Dispute {
   customer_name: string | null;
 }
 
-type StatusFilter = 'all' | 'open' | 'under_review' | 'info_required' | 'resolved' | 'rejected';
+type StatusFilter = 'all' | 'open' | 'under_review' | 'info_required' | 'escalated' | 'resolved' | 'closed';
+
+const FILTER_PILLS: StatusFilter[] = ['all', 'open', 'under_review', 'resolved', 'closed'];
+
+const STATUS_CONFIG: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string; accent: string }> = {
+  open: { variant: 'destructive', label: 'Pending', accent: 'border-l-destructive' },
+  under_review: { variant: 'default', label: 'Reviewing', accent: 'border-l-warning' },
+  info_required: { variant: 'destructive', label: 'Info Needed', accent: 'border-l-destructive' },
+  escalated: { variant: 'destructive', label: 'Escalated', accent: 'border-l-destructive' },
+  resolved: { variant: 'outline', label: 'Resolved', accent: 'border-l-success' },
+  closed: { variant: 'outline', label: 'Closed', accent: 'border-l-muted-foreground' },
+  rejected: { variant: 'outline', label: 'Rejected', accent: 'border-l-muted-foreground' },
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  open: 'Pending Response',
+  under_review: 'Under Review',
+  info_required: 'Info Required',
+  escalated: 'Escalated',
+  resolved: 'Resolved',
+  closed: 'Closed',
+};
 
 export default function MerchantDisputes() {
   const navigate = useNavigate();
@@ -138,19 +159,6 @@ export default function MerchantDisputes() {
     };
   }, [merchant?.id, fetchDisputes]);
 
-  const getStatusConfig = (status: string): { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string } => {
-    const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      open: { variant: 'secondary', label: 'Pending' },
-      under_review: { variant: 'default', label: 'Reviewing' },
-      info_required: { variant: 'destructive', label: 'Info Needed' },
-      escalated: { variant: 'destructive', label: 'Escalated' },
-      resolved: { variant: 'outline', label: 'Resolved' },
-      closed: { variant: 'outline', label: 'Closed' },
-      rejected: { variant: 'outline', label: 'Rejected' },
-    };
-    return config[status] || { variant: 'secondary', label: status };
-  };
-
   const filteredDisputes = disputes.filter((dispute) => {
     const matchesSearch =
       dispute.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -161,7 +169,7 @@ export default function MerchantDisputes() {
     return matchesSearch && dispute.status === statusFilter;
   });
 
-  const urgentDisputes = disputes.filter(d => 
+  const urgentDisputes = disputes.filter(d =>
     d.status === 'open' || d.status === 'info_required' || d.merchant_not_responded
   );
 
@@ -184,6 +192,39 @@ export default function MerchantDisputes() {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return new Date(dateString).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  };
+
+  const renderAction = (dispute: Dispute) => {
+    const isRespondable = dispute.status === 'open' || dispute.status === 'info_required';
+
+    if (isRespondable) {
+      return (
+        <Link to={`/merchant-dispute-response/${dispute.id}`} className="flex-1">
+          <Button size="sm" className="w-full h-9 text-xs gap-1">
+            <span className="material-symbols-outlined text-sm">reply</span>
+            Respond
+          </Button>
+        </Link>
+      );
+    }
+    if (dispute.status === 'resolved' || dispute.status === 'closed') {
+      return (
+        <Link to={`/merchant-dispute-result/${dispute.id}`} className="flex-1">
+          <Button size="sm" variant="outline" className="w-full h-9 text-xs gap-1">
+            <span className="material-symbols-outlined text-sm">description</span>
+            Result
+          </Button>
+        </Link>
+      );
+    }
+    return (
+      <Link to={`/merchant-dispute-response/${dispute.id}`} className="flex-1">
+        <Button size="sm" variant="outline" className="w-full h-9 text-xs gap-1">
+          <span className="material-symbols-outlined text-sm">visibility</span>
+          View
+        </Button>
+      </Link>
+    );
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
@@ -232,11 +273,9 @@ export default function MerchantDisputes() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Disputes</SelectItem>
-                      <SelectItem value="pending">Pending Response</SelectItem>
-                      <SelectItem value="under_review">Under Review</SelectItem>
-                      <SelectItem value="info_required">Info Required</SelectItem>
-                      <SelectItem value="resolved">Resolved</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
+                      {(Object.keys(STATUS_LABEL) as StatusFilter[]).map((key) => (
+                        <SelectItem key={key} value={key}>{STATUS_LABEL[key]}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -271,7 +310,7 @@ export default function MerchantDisputes() {
             </span>
             <Input
               type="text"
-              placeholder="Search disputes..."
+              placeholder="Search by dispute, order, or customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-10 text-sm"
@@ -280,7 +319,7 @@ export default function MerchantDisputes() {
 
           {/* Status Pills */}
           <div className="flex gap-2 overflow-x-auto pb-3 mb-3 -mx-4 px-4 scrollbar-hide">
-            {(['all', 'open', 'under_review', 'resolved'] as StatusFilter[]).map((filter) => (
+            {FILTER_PILLS.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setStatusFilter(filter)}
@@ -290,24 +329,34 @@ export default function MerchantDisputes() {
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
-                {filter === 'all' ? 'All' : filter === 'under_review' ? 'Reviewing' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                {filter === 'all' ? 'All' : STATUS_LABEL[filter] || filter.charAt(0).toUpperCase() + filter.slice(1)}
               </button>
             ))}
           </div>
 
-          {/* Disputes List */}
+          {/* Dispute Cards */}
           {isLoading ? (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-3">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-muted/30 rounded-xl p-3">
-                  <Skeleton className="h-4 w-28 mb-1.5" />
-                  <Skeleton className="h-3 w-40 mb-1.5" />
-                  <Skeleton className="h-3 w-20" />
+                <div key={i} className="bg-muted/30 rounded-2xl p-4 border border-border/60">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <Skeleton className="size-9 rounded-xl" />
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-3.5 w-24" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-3 w-2/3 mb-3" />
+                  <div className="flex items-center justify-between border-t border-border/60 pt-3">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                  </div>
                 </div>
               ))}
             </div>
           ) : filteredDisputes.length === 0 ? (
-            <div className="bg-muted/30 rounded-xl p-8 text-center">
+            <div className="bg-muted/30 rounded-2xl p-8 text-center border border-border/60">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
                 <span className="material-symbols-outlined text-muted-foreground text-2xl">gavel</span>
               </div>
@@ -317,70 +366,62 @@ export default function MerchantDisputes() {
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {filteredDisputes.map((dispute) => {
-                const statusConfig = getStatusConfig(dispute.status);
+                const statusConfig = STATUS_CONFIG[dispute.status] || STATUS_CONFIG.open;
                 const isUrgent = dispute.status === 'open' || dispute.status === 'info_required' || dispute.merchant_not_responded;
-                
+                const issueLabel = (dispute.issue_type || dispute.reason || 'General').replace(/_/g, ' ');
+
                 return (
                   <div
                     key={dispute.id}
-                    className={`bg-muted/30 rounded-xl p-3 active:bg-muted/50 transition-colors ${isUrgent ? 'border-l-3 border-l-destructive' : ''}`}
+                    className={`group relative flex flex-col rounded-2xl border border-border bg-surface p-4 shadow-sm active:scale-[0.99] transition-all border-l-4 ${statusConfig.accent}`}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-foreground">
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between gap-2 mb-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <span className="material-symbols-outlined text-lg">gavel</span>
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground leading-tight">
                             #{dispute.id.slice(0, 8)}
                           </p>
-                          {isUrgent && (
-                            <span className="material-symbols-outlined text-xs text-destructive">priority_high</span>
-                          )}
+                          <p className="text-[11px] text-muted-foreground">
+                            Order #{dispute.order?.order_number || 'N/A'}
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          Order #{dispute.order?.order_number || 'N/A'}
-                        </p>
                       </div>
-                      <Badge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0.5 flex-shrink-0">
-                        {statusConfig.label}
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-1 mb-2">
-                      <p className="text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">{dispute.customer_name}</span> • {dispute.issue_type || dispute.reason}
-                      </p>
-                      {dispute.order && (
-                        <p className="text-xs font-semibold text-foreground">{formatAmount(dispute.order.amount)}</p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">{getTimeAgo(dispute.updated_at)}</span>
-                      
-                      <div className="flex gap-2">
-                        {(dispute.status === 'open' || dispute.status === 'info_required') ? (
-                          <Link to={`/merchant-dispute-response/${dispute.id}`}>
-                            <Button size="sm" className="h-7 text-xs px-2.5">
-                              <span className="material-symbols-outlined text-sm mr-1">reply</span>
-                              Respond
-                            </Button>
-                          </Link>
-                        ) : dispute.status === 'resolved' || dispute.status === 'closed' ? (
-                          <Link to={`/merchant-dispute-result/${dispute.id}`}>
-                            <Button size="sm" variant="outline" className="h-7 text-xs px-2.5">
-                              <span className="material-symbols-outlined text-sm mr-1">description</span>
-                              Result
-                            </Button>
-                          </Link>
-                        ) : (
-                          <Link to={`/merchant-dispute-response/${dispute.id}`}>
-                            <Button size="sm" variant="outline" className="h-7 text-xs px-2.5">
-                              <span className="material-symbols-outlined text-sm mr-1">visibility</span>
-                              View
-                            </Button>
-                          </Link>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isUrgent && (
+                          <span className="material-symbols-outlined text-destructive text-base">priority_high</span>
                         )}
+                        <Badge variant={statusConfig.variant} className="text-[10px] px-2 py-1">
+                          {statusConfig.label}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Product */}
+                    <p className="line-clamp-2 text-sm font-semibold text-foreground leading-snug mb-1">
+                      {dispute.order?.product_name || 'Dispute'}
+                    </p>
+                    <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-3">
+                      <span className="truncate">{dispute.customer_name}</span>
+                      <span className="size-1 shrink-0 rounded-full bg-muted-foreground/50" />
+                      <span className="truncate capitalize">{issueLabel}</span>
+                    </p>
+
+                    {/* Amount + Action */}
+                    <div className="mt-auto flex items-end justify-between gap-2 border-t border-border/60 pt-3">
+                      <div className="min-w-0">
+                        <p className="text-lg font-extrabold text-foreground tracking-tight">
+                          {dispute.order ? formatAmount(dispute.order.amount) : '—'}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">{getTimeAgo(dispute.updated_at)}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {renderAction(dispute)}
                       </div>
                     </div>
                   </div>

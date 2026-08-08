@@ -112,6 +112,17 @@ export default function DisputeResult() {
         .single();
 
       if (refundError) {
+        if (refundError.code === '23505') {
+          const { data: existing } = await supabase
+            .from('refunds')
+            .select('id')
+            .eq('dispute_id', disputeData.id)
+            .maybeSingle();
+          if (existing) {
+            setRefundId(existing.id);
+            return;
+          }
+        }
         console.error('Error creating refund:', refundError);
         return;
       }
@@ -125,15 +136,6 @@ export default function DisputeResult() {
         description: 'Refund created from dispute resolution',
         event_type: 'status_change',
         status: 'pending'
-      });
-
-      // Create notification
-      await supabase.from('notifications').insert({
-        user_id: user.id,
-        title: 'Refund Initiated',
-        message: `Your refund of ₹${disputeData.refund_amount.toLocaleString()} has been initiated`,
-        type: 'refund',
-        link: `/refunds/${newRefund.id}`
       });
 
     } catch (error) {
