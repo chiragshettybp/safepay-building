@@ -309,6 +309,48 @@ export default function MerchantProfile() {
             <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
           </Link>
 
+          <Link
+            to="/merchant-refunds"
+            className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-success text-lg sm:text-xl">currency_rupee</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm sm:text-base">Refunds</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Refunds issued on your orders</p>
+            </div>
+            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+          </Link>
+
+          <Link
+            to="/merchant-support"
+            className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-blue-600 text-lg sm:text-xl">support_agent</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm sm:text-base">Help & Support</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Tickets & contact us</p>
+            </div>
+            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+          </Link>
+
+          <Link
+            to="/merchant-settings"
+            className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-primary text-lg sm:text-xl">settings</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm sm:text-base">Settings</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Notifications & account</p>
+            </div>
+            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+          </Link>
+
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors w-full text-left"

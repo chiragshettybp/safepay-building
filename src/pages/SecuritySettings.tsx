@@ -100,6 +100,46 @@ export default function SecuritySettings() {
           </div>
         </section>
 
+        {/* Notification Preferences */}
+        <section className="mb-6 sm:mb-8">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">Notifications</h2>
+          <div
+            onClick={() => navigate('/settings/notifications')}
+            className="bg-card border border-border rounded-xl p-4 sm:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-emerald-600 text-lg sm:text-xl">notifications</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground text-sm sm:text-base">Notification Preferences</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Choose what you hear about</p>
+              </div>
+              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Privacy */}
+        <section className="mb-6 sm:mb-8">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">Privacy & Data</h2>
+          <div
+            onClick={() => navigate('/settings/privacy')}
+            className="bg-card border border-border rounded-xl p-4 sm:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-purple-600 text-lg sm:text-xl">shield</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground text-sm sm:text-base">Privacy Settings</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Data, visibility & exports</p>
+              </div>
+              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            </div>
+          </div>
+        </section>
+
         {/* Account Info */}
         <section className="mb-6 sm:mb-8">
           <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">Account</h2>

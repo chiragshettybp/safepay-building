@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -166,16 +166,27 @@ export default function HelpSupport() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      const { data: newTicket, error } = await supabase
         .from('support_tickets')
         .insert({
           customer_id: user.id,
           subject: ticketSubject.trim(),
           category: ticketCategory.toLowerCase().replace(' ', '_'),
           description: ticketDescription.trim(),
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Seed the conversation with the customer's initial message
+      await supabase.from('ticket_messages').insert({
+        ticket_id: newTicket.id,
+        sender_id: user.id,
+        sender_type: 'customer',
+        sender_name: user.fullName || 'You',
+        message: ticketDescription.trim(),
+      });
 
       toast({
         title: 'Ticket Submitted',
@@ -307,9 +318,10 @@ export default function HelpSupport() {
           ) : myTickets.length > 0 ? (
             <div className="space-y-2">
               {myTickets.map((ticket) => (
-                <div
+                <Link
                   key={ticket.id}
-                  className="p-4 bg-card rounded-xl border border-border"
+                  to={`/help/tickets/${ticket.id}`}
+                  className="block p-4 bg-card rounded-xl border border-border hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -322,7 +334,7 @@ export default function HelpSupport() {
                       {ticket.status.replace('_', ' ')}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (

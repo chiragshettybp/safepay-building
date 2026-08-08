@@ -18,6 +18,9 @@ import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
 import CustomerKyc from "./pages/CustomerKyc";
 import SecuritySettings from "./pages/SecuritySettings";
+import NotificationSettings from "./pages/NotificationSettings";
+import PrivacySettings from "./pages/PrivacySettings";
+import SupportTicketDetail from "./pages/SupportTicketDetail";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
 import OrderTracking from "./pages/OrderTracking";
@@ -77,6 +80,11 @@ import MerchantPayoutHistory from "./pages/MerchantPayoutHistory";
 import MerchantProfile from "./pages/MerchantProfile";
 import MerchantProfileEdit from "./pages/MerchantProfileEdit";
 import MerchantNotifications from "./pages/MerchantNotifications";
+import MerchantSupport from "./pages/MerchantSupport";
+import MerchantSupportTicket from "./pages/MerchantSupportTicket";
+import MerchantRefunds from "./pages/MerchantRefunds";
+import MerchantRefundDetail from "./pages/MerchantRefundDetail";
+import MerchantSettings from "./pages/MerchantSettings";
 
 const queryClient = new QueryClient();
 
@@ -142,6 +150,12 @@ const App = () => (
             <Route path="/settings/security" element={
               <ProtectedRoute><SecuritySettings /></ProtectedRoute>
             } />
+            <Route path="/settings/notifications" element={
+              <ProtectedRoute><NotificationSettings /></ProtectedRoute>
+            } />
+            <Route path="/settings/privacy" element={
+              <ProtectedRoute><PrivacySettings /></ProtectedRoute>
+            } />
             <Route path="/payment/new" element={
               <ProtectedRoute><NewPayment /></ProtectedRoute>
             } />
@@ -189,6 +203,9 @@ const App = () => (
             } />
             <Route path="/help" element={
               <ProtectedRoute><HelpSupport /></ProtectedRoute>
+            } />
+            <Route path="/help/tickets/:ticketId" element={
+              <ProtectedRoute><SupportTicketDetail /></ProtectedRoute>
             } />
             <Route path="/settings/change-password" element={
               <ProtectedRoute><ChangePassword /></ProtectedRoute>
@@ -265,6 +282,21 @@ const App = () => (
             } />
             <Route path="/merchant-notifications" element={
               <MerchantProtectedRoute><MerchantNotifications /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-support" element={
+              <MerchantProtectedRoute><MerchantSupport /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-support/:ticketId" element={
+              <MerchantProtectedRoute><MerchantSupportTicket /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-refunds" element={
+              <MerchantProtectedRoute><MerchantRefunds /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-refunds/:refundId" element={
+              <MerchantProtectedRoute><MerchantRefundDetail /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-settings" element={
+              <MerchantProtectedRoute><MerchantSettings /></MerchantProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -337,6 +337,34 @@ export default function Profile() {
           </Link>
 
           <Link 
+            to="/settings/notifications"
+            className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-emerald-600 text-lg sm:text-xl">notifications</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm sm:text-base">Notification Settings</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Choose what you hear about</p>
+            </div>
+            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+          </Link>
+
+          <Link 
+            to="/settings/privacy"
+            className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-purple-600 text-lg sm:text-xl">shield</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm sm:text-base">Privacy Settings</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Data, visibility & exports</p>
+            </div>
+            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+          </Link>
+
+          <Link 
             to="/help"
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >

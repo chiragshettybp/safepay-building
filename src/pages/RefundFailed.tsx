@@ -286,9 +286,9 @@ export default function RefundFailed() {
             <ExternalLink className="w-4 h-4 text-muted-foreground" />
           </Link>
 
-          <button
-            className="w-full bg-background rounded-2xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
-            onClick={() => toast({ title: 'Support', description: 'Support ticket feature coming soon' })}
+          <Link
+            to="/help"
+            className="w-full bg-background rounded-2xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors"
           >
             <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-warning" />
@@ -298,7 +298,7 @@ export default function RefundFailed() {
               <p className="text-xs text-muted-foreground">Get help from our support team</p>
             </div>
             <ExternalLink className="w-4 h-4 text-muted-foreground" />
-          </button>
+          </Link>
         </div>
       </main>
 
