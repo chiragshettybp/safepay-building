@@ -161,7 +161,7 @@ export default function RaiseDispute() {
           issue_type: issueType,
           description: description,
           merchant_not_responded: merchantNotResponded,
-          status: 'submitted',
+          status: 'open',
         })
         .select()
         .single();

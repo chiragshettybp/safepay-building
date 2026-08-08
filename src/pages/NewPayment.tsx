@@ -47,19 +47,20 @@ export default function NewPayment() {
     try {
       const { data, error } = await supabase
         .from('merchants')
-        .select('id, user_id, business_name, logo_url, status, category')
-        .eq('status', 'active')
+        .select('id, user_id, business_name, business_logo_url, verification_status, is_active, business_category')
+        .eq('is_active', true)
+        .eq('verification_status', 'approved')
         .ilike('business_name', `%${query}%`)
         .limit(10);
 
       if (error) throw error;
 
       const results: MerchantResult[] = (data || []).map((m: any) => ({
-        id: m.user_id, // orders.merchant_id references the merchant's auth user id
+        id: m.id, // orders.merchant_id references the merchant record id
         name: m.business_name,
-        avatar: m.logo_url,
-        verified: m.status === 'active',
-        category: m.category,
+        avatar: m.business_logo_url,
+        verified: m.is_active === true && m.verification_status === 'approved',
+        category: m.business_category,
       }));
 
       setMerchants(results);

@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Local dev artifacts (never commit)
+.vite-dev.pid
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

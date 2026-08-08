@@ -50,11 +50,13 @@ interface DisputeComment {
 }
 
 const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
+  open: { color: 'bg-destructive', icon: <AlertCircle className="w-5 h-5" />, label: 'Submitted' },
   submitted: { color: 'bg-destructive', icon: <AlertCircle className="w-5 h-5" />, label: 'Submitted' },
   under_review: { color: 'bg-warning', icon: <HourglassIcon className="w-5 h-5" />, label: 'Under Review' },
   awaiting_response: { color: 'bg-primary', icon: <Clock className="w-5 h-5" />, label: 'Awaiting Response' },
   resolved: { color: 'bg-success', icon: <Check className="w-5 h-5" />, label: 'Resolved' },
   withdrawn: { color: 'bg-muted-foreground', icon: <X className="w-5 h-5" />, label: 'Withdrawn' },
+  closed: { color: 'bg-muted-foreground', icon: <X className="w-5 h-5" />, label: 'Closed' },
 };
 
 export default function DisputeStatus() {
@@ -164,7 +166,7 @@ export default function DisputeStatus() {
     try {
       await supabase
         .from('disputes')
-        .update({ status: 'withdrawn' })
+        .update({ status: 'closed' })
         .eq('id', dispute.id);
 
       await supabase.from('dispute_updates').insert({

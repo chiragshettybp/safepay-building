@@ -1,4 +1,15 @@
 project_id = "jcxhagmfbezpgrxdxfvs"
 
+# Custom-auth edge functions receive the session token in the request body,
+# not in an Authorization header, so the JWT gateway check must be disabled.
+[functions.auth]
+verify_jwt = false
+
+[functions.merchant-auth]
+verify_jwt = false
+
+[functions.razorpay]
+verify_jwt = false
+
 [functions.razorpay-webhook]
 verify_jwt = false

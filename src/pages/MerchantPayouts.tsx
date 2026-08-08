@@ -45,6 +45,7 @@ export default function MerchantPayouts() {
   const [bankAccount, setBankAccount] = useState<BankAccount | null>(null);
   const [recentPayouts, setRecentPayouts] = useState<Payout[]>([]);
   const [lastPayout, setLastPayout] = useState<Payout | null>(null);
+  const [heldFunds, setHeldFunds] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -87,6 +88,15 @@ export default function MerchantPayouts() {
           setWallet(newWallet);
         }
       }
+
+      // Fetch funds held in escrow (payments secured but not yet released)
+      const { data: heldData } = await supabase
+        .from('orders')
+        .select('amount')
+        .eq('merchant_id', merchant.id)
+        .eq('escrow_status', 'held');
+
+      setHeldFunds((heldData || []).reduce((sum, o: any) => sum + Number(o.amount || 0), 0));
 
       // Fetch default bank account
       const { data: bankData } = await supabase
@@ -290,6 +300,28 @@ export default function MerchantPayouts() {
           </div>
         </div>
 
+        {/* Escrow Held Funds */}
+        {heldFunds > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-amber-600 text-lg">lock</span>
+              <span className="text-[10px] text-amber-700">Held in Escrow</span>
+            </div>
+            <p className="text-xl font-bold text-amber-700">{formatCurrency(heldFunds)}</p>
+            <p className="text-[10px] text-amber-700/80 mt-1">
+              Funds secured in escrow for orders not yet completed. They become available after the order is completed and escrow is released.
+            </p>
+          </div>
+        )}
+
+        {wallet && wallet.balance === 0 && heldFunds > 0 && (
+          <div className="bg-muted/40 border border-border rounded-xl p-3 text-center">
+            <p className="text-xs text-muted-foreground">
+              Your available balance is ₹0. Payments are held in escrow and will be credited to you once orders are completed.
+            </p>
+          </div>
+        )}
+
         {/* Last Withdrawal */}
         {lastPayout && (
           <div className="bg-card border border-border rounded-xl p-3">
@@ -417,6 +449,7 @@ export default function MerchantPayouts() {
             <span className="material-symbols-outlined text-lg mr-2">payments</span>
             {!bankAccount ? 'Add Bank Account First' :
              bankAccount.verification_status !== 'verified' ? 'Bank Verification Pending' :
+             wallet?.balance === 0 && heldFunds > 0 ? 'Funds Held in Escrow' :
              wallet?.balance === 0 ? 'No Balance to Withdraw' : 'Withdraw Funds'}
           </Button>
         </Link>

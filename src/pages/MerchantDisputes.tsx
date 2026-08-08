@@ -42,7 +42,7 @@ interface Dispute {
   customer_name: string | null;
 }
 
-type StatusFilter = 'all' | 'pending' | 'under_review' | 'info_required' | 'resolved' | 'rejected';
+type StatusFilter = 'all' | 'open' | 'under_review' | 'info_required' | 'resolved' | 'rejected';
 
 export default function MerchantDisputes() {
   const navigate = useNavigate();
@@ -140,7 +140,7 @@ export default function MerchantDisputes() {
 
   const getStatusConfig = (status: string): { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string } => {
     const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      pending: { variant: 'secondary', label: 'Pending' },
+      open: { variant: 'secondary', label: 'Pending' },
       under_review: { variant: 'default', label: 'Reviewing' },
       info_required: { variant: 'destructive', label: 'Info Needed' },
       escalated: { variant: 'destructive', label: 'Escalated' },
@@ -162,7 +162,7 @@ export default function MerchantDisputes() {
   });
 
   const urgentDisputes = disputes.filter(d => 
-    d.status === 'pending' || d.status === 'info_required' || d.merchant_not_responded
+    d.status === 'open' || d.status === 'info_required' || d.merchant_not_responded
   );
 
   const formatAmount = (amount: number) => {
@@ -280,7 +280,7 @@ export default function MerchantDisputes() {
 
           {/* Status Pills */}
           <div className="flex gap-2 overflow-x-auto pb-3 mb-3 -mx-4 px-4 scrollbar-hide">
-            {(['all', 'pending', 'under_review', 'resolved'] as StatusFilter[]).map((filter) => (
+            {(['all', 'open', 'under_review', 'resolved'] as StatusFilter[]).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setStatusFilter(filter)}
@@ -320,7 +320,7 @@ export default function MerchantDisputes() {
             <div className="space-y-2">
               {filteredDisputes.map((dispute) => {
                 const statusConfig = getStatusConfig(dispute.status);
-                const isUrgent = dispute.status === 'pending' || dispute.status === 'info_required' || dispute.merchant_not_responded;
+                const isUrgent = dispute.status === 'open' || dispute.status === 'info_required' || dispute.merchant_not_responded;
                 
                 return (
                   <div
@@ -359,7 +359,7 @@ export default function MerchantDisputes() {
                       <span className="text-[11px] text-muted-foreground">{getTimeAgo(dispute.updated_at)}</span>
                       
                       <div className="flex gap-2">
-                        {(dispute.status === 'pending' || dispute.status === 'info_required') ? (
+                        {(dispute.status === 'open' || dispute.status === 'info_required') ? (
                           <Link to={`/merchant-dispute-response/${dispute.id}`}>
                             <Button size="sm" className="h-7 text-xs px-2.5">
                               <span className="material-symbols-outlined text-sm mr-1">reply</span>

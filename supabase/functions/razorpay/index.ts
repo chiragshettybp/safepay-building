@@ -214,12 +214,12 @@ serve(async (req) => {
           console.error('Failed to update transaction:', updateError);
         }
 
-        // Sync order status -> escrow_locked (escrow held in SafePay)
+        // Sync order status -> pending with escrow held in SafePay
         if (updatedTx?.order_id) {
           const { error: orderUpdateError } = await supabase
             .from('orders')
             .update({
-              status: 'escrow_locked',
+              status: 'pending',
               escrow_status: 'held',
             })
             .eq('id', updatedTx.order_id);

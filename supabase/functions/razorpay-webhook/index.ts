@@ -1,6 +1,6 @@
 // Razorpay webhook handler — server-authoritative payment status sync.
 // Configure in Razorpay Dashboard → Settings → Webhooks:
-//   URL:    https://sgpefhfmcykwtfqfwzcq.supabase.co/functions/v1/razorpay-webhook
+//   URL:    https://jcxhagmfbezpgrxdxfvs.supabase.co/functions/v1/razorpay-webhook
 //   Events: payment.captured, payment.failed, payment.authorized, refund.processed, refund.failed
 //   Secret: RAZORPAY_WEBHOOK_SECRET (set via Lovable Cloud secrets)
 
@@ -94,7 +94,7 @@ serve(async (req) => {
       if (tx?.order_id) {
         await supabase
           .from("orders")
-          .update({ status: "escrow_locked", escrow_status: "held" })
+          .update({ status: "pending", escrow_status: "held" })
           .eq("id", tx.order_id);
       }
     } else if (type === "payment.failed") {

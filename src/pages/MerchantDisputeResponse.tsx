@@ -290,7 +290,7 @@ export default function MerchantDisputeResponse() {
     );
   }
 
-  const canRespond = dispute.status === 'pending' || dispute.status === 'info_required';
+  const canRespond = dispute.status === 'open' || dispute.status === 'info_required';
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">

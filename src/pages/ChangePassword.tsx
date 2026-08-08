@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
-const SUPABASE_URL = 'https://sgpefhfmcykwtfqfwzcq.supabase.co';
+const SUPABASE_URL = 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
 const TOKEN_KEY = 'safepay_auth_token';
 
 export default function ChangePassword() {
