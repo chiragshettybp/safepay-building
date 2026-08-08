@@ -24,6 +24,7 @@ import {
 
 interface Dispute {
   id: string;
+  public_dispute_id: string;
   order_id: string;
   customer_id: string;
   reason: string;
@@ -35,6 +36,7 @@ interface Dispute {
   updated_at: string;
   merchant_not_responded: boolean | null;
   order: {
+    public_order_id: string;
     order_number: string;
     product_name: string;
     amount: number;
@@ -92,7 +94,7 @@ export default function MerchantDisputes() {
     try {
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select('id, order_number, product_name, amount, customer_id')
+        .select('id, public_order_id, order_number, product_name, amount, customer_id')
         .eq('merchant_id', merchant.id);
 
       if (ordersError) throw ordersError;
@@ -125,6 +127,7 @@ export default function MerchantDisputes() {
       const mappedDisputes: Dispute[] = (disputesData || []).map((d: any) => ({
         ...d,
         order: orderMap.get(d.order_id) ? {
+          public_order_id: orderMap.get(d.order_id)!.public_order_id,
           order_number: orderMap.get(d.order_id)!.order_number,
           product_name: orderMap.get(d.order_id)!.product_name,
           amount: orderMap.get(d.order_id)!.amount,
@@ -161,7 +164,9 @@ export default function MerchantDisputes() {
 
   const filteredDisputes = disputes.filter((dispute) => {
     const matchesSearch =
+      dispute.public_dispute_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dispute.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (dispute.order?.public_order_id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (dispute.order?.order_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (dispute.customer_name || '').toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -384,11 +389,11 @@ export default function MerchantDisputes() {
                           <span className="material-symbols-outlined text-lg">gavel</span>
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-foreground leading-tight">
-                            #{dispute.id.slice(0, 8)}
+                          <p className="truncate text-sm font-bold text-foreground leading-tight font-mono">
+                            {dispute.public_dispute_id || `#${dispute.id.slice(0, 8)}`}
                           </p>
                           <p className="text-[11px] text-muted-foreground">
-                            Order #{dispute.order?.order_number || 'N/A'}
+                            Order {dispute.order?.public_order_id || `#${dispute.order?.order_number || 'N/A'}`}
                           </p>
                         </div>
                       </div>

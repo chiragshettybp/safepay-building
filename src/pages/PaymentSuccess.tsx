@@ -7,6 +7,7 @@ import Confetti from '@/components/ui/confetti';
 interface SuccessData {
   orderId: string;
   orderNumber: string;
+  publicOrderId?: string;
   merchantName: string;
   amount: number;
   currency: string;
@@ -83,7 +84,7 @@ export default function PaymentSuccess() {
             {/* Order ID */}
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Order ID</span>
-              <span className="text-foreground text-sm font-mono font-semibold">#{successData.orderNumber}</span>
+              <span className="text-foreground text-sm font-mono font-semibold">{successData.publicOrderId || `#${successData.orderNumber}`}</span>
             </div>
             
             {/* Merchant */}

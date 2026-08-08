@@ -58,6 +58,7 @@ export default function MerchantEditTracking() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [orderPublicId, setOrderPublicId] = useState('');
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -78,7 +79,7 @@ export default function MerchantEditTracking() {
       try {
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
-          .select('order_number, merchant_id')
+          .select('order_number, public_order_id, merchant_id')
           .eq('id', orderId)
           .eq('merchant_id', merchant.id)
           .single();
@@ -90,6 +91,7 @@ export default function MerchantEditTracking() {
         }
         
         setOrderNumber(orderData.order_number);
+        setOrderPublicId(orderData.public_order_id || '');
 
         const { data: trackingData, error } = await supabase
           .from('order_tracking')
@@ -201,7 +203,7 @@ export default function MerchantEditTracking() {
         merchant_id: merchant.id,
         activity_type: 'tracking',
         title: 'Tracking Updated',
-        description: `Updated tracking for order #${orderNumber}`,
+        description: `Updated tracking for order ${orderPublicId || `#${orderNumber}`}`,
         reference_id: orderId,
         reference_type: 'order',
       });
@@ -265,10 +267,10 @@ export default function MerchantEditTracking() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="px-4 py-4 max-w-lg mx-auto">
-          {orderNumber && (
+          {orderPublicId && (
             <div className="bg-muted/30 rounded-xl p-3 mb-4">
               <p className="text-xs text-muted-foreground">Order</p>
-              <p className="text-base font-semibold text-foreground">#{orderNumber}</p>
+              <p className="text-base font-semibold text-foreground font-mono">{orderPublicId}</p>
             </div>
           )}
 

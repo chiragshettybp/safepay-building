@@ -13,6 +13,7 @@ const generateReceiptPDF = (transaction: Transaction): void => {
   const currencySymbol = transaction.currency === 'INR' ? '₹' : '$';
   const formattedAmount = `${currencySymbol}${transaction.amount.toLocaleString('en-IN')}`;
   const formattedDate = format(new Date(transaction.created_at), 'MMMM d, yyyy h:mm a');
+  const publicTxnId = transaction.public_transaction_id || `${transaction.id.slice(0, 8)}...${transaction.id.slice(-4)}`;
   
   // Create PDF content using HTML
   const htmlContent = `
@@ -20,7 +21,7 @@ const generateReceiptPDF = (transaction: Transaction): void => {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Payment Receipt - ${transaction.id}</title>
+      <title>Payment Receipt - ${publicTxnId}</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f5f5; padding: 40px; }
@@ -57,7 +58,7 @@ const generateReceiptPDF = (transaction: Transaction): void => {
         <div class="details">
           <div class="detail-row">
             <span class="detail-label">Transaction ID</span>
-            <span class="detail-value">${transaction.id.slice(0, 8)}...${transaction.id.slice(-4)}</span>
+            <span class="detail-value">${publicTxnId}</span>
           </div>
           ${transaction.razorpay_payment_id ? `
           <div class="detail-row">
@@ -116,7 +117,7 @@ const generateReceiptPDF = (transaction: Transaction): void => {
     // Fallback: download as HTML
     const link = document.createElement('a');
     link.href = url;
-    link.download = `safepay-receipt-${transaction.id.slice(0, 8)}.html`;
+    link.download = `safepay-receipt-${(transaction.public_transaction_id || transaction.id).slice(0, 8)}.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -127,6 +128,7 @@ const generateReceiptPDF = (transaction: Transaction): void => {
 
 interface Transaction {
   id: string;
+  public_transaction_id: string;
   customer_id: string;
   order_id: string | null;
   customer_name: string | null;
@@ -279,11 +281,11 @@ export default function TransactionDetail() {
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <span className="text-muted-foreground text-xs block">Internal ID</span>
-                <span className="text-foreground text-sm font-mono truncate block">{transaction.id}</span>
+                <span className="text-muted-foreground text-xs block">Transaction ID</span>
+                <span className="text-foreground text-sm font-mono truncate block">{transaction.public_transaction_id || transaction.id}</span>
               </div>
               <button
-                onClick={() => copyToClipboard(transaction.id, 'Transaction ID')}
+                onClick={() => copyToClipboard(transaction.public_transaction_id || transaction.id, 'Transaction ID')}
                 className="p-2 hover:bg-muted rounded-lg shrink-0"
               >
                 <span className="material-symbols-outlined text-muted-foreground text-[18px]">content_copy</span>

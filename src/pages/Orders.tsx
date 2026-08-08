@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, Search, ShoppingBag, Truck, Gavel, ChevronRight, CheckCircle, Flag, AlertTriangle } from 'lucide-react';
+import { publicIdOf } from '@/lib/public-ids';
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   merchant_name: string;
   merchant_avatar: string | null;
@@ -192,7 +194,7 @@ export default function Orders() {
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">{order.merchant_name}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">{format(new Date(order.created_at), 'MMM d, yyyy')}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{publicIdOf(order, 'public_order_id', 'ORD', 'order_number')} • {format(new Date(order.created_at), 'MMM d, yyyy')}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="font-bold text-sm sm:text-base text-foreground">

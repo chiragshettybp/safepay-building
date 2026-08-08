@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface Refund {
   id: string;
+  public_refund_id: string;
   order_id: string;
   amount: number;
   currency: string;
@@ -17,11 +18,15 @@ interface Refund {
   payment_method: string | null;
   payment_details: string | null;
   transaction_id: string | null;
+  payment_transactions: {
+    public_transaction_id: string | null;
+  } | null;
   receipt_url: string | null;
   created_at: string;
   updated_at: string;
   completed_at: string | null;
   orders: {
+    public_order_id: string;
     order_number: string;
     product_name: string;
     status: string;
@@ -60,7 +65,7 @@ export default function MerchantRefundDetail() {
       try {
         const { data, error } = await supabase
           .from('refunds')
-          .select('*, orders(order_number, product_name, status, merchant_id)')
+          .select('*, orders(public_order_id, order_number, product_name, status, merchant_id), payment_transactions(public_transaction_id)')
           .eq('id', refundId)
           .eq('orders.merchant_id', merchant.id)
           .maybeSingle();
@@ -112,7 +117,7 @@ export default function MerchantRefundDetail() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground">Refund Details</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">#{refund.id.slice(0, 8).toUpperCase()}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-mono">{refund.public_refund_id || `#${refund.id.slice(0, 8).toUpperCase()}`}</p>
           </div>
           <span className={`text-[10px] sm:text-xs px-2 py-1 rounded-full capitalize shrink-0 flex items-center gap-1 ${config.className}`}>
             <span className="material-symbols-outlined text-xs">{config.icon}</span>
@@ -140,7 +145,7 @@ export default function MerchantRefundDetail() {
             <>
               <div className="flex justify-between items-center py-1.5 border-b border-border">
                 <span className="text-xs text-muted-foreground">Order</span>
-                <span className="text-xs font-medium text-foreground">#{refund.orders.order_number}</span>
+                <span className="text-xs font-medium text-foreground font-mono">{refund.orders.public_order_id || `#${refund.orders.order_number}`}</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-border">
                 <span className="text-xs text-muted-foreground">Product</span>
@@ -150,8 +155,8 @@ export default function MerchantRefundDetail() {
           )}
           {refund.transaction_id && (
             <div className="flex justify-between items-center py-1.5 border-b border-border">
-              <span className="text-xs text-muted-foreground">Transaction ID</span>
-              <span className="text-xs font-medium text-foreground font-mono">{refund.transaction_id}</span>
+              <span className="text-xs text-muted-foreground">Payment Transaction</span>
+              <span className="text-xs font-medium text-foreground font-mono">{refund.payment_transactions?.public_transaction_id || refund.transaction_id}</span>
             </div>
           )}
           {refund.payment_method && (

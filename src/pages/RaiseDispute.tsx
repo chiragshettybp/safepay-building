@@ -7,9 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   merchant_name: string;
   merchant_avatar: string | null;
+  merchant?: {
+    public_merchant_id: string;
+  };
   product_name: string;
   amount: number;
   currency: string;
@@ -46,7 +50,7 @@ export default function RaiseDispute() {
         // Fetch order
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
-          .select('*')
+          .select('*, merchant:merchants(public_merchant_id)')
           .eq('id', orderId)
           .eq('customer_id', user.id)
           .maybeSingle();
@@ -236,7 +240,7 @@ export default function RaiseDispute() {
             className="back-btn flex items-center text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-xs sm:text-sm font-medium truncate">Order #{order.order_number}</span>
+            <span className="text-xs sm:text-sm font-medium truncate">Order {order.public_order_id || `#${order.order_number}`}</span>
           </button>
         </div>
       </header>
@@ -283,7 +287,7 @@ export default function RaiseDispute() {
             </h3>
             
             <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface border border-border text-[10px] sm:text-xs font-medium text-muted-foreground mb-3 sm:mb-4">
-              MERC-{order.order_number.slice(-3)}
+              {order.merchant?.public_merchant_id || `MERC-${order.order_number.slice(-3)}`}
             </span>
             
             <div className="w-full h-px bg-border/60 mb-3 sm:mb-4"></div>

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 interface OrderDetails {
   id: string;
+  public_order_id: string;
   order_number: string;
   product_name: string;
   product_description: string | null;
@@ -78,6 +79,7 @@ export default function MerchantOrderDetails() {
 
       setOrder({
         id: orderData.id,
+        public_order_id: orderData.public_order_id,
         order_number: orderData.order_number,
         product_name: orderData.product_name,
         product_description: orderData.product_description,
@@ -311,7 +313,7 @@ export default function MerchantOrderDetails() {
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
               <span className="material-symbols-outlined text-xl">arrow_back</span>
             </button>
-            <h1 className="text-base font-semibold text-foreground">#{order.order_number}</h1>
+            <h1 className="text-base font-semibold text-foreground font-mono">{order.public_order_id || `#${order.order_number}`}</h1>
           </div>
           {getStatusBadge(order.status)}
         </div>

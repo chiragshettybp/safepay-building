@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 interface MerchantData {
+  public_merchant_id: string;
   business_name: string;
   business_category: string;
   business_email: string | null;
@@ -245,7 +246,7 @@ export default function MerchantProfile() {
             <div className="space-y-2.5 sm:space-y-3">
               <div className="flex justify-between items-center gap-2">
                 <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Merchant ID</span>
-                <span className="text-[10px] sm:text-xs font-mono text-muted-foreground truncate max-w-[120px]">{merchant?.id?.slice(0, 8)}...</span>
+                <span className="text-[10px] sm:text-xs font-mono text-muted-foreground truncate max-w-[160px]">{merchantData?.public_merchant_id || `${merchant?.id?.slice(0, 8)}...`}</span>
               </div>
               <div className="flex justify-between items-center gap-2">
                 <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Member Since</span>

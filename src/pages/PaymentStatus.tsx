@@ -6,12 +6,14 @@ import Confetti from '@/components/ui/confetti';
 interface PaymentStatusData {
   status: 'success' | 'failed' | 'pending';
   transactionId: string;
+  publicTransactionId?: string;
   razorpayPaymentId?: string;
   amount: number;
   currency: string;
   merchantName?: string;
   orderId?: string;
   orderNumber?: string;
+  publicOrderId?: string;
   error?: string;
 }
 
@@ -122,7 +124,7 @@ export default function PaymentStatus() {
             {/* Transaction ID */}
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Transaction ID</span>
-              <span className="text-foreground text-sm font-mono">{statusData.transactionId.slice(0, 8)}...</span>
+              <span className="text-foreground text-sm font-mono">{statusData.publicTransactionId || `${statusData.transactionId.slice(0, 8)}...`}</span>
             </div>
 
             {/* Razorpay Payment ID */}
@@ -172,7 +174,7 @@ export default function PaymentStatus() {
             className="flex items-center gap-2 text-primary text-sm font-medium mb-4"
           >
             <span className="material-symbols-outlined text-[18px]">visibility</span>
-            View Order #{statusData.orderNumber}
+            View Order {statusData.publicOrderId || `#${statusData.orderNumber}`}
           </Link>
         )}
       </main>

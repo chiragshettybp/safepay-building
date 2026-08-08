@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 interface Dispute {
   id: string;
+  public_dispute_id: string;
   order_id: string;
   reason: string;
   description: string | null;
@@ -23,6 +24,7 @@ interface Dispute {
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   product_name: string;
   amount: number;
@@ -76,7 +78,7 @@ export default function MerchantDisputeResult() {
 
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
-        .select('id, order_number, product_name, amount, merchant_id')
+        .select('id, public_order_id, order_number, product_name, amount, merchant_id')
         .eq('id', disputeData.order_id)
         .single();
 
@@ -305,7 +307,7 @@ export default function MerchantDisputeResult() {
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <p className="text-[11px] text-muted-foreground">Order #</p>
-                <p className="font-medium text-foreground">{order.order_number}</p>
+                <p className="font-medium text-foreground">{order.public_order_id || `#${order.order_number}`}</p>
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground">Amount</p>

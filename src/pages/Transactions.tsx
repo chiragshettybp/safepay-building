@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 
 interface Transaction {
   id: string;
+  public_transaction_id: string;
   customer_name: string | null;
   customer_email: string | null;
   customer_phone: string;
@@ -119,6 +120,7 @@ export default function Transactions() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
+        tx.public_transaction_id?.toLowerCase().includes(query) ||
         tx.razorpay_payment_id?.toLowerCase().includes(query) ||
         tx.razorpay_order_id?.toLowerCase().includes(query) ||
         tx.customer_name?.toLowerCase().includes(query) ||
@@ -322,8 +324,8 @@ export default function Transactions() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5">
-                    <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                      {tx.razorpay_payment_id?.slice(-8) || tx.id.slice(0, 8)}
+                    <span className="text-xs sm:text-sm font-semibold text-foreground truncate font-mono">
+                      {tx.public_transaction_id || tx.razorpay_payment_id?.slice(-8) || tx.id.slice(0, 8)}
                     </span>
                     {getStatusBadge(tx.status)}
                   </div>

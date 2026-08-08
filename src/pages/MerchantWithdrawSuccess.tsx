@@ -10,10 +10,10 @@ import Confetti from '@/components/ui/confetti';
 
 interface Payout {
   id: string;
+  public_payout_id: string;
   amount: number;
   currency: string;
   status: string;
-  transaction_id: string | null;
   notes: string | null;
   created_at: string;
   bank_account: {
@@ -54,10 +54,10 @@ export default function MerchantWithdrawSuccess() {
         .from('merchant_payouts')
         .select(`
           id,
+          public_payout_id,
           amount,
           currency,
           status,
-          transaction_id,
           notes,
           created_at,
           merchant_bank_accounts (
@@ -204,13 +204,11 @@ export default function MerchantWithdrawSuccess() {
               </Badge>
             </div>
 
-            {/* Transaction ID */}
-            {payout.transaction_id && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Transaction ID</span>
-                <span className="text-sm font-mono">{payout.transaction_id}</span>
-              </div>
-            )}
+            {/* Payout ID */}
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Payout ID</span>
+              <span className="text-sm font-mono">{payout.public_payout_id || payout.id.slice(0, 8).toUpperCase()}</span>
+            </div>
 
             {/* Date */}
             <div className="flex justify-between items-center">

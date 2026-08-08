@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface MerchantResult {
   id: string;
+  public_merchant_id: string;
   name: string;
   avatar?: string | null;
   verified: boolean;
@@ -47,7 +48,7 @@ export default function NewPayment() {
     try {
       const { data, error } = await supabase
         .from('merchants')
-        .select('id, user_id, business_name, business_logo_url, verification_status, is_active, business_category')
+        .select('id, public_merchant_id, user_id, business_name, business_logo_url, verification_status, is_active, business_category')
         .eq('is_active', true)
         .eq('verification_status', 'approved')
         .ilike('business_name', `%${query}%`)
@@ -57,6 +58,7 @@ export default function NewPayment() {
 
       const results: MerchantResult[] = (data || []).map((m: any) => ({
         id: m.id, // orders.merchant_id references the merchant record id
+        public_merchant_id: m.public_merchant_id,
         name: m.business_name,
         avatar: m.business_logo_url,
         verified: m.is_active === true && m.verification_status === 'approved',
@@ -132,6 +134,7 @@ export default function NewPayment() {
     // Store payment data in session for review page
     const paymentData = {
       merchantId: selectedMerchant.id,
+      publicMerchantId: selectedMerchant.public_merchant_id,
       merchantName: selectedMerchant.name,
       merchantVerified: selectedMerchant.verified || false,
       amount: parsedAmount,
@@ -247,7 +250,7 @@ export default function NewPayment() {
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {merchant.category && <span>{merchant.category} • </span>}
-                        ID: {merchant.id.slice(0, 8)}...
+                        ID: {merchant.public_merchant_id || `${merchant.id.slice(0, 8)}...`}
                       </p>
                     </div>
                   </button>
@@ -272,7 +275,7 @@ export default function NewPayment() {
                       <span className="material-symbols-outlined text-primary text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">ID: {selectedMerchant.id.slice(0, 8)}...</p>
+                  <p className="text-xs text-muted-foreground">ID: {selectedMerchant.public_merchant_id || `${selectedMerchant.id.slice(0, 8)}...`}</p>
                 </div>
                 <button 
                   onClick={() => {

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Dispute {
   id: string;
+  public_dispute_id: string;
   order_id: string;
   reason: string;
   issue_type: string | null;
@@ -245,7 +246,7 @@ export default function DisputeStatus() {
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
               </svg>
               <span className="text-sm font-bold text-primary tracking-wide">
-                #DSP-{dispute.id.slice(0, 6).toUpperCase()}
+                {dispute.public_dispute_id || `#DSP-${dispute.id.slice(0, 6).toUpperCase()}`}
               </span>
             </div>
 

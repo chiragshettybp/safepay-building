@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface Ticket {
   id: string;
+  public_ticket_id: string;
   subject: string;
   category: string;
   description: string;
@@ -270,7 +271,7 @@ export default function SupportTicketDetail() {
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground truncate">Support Ticket</h1>
             <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-              #{ticket.id.slice(0, 8).toUpperCase()} • {ticket.category.replace(/_/g, ' ')}
+              {ticket.public_ticket_id || `#${ticket.id.slice(0, 8).toUpperCase()}`} • {ticket.category.replace(/_/g, ' ')}
             </p>
           </div>
           <span className={`text-[10px] sm:text-xs px-2 py-1 rounded-full capitalize shrink-0 ${getStatusColor(ticket.status)}`}>

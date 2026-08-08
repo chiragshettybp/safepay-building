@@ -154,10 +154,7 @@ export default function MerchantWithdraw() {
     setIsSubmitting(true);
 
     try {
-      // Generate transaction ID
-      const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-
-      // Insert payout record
+      // Insert payout record (public payout ID auto-generated server-side)
       const { data: payoutData, error: payoutError } = await supabase
         .from('merchant_payouts')
         .insert({
@@ -167,7 +164,6 @@ export default function MerchantWithdraw() {
           currency: 'INR',
           status: 'processing',
           notes: notes.trim() || null,
-          transaction_id: transactionId,
           processing_started_at: new Date().toISOString(),
         })
         .select()

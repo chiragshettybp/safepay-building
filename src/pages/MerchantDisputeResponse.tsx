@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 interface Dispute {
   id: string;
+  public_dispute_id: string;
   order_id: string;
   customer_id: string;
   reason: string;
@@ -24,6 +25,7 @@ interface Dispute {
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   product_name: string;
   amount: number;
@@ -318,11 +320,11 @@ export default function MerchantDisputeResponse() {
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <p className="text-[11px] text-muted-foreground">Dispute ID</p>
-                <p className="font-medium text-foreground">{dispute.id.slice(0, 8)}</p>
+                <p className="font-medium text-foreground">{dispute.public_dispute_id || `#${dispute.id.slice(0, 8)}`}</p>
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground">Order</p>
-                <p className="font-medium text-foreground">#{order.order_number}</p>
+                <p className="font-medium text-foreground">{order.public_order_id || `#${order.order_number}`}</p>
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground">Customer</p>

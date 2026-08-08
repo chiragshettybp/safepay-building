@@ -21,6 +21,7 @@ interface DashboardStats {
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   product_name: string;
   amount: number;
@@ -85,7 +86,7 @@ export default function MerchantDashboard() {
 
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select('id, order_number, product_name, amount, status, escrow_status, created_at, expected_delivery, customer_id, merchant_id')
+        .select('id, public_order_id, order_number, product_name, amount, status, escrow_status, created_at, expected_delivery, customer_id, merchant_id')
         .eq('merchant_id', merchant.id)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -96,6 +97,7 @@ export default function MerchantDashboard() {
 
       const merchantOrders: Order[] = (ordersData || []).map((o: any) => ({
         id: o.id,
+        public_order_id: o.public_order_id,
         order_number: o.order_number,
         product_name: o.product_name,
         amount: o.amount,
@@ -234,6 +236,7 @@ export default function MerchantDashboard() {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
+      order.public_order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.product_name.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -493,7 +496,7 @@ export default function MerchantDashboard() {
                   >
                     <div className="flex items-start justify-between gap-2 mb-1.5">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground">#{order.order_number}</p>
+                        <p className="text-sm font-semibold text-foreground font-mono">{order.public_order_id || `#${order.order_number}`}</p>
                         <p className="text-xs text-muted-foreground truncate">{order.product_name}</p>
                       </div>
                       {getStatusBadge(order.status)}

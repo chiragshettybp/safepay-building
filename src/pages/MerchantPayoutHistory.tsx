@@ -25,6 +25,7 @@ import {
 
 interface Payout {
   id: string;
+  public_payout_id: string;
   amount: number;
   currency: string;
   status: string;
@@ -33,6 +34,9 @@ interface Payout {
   failure_reason: string | null;
   created_at: string;
   completed_at: string | null;
+  wallet_transactions: {
+    public_withdrawal_id: string | null;
+  } | null;
   bank_account: {
     bank_name: string;
     account_number: string;
@@ -70,6 +74,7 @@ export default function MerchantPayoutHistory() {
         .from('merchant_payouts')
         .select(`
           id,
+          public_payout_id,
           amount,
           currency,
           status,
@@ -78,6 +83,9 @@ export default function MerchantPayoutHistory() {
           failure_reason,
           created_at,
           completed_at,
+          wallet_transactions (
+            public_withdrawal_id
+          ),
           merchant_bank_accounts (
             bank_name,
             account_number
@@ -146,6 +154,8 @@ export default function MerchantPayoutHistory() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(p =>
+        p.public_payout_id?.toLowerCase().includes(query) ||
+        p.wallet_transactions?.public_withdrawal_id?.toLowerCase().includes(query) ||
         p.transaction_id?.toLowerCase().includes(query) ||
         p.amount.toString().includes(query) ||
         p.bank_account?.bank_name.toLowerCase().includes(query)
@@ -379,9 +389,12 @@ export default function MerchantPayoutHistory() {
                       <p className="text-[10px] text-muted-foreground">
                         {format(new Date(payout.created_at), 'dd MMM yyyy, HH:mm')}
                       </p>
-                      {payout.transaction_id && (
-                        <p className="text-[9px] font-mono text-muted-foreground mt-1">
-                          ID: {payout.transaction_id}
+                      <p className="text-[9px] font-mono text-muted-foreground mt-1">
+                        {payout.public_payout_id || 'Payout'}
+                      </p>
+                      {payout.wallet_transactions?.public_withdrawal_id && (
+                        <p className="text-[9px] font-mono text-muted-foreground">
+                          {payout.wallet_transactions.public_withdrawal_id}
                         </p>
                       )}
                       {payout.failure_reason && (

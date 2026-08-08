@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Dispute {
   id: string;
+  public_dispute_id: string;
   order_id: string;
   reason: string;
   issue_type: string | null;
@@ -71,6 +72,7 @@ export default function DisputeResult() {
   const [updates, setUpdates] = useState<DisputeUpdate[]>([]);
   const [files, setFiles] = useState<DisputeFile[]>([]);
   const [refundId, setRefundId] = useState<string | null>(null);
+  const [refundPublicId, setRefundPublicId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(true);
 
@@ -87,12 +89,13 @@ export default function DisputeResult() {
       // Check if refund already exists for this dispute
       const { data: existingRefund } = await supabase
         .from('refunds')
-        .select('id')
+        .select('id, public_refund_id')
         .eq('dispute_id', disputeData.id)
         .maybeSingle();
 
       if (existingRefund) {
         setRefundId(existingRefund.id);
+        setRefundPublicId(existingRefund.public_refund_id);
         return;
       }
 
@@ -108,18 +111,19 @@ export default function DisputeResult() {
           reason: 'dispute_won',
           status: 'initiated'
         })
-        .select('id')
+        .select('id, public_refund_id')
         .single();
 
       if (refundError) {
         if (refundError.code === '23505') {
           const { data: existing } = await supabase
             .from('refunds')
-            .select('id')
+            .select('id, public_refund_id')
             .eq('dispute_id', disputeData.id)
             .maybeSingle();
           if (existing) {
             setRefundId(existing.id);
+            setRefundPublicId(existing.public_refund_id);
             return;
           }
         }
@@ -128,6 +132,7 @@ export default function DisputeResult() {
       }
 
       setRefundId(newRefund.id);
+      setRefundPublicId(newRefund.public_refund_id);
 
       // Create initial refund event
       await supabase.from('refund_events').insert({
@@ -196,9 +201,10 @@ export default function DisputeResult() {
   }, [disputeId, user?.id, navigate]);
 
   const copyTransactionId = () => {
-    if (dispute?.refund_transaction_id) {
-      navigator.clipboard.writeText(dispute.refund_transaction_id);
-      toast({ title: 'Copied!', description: 'Transaction ID copied to clipboard' });
+    const txnId = refundPublicId || dispute?.refund_transaction_id;
+    if (txnId) {
+      navigator.clipboard.writeText(txnId);
+      toast({ title: 'Copied!', description: 'Refund ID copied to clipboard' });
     }
   };
 
@@ -246,7 +252,7 @@ export default function DisputeResult() {
           <ArrowLeft className="w-6 h-6" />
         </button>
         <h2 className="text-base font-semibold text-foreground tracking-tight">
-          Dispute #{dispute.id.slice(0, 5).toUpperCase()}
+          {dispute.public_dispute_id || `Dispute #${dispute.id.slice(0, 5).toUpperCase()}`}
         </h2>
         <button className="flex items-center justify-center p-2 rounded-full text-primary font-medium hover:bg-primary/10 transition-colors text-sm">
           <HelpCircle className="w-5 h-5" />
@@ -309,7 +315,7 @@ export default function DisputeResult() {
                 {dispute.refund_transaction_id && (
                   <div className="flex items-center mt-2 gap-2">
                     <span className="bg-muted px-2 py-1 rounded text-xs font-mono text-muted-foreground">
-                      TXN #{dispute.refund_transaction_id}
+                      {refundPublicId || `TXN #${dispute.refund_transaction_id}`}
                     </span>
                     <button 
                       onClick={copyTransactionId}

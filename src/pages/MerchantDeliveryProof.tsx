@@ -29,6 +29,7 @@ export default function MerchantDeliveryProof() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [orderPublicId, setOrderPublicId] = useState('');
   const [existingProof, setExistingProof] = useState<string[] | null>(null);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function MerchantDeliveryProof() {
       try {
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
-          .select('order_number, merchant_id')
+          .select('order_number, public_order_id, merchant_id')
           .eq('id', orderId)
           .eq('merchant_id', merchant.id)
           .single();
@@ -62,6 +63,7 @@ export default function MerchantDeliveryProof() {
         }
         
         setOrderNumber(orderData.order_number);
+        setOrderPublicId(orderData.public_order_id || '');
 
         const { data: proofData } = await supabase
           .from('delivery_proofs')
@@ -211,7 +213,7 @@ export default function MerchantDeliveryProof() {
         merchant_id: merchant.id,
         activity_type: 'delivery',
         title: 'Delivery Proof Uploaded',
-        description: `Uploaded proof for order #${orderNumber}`,
+        description: `Uploaded proof for order ${orderPublicId || `#${orderNumber}`}`,
         reference_id: orderId,
         reference_type: 'order',
       });
@@ -273,10 +275,10 @@ export default function MerchantDeliveryProof() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="px-4 py-4 max-w-lg mx-auto">
-          {orderNumber && (
+          {orderPublicId && (
             <div className="bg-muted/30 rounded-xl p-3 mb-4">
               <p className="text-xs text-muted-foreground">Order</p>
-              <p className="text-base font-semibold text-foreground">#{orderNumber}</p>
+              <p className="text-base font-semibold text-foreground font-mono">{orderPublicId}</p>
             </div>
           )}
 

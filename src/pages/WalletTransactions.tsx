@@ -11,6 +11,8 @@ import {
 
 interface WalletTransaction {
   id: string;
+  public_transaction_id: string;
+  public_withdrawal_id: string | null;
   type: string;
   amount: number;
   currency: string;
@@ -114,6 +116,8 @@ export default function WalletTransactions() {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
     return (
+      t.public_transaction_id?.toLowerCase().includes(search) ||
+      t.public_withdrawal_id?.toLowerCase().includes(search) ||
       t.id.toLowerCase().includes(search) ||
       t.type.toLowerCase().includes(search) ||
       t.description?.toLowerCase().includes(search)
@@ -278,7 +282,7 @@ export default function WalletTransactions() {
                     <div className="pt-4 space-y-3">
                       <div className="flex justify-between items-center py-2 border-b border-border/50">
                         <span className="text-sm text-muted-foreground">Transaction ID</span>
-                        <span className="text-sm font-mono text-foreground">{transaction.id.slice(0, 8).toUpperCase()}</span>
+                        <span className="text-sm font-mono text-foreground">{transaction.public_transaction_id || transaction.id.slice(0, 8).toUpperCase()}</span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-border/50">
                         <span className="text-sm text-muted-foreground">Type</span>

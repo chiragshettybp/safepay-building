@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Refund {
   id: string;
+  public_refund_id: string;
   order_id: string;
   amount: number;
   currency: string;
@@ -21,6 +22,7 @@ interface Refund {
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   merchant_name: string;
   product_name: string;
@@ -82,7 +84,7 @@ export default function RefundInitiated() {
         // Fetch order
         const { data: orderData } = await supabase
           .from('orders')
-          .select('id, order_number, merchant_name, product_name')
+          .select('id, public_order_id, order_number, merchant_name, product_name')
           .eq('id', refundData.order_id)
           .maybeSingle();
         
@@ -200,8 +202,12 @@ export default function RefundInitiated() {
             {order && (
               <>
                 <div className="flex justify-between items-center py-2 border-b border-border">
+                  <span className="text-sm text-muted-foreground">Refund ID</span>
+                  <span className="text-sm font-medium text-foreground font-mono">{refund.public_refund_id}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-sm text-muted-foreground">Order ID</span>
-                  <span className="text-sm font-medium text-foreground">#{order.order_number}</span>
+                  <span className="text-sm font-medium text-foreground">{order?.public_order_id || `#${order?.order_number}`}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-sm text-muted-foreground">Merchant</span>

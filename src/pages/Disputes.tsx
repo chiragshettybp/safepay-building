@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 
 interface Dispute {
   id: string;
+  public_dispute_id: string;
   order_id: string;
   reason: string;
   description: string | null;
@@ -14,6 +15,7 @@ interface Dispute {
   created_at: string;
   updated_at: string;
   orders?: {
+    public_order_id: string;
     order_number: string;
     merchant_name: string;
     amount: number;
@@ -87,6 +89,7 @@ export default function Disputes() {
       .select(`
         *,
         orders (
+          public_order_id,
           order_number,
           merchant_name,
           amount,
@@ -107,6 +110,8 @@ export default function Disputes() {
   const filteredDisputes = disputes.filter(dispute => {
     const matchesFilter = filter === 'all' || dispute.status === filter;
     const matchesSearch = searchQuery === '' || 
+      dispute.public_dispute_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dispute.orders?.public_order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dispute.orders?.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dispute.orders?.merchant_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dispute.reason?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -201,7 +206,7 @@ export default function Disputes() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <h3 className="font-medium text-sm sm:text-base text-foreground truncate">
-                          {dispute.orders?.order_number || 'Order'}
+                          {dispute.public_dispute_id || dispute.orders?.order_number || 'Dispute'}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {dispute.orders?.merchant_name}
@@ -218,6 +223,11 @@ export default function Disputes() {
                       <span className="text-[10px] sm:text-xs text-muted-foreground">
                         {format(new Date(dispute.created_at), 'MMM d, yyyy')}
                       </span>
+                      {dispute.orders?.public_order_id && (
+                        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
+                          {dispute.orders.public_order_id}
+                        </span>
+                      )}
                       {dispute.orders && (
                         <span className="text-[10px] sm:text-xs font-medium text-foreground">
                           {dispute.orders.currency} {dispute.orders.amount}

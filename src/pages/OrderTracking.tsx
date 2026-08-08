@@ -3,11 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
-import { ArrowLeft, Copy, Package, Check, Truck, FileText, Lock, Clock, AlertCircle, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Package, Check, Truck, FileText, Lock, Clock, AlertCircle, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { publicIdOf } from '@/lib/public-ids';
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   merchant_name: string;
   product_name: string;
@@ -114,7 +116,7 @@ export default function OrderTracking() {
   if (!order) return null;
 
   const copyOrderNumber = () => {
-    navigator.clipboard.writeText(order.order_number);
+    navigator.clipboard.writeText(publicIdOf(order, 'public_order_id', 'ORD', 'order_number'));
     toast({ title: 'Copied!', description: 'Order number copied' });
   };
 
@@ -183,8 +185,7 @@ export default function OrderTracking() {
               </p>
             </div>
             <button onClick={copyOrderNumber} className="inline-flex items-center gap-2 bg-muted px-4 py-2 rounded-lg text-sm font-mono font-medium text-primary hover:bg-muted/80">
-              #{order.order_number}
-              <Copy className="w-3.5 h-3.5" />
+              {publicIdOf(order, 'public_order_id', 'ORD', 'order_number')}
             </button>
           </div>
         )}
@@ -197,8 +198,7 @@ export default function OrderTracking() {
                 {getStatusLabel()}
               </span>
               <button onClick={copyOrderNumber} className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-lg text-sm font-mono font-medium text-primary hover:bg-muted/80">
-                #{order.order_number.slice(0, 10)}
-                <Copy className="w-3.5 h-3.5" />
+                {publicIdOf(order, 'public_order_id', 'ORD', 'order_number')}
               </button>
             </div>
             

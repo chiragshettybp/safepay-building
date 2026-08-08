@@ -29,6 +29,8 @@ export default function MerchantDisputeUpload() {
   const { merchant, isAuthenticated, isLoading: authLoading } = useMerchantAuth();
   
   const [orderNumber, setOrderNumber] = useState('');
+  const [disputePublicId, setDisputePublicId] = useState('');
+  const [orderPublicId, setOrderPublicId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   
@@ -48,15 +50,16 @@ export default function MerchantDisputeUpload() {
     try {
       const { data: disputeData, error: disputeError } = await supabase
         .from('disputes')
-        .select('order_id')
+        .select('order_id, public_dispute_id')
         .eq('id', disputeId)
         .single();
 
       if (disputeError) throw disputeError;
+      setDisputePublicId(disputeData.public_dispute_id);
 
       const { data: orderData } = await supabase
         .from('orders')
-        .select('order_number, merchant_id')
+        .select('order_number, public_order_id, merchant_id')
         .eq('id', disputeData.order_id)
         .single();
 
@@ -67,6 +70,7 @@ export default function MerchantDisputeUpload() {
       }
 
       setOrderNumber(orderData?.order_number || '');
+      setOrderPublicId(orderData?.public_order_id || '');
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load dispute');
@@ -242,8 +246,8 @@ export default function MerchantDisputeUpload() {
                 <span className="material-symbols-outlined text-destructive text-lg">gavel</span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Dispute #{disputeId?.slice(0, 8)}</p>
-                <p className="text-xs text-muted-foreground">Order #{orderNumber}</p>
+                <p className="text-sm font-semibold text-foreground font-mono">{disputePublicId || `Dispute #${disputeId?.slice(0, 8)}`}</p>
+                <p className="text-xs text-muted-foreground">Order {orderPublicId || `#${orderNumber}`}</p>
               </div>
             </div>
           </div>

@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Check, Lock, Camera, AlertCircle, ShieldCheck, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { publicIdOf } from '@/lib/public-ids';
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   merchant_name: string;
   merchant_avatar: string | null;
@@ -181,7 +183,7 @@ export default function ConfirmDelivery() {
           </div>
           <div>
             <p className="font-bold text-sm sm:text-base text-foreground">{order.merchant_name}</p>
-            <Link to={`/orders/${order.id}`} className="text-xs sm:text-sm text-primary font-medium">Order #{order.order_number}</Link>
+            <Link to={`/orders/${order.id}`} className="text-xs sm:text-sm text-primary font-medium">Order {publicIdOf(order, 'public_order_id', 'ORD', 'order_number')}</Link>
           </div>
           <div>
             <p className="text-base sm:text-lg font-bold text-foreground">{order.product_name}</p>

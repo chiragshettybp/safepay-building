@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface RefundRow {
   id: string;
+  public_refund_id: string;
   order_id: string;
   amount: number;
   currency: string;
@@ -15,6 +16,7 @@ interface RefundRow {
   created_at: string;
   completed_at: string | null;
   orders: {
+    public_order_id: string;
     order_number: string;
     product_name: string;
     customer_id: string;
@@ -48,7 +50,7 @@ export default function MerchantRefunds() {
       try {
         const { data, error } = await supabase
           .from('refunds')
-          .select('id, order_id, amount, currency, status, reason, created_at, completed_at, orders(order_number, product_name, customer_id)')
+          .select('id, public_refund_id, order_id, amount, currency, status, reason, created_at, completed_at, orders(public_order_id, order_number, product_name, customer_id)')
           .eq('orders.merchant_id', merchant.id)
           .order('created_at', { ascending: false })
           .limit(100);
@@ -142,12 +144,17 @@ export default function MerchantRefunds() {
                       <p className="font-semibold text-foreground text-sm">
                         {formatAmount(Number(refund.amount), refund.currency)}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">
-                        {refund.orders?.order_number ? `#${refund.orders.order_number}` : 'Order'} • {refund.orders?.product_name || ''}
+                      <p className="text-xs text-muted-foreground truncate mt-0.5 font-mono">
+                        {refund.public_refund_id || (refund.orders?.order_number ? `#${refund.orders.order_number}` : 'Refund')}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5 capitalize">
                         {refund.reason?.replace(/_/g, ' ') || 'Refund'} • {format(new Date(refund.created_at), 'MMM d, h:mm a')}
                       </p>
+                      {refund.orders?.public_order_id && (
+                        <p className="text-[10px] text-muted-foreground font-mono">
+                          {refund.orders.public_order_id} • {refund.orders.product_name || ''}
+                        </p>
+                      )}
                     </div>
                     <span className={`text-[10px] sm:text-xs px-2 py-1 rounded-full capitalize shrink-0 flex items-center gap-1 ${config.className}`}>
                       <span className="material-symbols-outlined text-xs">{config.icon}</span>

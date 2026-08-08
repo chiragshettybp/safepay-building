@@ -9,9 +9,11 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
+import { publicIdOf } from '@/lib/public-ids';
 
 interface Order {
   id: string;
+  public_order_id: string;
   order_number: string;
   merchant_name: string;
   merchant_avatar: string | null;
@@ -154,7 +156,7 @@ export default function CustomerDashboard() {
 
   // Filter orders by search query
   const filteredOrders = orders.filter(order => 
-    order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (order.public_order_id || order.order_number).toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.merchant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.product_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -249,7 +251,7 @@ export default function CustomerDashboard() {
                     {/* Product Info */}
                     <div className="border-t border-border pt-3">
                       <p className="text-sm font-medium text-foreground mb-1">{order.product_name}</p>
-                      <p className="text-xs text-muted-foreground mb-2">Order #{order.order_number}</p>
+                      <p className="text-xs text-muted-foreground mb-2">Order {publicIdOf(order, 'public_order_id', 'ORD', 'order_number')}</p>
                       <p className="text-xs text-muted-foreground flex items-start gap-1.5">
                         <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5">info</span>
                         <span>

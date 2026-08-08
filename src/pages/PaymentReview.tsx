@@ -21,6 +21,7 @@ const RAZORPAY_ENABLED = false;
 
 const paymentSchema = z.object({
   merchantId: z.string().min(1),
+  publicMerchantId: z.string().optional(),
   merchantName: z.string().min(1),
   merchantVerified: z.boolean().optional(),
   amount: z.number().min(100).max(50000),
@@ -209,6 +210,7 @@ export default function PaymentReview() {
         sessionStorage.setItem('paymentSuccess', JSON.stringify({
           orderId: order.id,
           orderNumber,
+          publicOrderId: order.public_order_id,
           merchantName: paymentData.merchantName,
           amount: totalAmount,
           currency: paymentData.currency,
@@ -277,6 +279,7 @@ export default function PaymentReview() {
         sessionStorage.setItem('paymentSuccess', JSON.stringify({
           orderId: order.id,
           orderNumber,
+          publicOrderId: order.public_order_id,
           merchantName: paymentData.merchantName,
           amount: totalAmount,
           currency: paymentData.currency,
@@ -289,6 +292,7 @@ export default function PaymentReview() {
         sessionStorage.setItem('paymentStatus', JSON.stringify({
           status: 'failed',
           transactionId: transaction.id,
+          publicTransactionId: transaction.public_transaction_id,
           amount: totalAmount,
           currency: paymentData.currency,
           merchantName: paymentData.merchantName,
@@ -354,7 +358,7 @@ export default function PaymentReview() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">{paymentData.merchantName}</p>
-                <p className="text-xs text-muted-foreground">ID: #{paymentData.merchantId}</p>
+                <p className="text-xs text-muted-foreground">ID: {paymentData.publicMerchantId || `#${paymentData.merchantId}`}</p>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { ArrowRight, CheckCircle, Clock, AlertCircle, IndianRupee, Search, Filte
 
 interface Refund {
   id: string;
+  public_refund_id: string;
   order_id: string;
   amount: number;
   currency: string;
@@ -15,6 +16,7 @@ interface Refund {
   reason: string;
   created_at: string;
   order?: {
+    public_order_id: string;
     order_number: string;
     merchant_name: string;
     product_name: string;
@@ -65,7 +67,7 @@ export default function Refunds() {
           .from('refunds')
           .select(`
             *,
-            order:orders(order_number, merchant_name, product_name)
+            order:orders(public_order_id, order_number, merchant_name, product_name)
           `)
           .eq('customer_id', user.id)
           .order('created_at', { ascending: false });
@@ -106,6 +108,8 @@ export default function Refunds() {
 
   const filteredRefunds = refunds.filter(refund => {
     const matchesSearch = 
+      refund.public_refund_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      refund.order?.public_order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       refund.order?.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       refund.order?.merchant_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       refund.reason.toLowerCase().includes(searchQuery.toLowerCase());
@@ -213,8 +217,8 @@ export default function Refunds() {
                           <p className="font-semibold text-foreground">
                             ₹{Number(refund.amount).toLocaleString()}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {refund.order?.order_number ? `#${refund.order.order_number}` : 'Order'}
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {refund.public_refund_id || (refund.order?.order_number ? `#${refund.order.order_number}` : 'Order')}
                           </p>
                         </div>
                       </div>
@@ -234,6 +238,11 @@ export default function Refunds() {
                         <p className="text-xs text-muted-foreground capitalize">
                           {refund.reason.replace(/_/g, ' ')}
                         </p>
+                        {refund.order?.public_order_id && (
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {refund.order.public_order_id}
+                          </p>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(refund.created_at), 'MMM d, h:mm a')}
