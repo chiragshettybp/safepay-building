@@ -1,0 +1,417 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Safepay Design System - All colors in HSL */
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 220 14% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 14% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 14% 15%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 217 91% 50%;
+
+    --secondary: 220 9% 46%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 213 94% 68%;
+    --accent-foreground: 220 14% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --surface: 210 33% 99%;
+    --surface-foreground: 220 14% 15%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 222 47% 9%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 14% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 14% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 217 91% 50%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 213 94% 68%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --surface: 220 14% 12%;
+    --surface-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 213 94% 68%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224 76% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    @apply border-border;
+  }
+
+  html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  #root {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar,
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Safe area padding for mobile */
+  .pb-safe {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Responsive container */
+  .container-responsive {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-responsive {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-responsive {
+      max-width: 1024px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Mobile touch-friendly tap targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile-first card spacing */
+  .mobile-card {
+    @apply p-4 sm:p-5 md:p-6;
+  }
+
+  /* Mobile page container */
+  .mobile-page {
+    @apply min-h-[100dvh] bg-background max-w-[100vw] overflow-x-hidden;
+  }
+
+  /* Mobile header */
+  .mobile-header {
+    @apply sticky top-0 z-30 bg-card border-b border-border h-14 flex items-center px-4;
+  }
+
+  /* Mobile bottom action bar */
+  .mobile-bottom-bar {
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 pb-6 z-40;
+  }
+
+  /* Mobile spacing for content above bottom bar */
+  .pb-bottom-bar {
+    @apply pb-24 sm:pb-28;
+  }
+
+  /* Prevent horizontal overflow */
+  .overflow-guard {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .shadow-subtle {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  }
+
+  .shadow-input {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  /* Glass effect for overlays */
+  .glass {
+    @apply bg-card/95 backdrop-blur-md;
+  }
+
+  /* Improved focus states for touch */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Mobile stat card */
+  .stat-card {
+    @apply bg-card border border-border rounded-xl p-3 sm:p-4;
+  }
+
+  /* Mobile list item */
+  .list-item {
+    @apply flex items-center gap-3 p-3 sm:p-4 bg-card border border-border rounded-xl hover:border-primary/30 active:bg-muted/50 transition-all;
+  }
+
+  /* Mobile action button */
+  .action-btn {
+    @apply h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base active:scale-[0.98] transition-transform;
+  }
+
+  /* Responsive text */
+  .text-responsive-xs {
+    @apply text-[10px] sm:text-xs;
+  }
+
+  .text-responsive-sm {
+    @apply text-xs sm:text-sm;
+  }
+
+  .text-responsive-base {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-responsive-lg {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* Enhanced mobile utilities */
+  .mobile-section {
+    @apply px-4 py-4 sm:px-6 sm:py-5;
+  }
+
+  .mobile-section-header {
+    @apply flex items-center justify-between mb-3 sm:mb-4;
+  }
+
+  .mobile-section-title {
+    @apply text-base sm:text-lg font-semibold text-foreground;
+  }
+
+  /* Mobile metric card */
+  .metric-card {
+    @apply flex-shrink-0 w-[140px] sm:w-[160px] bg-card border border-border rounded-xl p-3 sm:p-4;
+  }
+
+  .metric-card-icon {
+    @apply w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0;
+  }
+
+  .metric-card-value {
+    @apply text-xl sm:text-2xl font-bold text-foreground;
+  }
+
+  .metric-card-label {
+    @apply text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wide;
+  }
+
+  /* Mobile filter chips */
+  .filter-chip {
+    @apply px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all active:scale-95;
+  }
+
+  .filter-chip-active {
+    @apply bg-primary text-primary-foreground shadow-sm;
+  }
+
+  .filter-chip-inactive {
+    @apply bg-muted text-muted-foreground hover:bg-muted/80;
+  }
+
+  /* Mobile order/transaction item */
+  .item-row {
+    @apply flex items-center gap-3 px-4 py-3.5 sm:py-4 hover:bg-muted/50 active:bg-muted transition-colors;
+  }
+
+  .item-avatar {
+    @apply w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden;
+  }
+
+  /* Mobile status badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold;
+  }
+
+  /* Mobile sticky header */
+  .sticky-header {
+    @apply sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border;
+  }
+
+  .sticky-header-content {
+    @apply flex items-center justify-between px-4 h-14 sm:h-16;
+  }
+
+  /* Mobile back button */
+  .back-btn {
+    @apply p-2 -ml-2 rounded-full hover:bg-muted active:scale-95 transition-all;
+  }
+
+  /* Mobile empty state */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-12 sm:py-16 px-6 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4;
+  }
+
+  /* Mobile form field */
+  .mobile-input {
+    @apply h-12 sm:h-14 px-4 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-base;
+  }
+
+  /* Mobile bottom action */
+  .bottom-action {
+    @apply fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-40;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .bottom-action-btn {
+    @apply w-full h-12 sm:h-14 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm;
+  }
+
+  /* Horizontal scroll container */
+  .horizontal-scroll {
+    @apply overflow-x-auto scrollbar-hide -mx-4 px-4;
+  }
+
+  .horizontal-scroll-content {
+    @apply flex gap-3 min-w-max pb-1;
+  }
+
+  /* Mobile info card */
+  .info-card {
+    @apply bg-card border border-border rounded-xl sm:rounded-2xl overflow-hidden;
+  }
+
+  .info-card-header {
+    @apply px-4 pt-4 pb-2 sm:px-5 sm:pt-5 sm:pb-3;
+  }
+
+  .info-card-content {
+    @apply divide-y divide-border;
+  }
+
+  .info-card-row {
+    @apply flex gap-3 px-4 py-3 sm:px-5 sm:py-4;
+  }
+
+  /* Quick action grid */
+  .quick-actions {
+    @apply grid grid-cols-2 gap-2 sm:gap-3;
+  }
+
+  .quick-action-btn {
+    @apply flex-1 h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform;
+  }
+}

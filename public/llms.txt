@@ -1,0 +1,23 @@
+# Safepay
+
+> Safepay is an escrow-style payment app for India. Buyers pay through Safepay, funds are locked until delivery is confirmed, and refunded automatically if the seller fails to deliver. Built for social-commerce purchases on Instagram, WhatsApp, and independent stores.
+
+## Pages
+
+- [Home](/): How Safepay protects online payments — escrow-style buyer protection, dispute resolution, refunds.
+- [About](/about): Company overview and mission.
+- [Contact](/contact): Support, grievance, and compliance contacts.
+- [Customer Signup](/customer-signup): Create a buyer account (phone + password).
+- [Customer Login](/customer-login): Sign in as a buyer.
+- [Merchant Signup](/merchant-signup): Create a seller account.
+- [Merchant Login](/merchant-login): Sign in as a seller.
+
+## Legal
+
+- [Privacy Policy](/privacy-policy): How user data is collected, stored, and protected.
+- [Terms of Service](/terms-of-service): Rules and obligations for using Safepay.
+- [Refund Policy](/refund-policy): How and when refunds are processed for protected payments.
+- [Cookie Policy](/cookie-policy): Cookies and tracking technologies used.
+- [Grievance Redressal](/grievance-redressal): Complaint resolution per RBI norms.
+- [AML & KYC Policy](/aml-kyc-policy): Anti-money-laundering and identity verification framework.
+- [Disclaimer](/disclaimer): Limitations of liability and scope of service.

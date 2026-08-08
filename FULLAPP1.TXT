@@ -1,0 +1,983 @@
+================================================================================
+SAFEPAY — COMPLETE SYSTEM EXTRACTION & AUDIT REPORT
+Generated: 2026-02-22
+================================================================================
+
+PART 1 — APP & MVP OVERVIEW
+================================================================================
+
+App Name: Safepay
+Purpose: Escrow-based payment system for online commerce trust
+Problem: Buyers can't trust unknown sellers on social commerce / independent sites
+Target Users: Customers buying online, Merchants selling online, Admin (planned)
+Core Value: Payment locked in escrow → released only after delivery confirmation
+
+MVP Scope:
+- Escrow payments via Razorpay
+- Delivery confirmation
+- Manual dispute resolution
+- Merchant payouts
+- Customer wallet
+
+Post-MVP:
+- AI dispute resolution
+- Automation & compliance
+- Trust badges
+- Social login (Google/Apple)
+- OTP verification via SMS
+- Advanced analytics
+
+Monetization:
+- 2% service fee on customer payments
+- 1% merchant payout/withdrawal fee
+
+Platform Scope: Web (mobile-responsive PWA-style) — Customer + Merchant portals
+Admin portal: NOT YET BUILT
+
+Primary User Journeys:
+1. Customer → Create Payment → Escrow Locked → Merchant Ships → Customer Confirms → Funds Released
+2. Customer → Raise Dispute → Admin Reviews → Refund or Release
+3. Merchant → View Orders → Add Tracking → Customer Confirms → Withdraw Funds
+
+
+PART 2 — COMPLETE PAGE & ROUTE INVENTORY
+================================================================================
+
+A. PUBLIC PAGES
+---------------
+| Route              | Page             | Status    |
+|--------------------|------------------|-----------|
+| /                  | Landing/Index    | EXISTS    |
+| /privacy-policy    | Privacy Policy   | EXISTS    |
+| /terms-of-service  | Terms of Service | EXISTS    |
+| /about             | About            | EXISTS    |
+
+B. AUTHENTICATION PAGES — CUSTOMER
+-----------------------------------
+| Route              | Page              | Protected | Status |
+|--------------------|-------------------|-----------|--------|
+| /customer-login    | Customer Login    | No        | EXISTS |
+| /customer-signup   | Customer Signup   | No        | EXISTS |
+| /customer-verify   | OTP/Verification  | No        | EXISTS |
+| /reset-password    | Password Reset    | No        | EXISTS |
+
+B2. AUTHENTICATION PAGES — MERCHANT
+------------------------------------
+| Route              | Page             | Protected | Status |
+|--------------------|------------------|-----------|--------|
+| /merchant-login    | Merchant Login   | No        | EXISTS |
+| /merchant-signup   | Merchant Signup  | No        | EXISTS |
+| /merchant-verify   | Merchant Verify  | No        | EXISTS |
+
+C. CUSTOMER PROTECTED PAGES
+----------------------------
+| Route                                  | Page               | Status          |
+|----------------------------------------|--------------------|-----------------|
+| /dashboard                             | Customer Dashboard | EXISTS          |
+| /orders                                | Orders List        | EXISTS          |
+| /orders/:id                            | Order Details      | EXISTS (dynamic)|
+| /orders/:id/tracking                   | Order Tracking     | EXISTS (dynamic)|
+| /orders/:id/confirm                    | Confirm Delivery   | EXISTS (dynamic)|
+| /orders/:id/report                     | Report Issue       | EXISTS (dynamic)|
+| /wallet                                | Wallet Home        | EXISTS          |
+| /wallet/transactions                   | Wallet Txns        | EXISTS          |
+| /wallet/bank-account                   | Add Bank Account   | EXISTS          |
+| /wallet/bank-account/:accountId        | Edit Bank Account  | EXISTS (dynamic)|
+| /wallet/withdraw                       | Wallet Withdraw    | EXISTS          |
+| /payment/new                           | New Payment        | EXISTS          |
+| /payment/review                        | Payment Review     | EXISTS          |
+| /payment/success                       | Payment Success    | EXISTS          |
+| /payment/status                        | Payment Status     | EXISTS          |
+| /transactions                          | Transaction History| EXISTS          |
+| /transactions/:transactionId           | Transaction Detail | EXISTS (dynamic)|
+| /dispute/:orderId                      | Raise Dispute      | EXISTS (dynamic)|
+| /dispute/:orderId/upload/:disputeId    | Upload Proof       | EXISTS (dynamic)|
+| /disputes                              | Disputes List      | EXISTS          |
+| /disputes/:disputeId                   | Dispute Status     | EXISTS (dynamic)|
+| /disputes/:disputeId/result            | Dispute Result     | EXISTS (dynamic)|
+| /refunds                               | Refunds List       | EXISTS          |
+| /refunds/:refundId                     | Refund Initiated   | EXISTS (dynamic)|
+| /refunds/:refundId/success             | Refund Success     | EXISTS (dynamic)|
+| /refunds/:refundId/failed              | Refund Failed      | EXISTS (dynamic)|
+| /profile                               | Profile Overview   | EXISTS          |
+| /profile/edit                          | Edit Profile       | EXISTS          |
+| /profile/kyc                           | KYC Page           | EXISTS          |
+| /settings/security                     | Security Settings  | EXISTS          |
+| /settings/change-password              | Change Password    | EXISTS          |
+| /change-password                       | Change Password    | EXISTS (dupe)   |
+| /delete-account                        | Delete Account     | EXISTS          |
+| /notifications                         | Notifications      | EXISTS          |
+| /help                                  | Help & Support     | EXISTS          |
+
+D. MERCHANT PROTECTED PAGES
+-----------------------------
+| Route                                     | Page              | Status          |
+|-------------------------------------------|-------------------|-----------------|
+| /merchant-dashboard                       | Dashboard         | EXISTS          |
+| /merchant-orders                          | Orders List       | EXISTS          |
+| /merchant-order/:orderId                  | Order Details     | EXISTS (dynamic)|
+| /merchant-add-tracking/:orderId           | Add Tracking      | EXISTS (dynamic)|
+| /merchant-edit-tracking/:orderId          | Edit Tracking     | EXISTS (dynamic)|
+| /merchant-delivery-proof/:orderId         | Delivery Proof    | EXISTS (dynamic)|
+| /merchant-disputes                        | Disputes List     | EXISTS          |
+| /merchant-dispute-response/:disputeId     | Dispute Response  | EXISTS (dynamic)|
+| /merchant-dispute-upload/:disputeId       | Dispute Upload    | EXISTS (dynamic)|
+| /merchant-dispute-result/:disputeId       | Dispute Result    | EXISTS (dynamic)|
+| /merchant-payouts                         | Payouts Home      | EXISTS          |
+| /merchant-bank-account                    | Bank Account      | EXISTS          |
+| /merchant-withdraw                        | Withdraw Funds    | EXISTS          |
+| /merchant-withdraw-success                | Withdrawal Success| EXISTS          |
+| /merchant-payout-history                  | Payout History    | EXISTS          |
+| /merchant-profile                         | Profile           | EXISTS          |
+| /merchant-profile/edit                    | Edit Profile      | EXISTS          |
+| /merchant-notifications                   | Notifications     | EXISTS          |
+
+E. SYSTEM & EDGE PAGES
+------------------------
+| Route           | Page          | Status           |
+|-----------------|---------------|------------------|
+| * (catch-all)   | Not Found 404 | EXISTS           |
+| /unauthorized   | Unauthorized  | MISSING          |
+| /error          | Error Page    | MISSING          |
+| /maintenance    | Maintenance   | MISSING          |
+
+F. ADMIN PAGES
+---------------
+ALL 21 ADMIN PAGES ARE COMPLETELY MISSING:
+- admin_login, admin_dashboard, admin_payments, admin_payment_details,
+  admin_force_release, admin_force_refund, admin_disputes, admin_dispute_review,
+  admin_dispute_decision, admin_merchants, admin_merchant_details,
+  admin_merchant_verification, admin_merchant_ban, admin_users, admin_user_details,
+  admin_user_ban, admin_payouts, admin_payout_details, admin_payout_verify
+
+TOTAL IMPLEMENTED: ~55 pages
+MISSING FROM SPEC: Admin panel (21 pages), system pages (3)
+
+
+PART 3 — PAGE-BY-PAGE DEEP DIVE (KEY PAGES)
+================================================================================
+
+--- Customer Login (/customer-login) ---
+Purpose: Phone + password authentication for customers
+Roles: Unauthenticated users only
+UI Structure:
+  - SafepayLogo component
+  - Phone input (tel type)
+  - Password input with show/hide toggle (material-symbols-outlined icon)
+  - "Remember me" checkbox
+  - "Forgot Password?" link → /reset-password
+  - "Or continue with" divider
+  - Google button (SVG icon) — NON-FUNCTIONAL
+  - Apple button (SVG icon) — NON-FUNCTIONAL
+  - "New? Create account" link → /customer-signup
+  - Fixed footer with "Log In" button
+Actions:
+  - Submit: calls AuthContext.login(phone, password)
+  - login() calls POST /functions/v1/auth/login
+Validation: phone >= 10 chars, password >= 8 chars (client-side)
+Success: Toast "Welcome back!", navigate to /dashboard
+Failure: Inline error message displayed
+API: POST /functions/v1/auth/login { phone, password }
+Tables: profiles (read), user_sessions (insert), wallets (read/insert)
+Loading: Button shows spinner + "Logging in..."
+Error: Red text below password field
+Issues: Google/Apple buttons are completely non-functional
+
+--- Customer Signup (/customer-signup) ---
+Purpose: New customer account creation
+Roles: Unauthenticated users
+API: POST /functions/v1/auth/signup { phone, password, fullName }
+Tables: profiles (insert), wallets (insert), user_sessions (insert), user_roles (insert via trigger)
+Success: Auto-login, redirect to /dashboard
+Failure: Inline error (duplicate phone, validation errors)
+
+--- Customer Dashboard (/dashboard) ---
+Purpose: Main hub showing recent orders and quick actions
+Roles: Authenticated customers
+Tables: orders (read), notifications (read/count)
+Actions: Navigate to orders, wallet, payments, profile
+Loading: DashboardSkeleton component
+Empty: "No orders yet" state
+
+--- Payment Flow ---
+
+/payment/new:
+  Purpose: Enter merchant ID + amount + description
+  Validation: Amount 100-50000, merchant ID required
+  Action: Stores data in sessionStorage, navigates to /payment/review
+
+/payment/review:
+  Purpose: Review payment before submitting
+  UI: Merchant info card, subtotal/fee/total breakdown, T&C checkbox
+  Calculations: 2% service fee via calculateServiceFee()
+  Action: Creates order → initiates Razorpay → handles success/failure
+  Tables: orders (insert/update), payment_transactions (via edge fn), profiles (read)
+  API: POST /functions/v1/razorpay { action: 'create-order' | 'verify-payment' }
+  Success: → /payment/success
+  Failure: → /payment/status (with error details)
+  Anti-duplicate: isSubmittingRef prevents double submission
+
+/payment/success:
+  Purpose: Confirmation screen after successful escrow payment
+  Data: From sessionStorage.paymentSuccess
+
+/payment/status:
+  Purpose: Shows failed/cancelled payment details
+  Data: From sessionStorage.paymentStatus
+
+--- Orders ---
+
+/orders:
+  Purpose: List all customer orders
+  Tables: orders (read, filtered by customer_id)
+  Sorting: created_at desc
+
+/orders/:id:
+  Purpose: Single order detail view
+  Tables: orders (read), order_events (read)
+  Actions: Track order, confirm delivery, raise dispute, report issue
+
+/orders/:id/tracking:
+  Purpose: View shipment tracking info
+  Tables: orders (read), order_tracking (read), order_events (read), tracking_updates (read)
+  Real-time: Supabase channels on orders, order_tracking, order_events
+  UI: Status timeline, shipment details card (tracking number, courier, status)
+
+/orders/:id/confirm:
+  Purpose: Customer confirms delivery
+  Tables: orders (update: status→completed, escrow→released)
+  Effect: Triggers merchant wallet credit
+
+/orders/:id/report:
+  Purpose: Report issue with order (shortcut to dispute)
+
+--- Disputes ---
+
+/dispute/:orderId:
+  Purpose: Raise a new dispute
+  Tables: disputes (insert), orders (read)
+
+/dispute/:orderId/upload/:disputeId:
+  Purpose: Upload evidence files
+  Tables: dispute_files (insert)
+  Storage: dispute-files bucket
+
+/disputes:
+  Purpose: List all customer disputes
+  Tables: disputes (read)
+
+/disputes/:disputeId:
+  Purpose: Dispute status and timeline
+  Tables: disputes (read), dispute_updates (read), dispute_comments (read)
+
+/disputes/:disputeId/result:
+  Purpose: Final dispute resolution
+  Tables: disputes (read)
+
+--- Refunds ---
+
+/refunds:
+  Purpose: List all refunds
+  Tables: refunds (read)
+
+/refunds/:refundId:
+  Purpose: Refund details and timeline
+  Tables: refunds (read), refund_events (read)
+
+/refunds/:refundId/success:
+  Purpose: Successful refund confirmation
+
+/refunds/:refundId/failed:
+  Purpose: Failed refund details with retry option
+
+--- Wallet ---
+
+/wallet:
+  Purpose: Wallet balance and quick actions
+  Tables: wallets (read)
+
+/wallet/transactions:
+  Purpose: Wallet transaction history
+  Tables: wallet_transactions (read)
+
+/wallet/bank-account:
+  Purpose: Add/manage bank accounts
+  Tables: bank_accounts (insert/read/update/delete)
+
+/wallet/withdraw:
+  Purpose: Withdraw wallet balance to bank
+  Tables: wallets (update), wallet_transactions (insert)
+
+--- Profile & Settings ---
+
+/profile:
+  Purpose: View profile info, KYC status
+  Tables: profiles (read), kyc_records (read)
+
+/profile/edit:
+  Purpose: Edit name, email, address
+  Tables: profiles (update)
+
+/profile/kyc:
+  Purpose: KYC document submission
+  Tables: kyc_records (insert/update)
+  Storage: kyc-documents bucket
+
+/settings/security:
+  Purpose: Security settings overview
+
+/settings/change-password (and /change-password):
+  Purpose: Change password
+  API: POST /functions/v1/auth/change-password
+  Tables: profiles (update), user_sessions (delete other sessions)
+
+/delete-account:
+  Purpose: Account deletion
+  API: POST /functions/v1/auth/delete-account
+
+--- Merchant Pages ---
+
+/merchant-dashboard:
+  Purpose: Merchant overview (orders, revenue, activity)
+  Tables: orders (read), merchants (read), merchant_wallets (read), merchant_activity (read)
+
+/merchant-orders:
+  Purpose: List merchant orders
+  Tables: orders (read, filtered by merchant_id)
+
+/merchant-order/:orderId:
+  Purpose: Order detail with tracking management
+  Tables: orders (read/update), order_tracking (read)
+  Actions: Add tracking, edit tracking, upload delivery proof
+
+/merchant-add-tracking/:orderId:
+  Purpose: Add shipment tracking
+  Tables: order_tracking (insert), tracking_updates (insert), orders (update status→shipped)
+
+/merchant-edit-tracking/:orderId:
+  Purpose: Update tracking info
+  Tables: order_tracking (update), tracking_updates (insert)
+  Statuses: pending, shipped, in_transit, out_for_delivery, delivered, returned, exception
+
+/merchant-delivery-proof/:orderId:
+  Purpose: Upload proof of delivery
+  Tables: delivery_proofs (insert)
+  Storage: delivery-proofs bucket
+
+/merchant-disputes:
+  Purpose: List disputes for merchant's orders
+  Tables: disputes (read via orders join)
+
+/merchant-dispute-response/:disputeId:
+  Purpose: Respond to customer dispute
+  Tables: disputes (read), dispute_comments (insert)
+
+/merchant-dispute-upload/:disputeId:
+  Purpose: Upload evidence for dispute
+  Tables: dispute_files (insert)
+
+/merchant-dispute-result/:disputeId:
+  Purpose: View dispute resolution
+
+/merchant-payouts:
+  Purpose: Payout overview
+  Tables: merchant_wallets (read), merchant_payouts (read)
+
+/merchant-bank-account:
+  Purpose: Manage bank accounts
+  Tables: merchant_bank_accounts (CRUD)
+
+/merchant-withdraw:
+  Purpose: Request payout
+  Tables: merchant_payouts (insert), merchant_wallets (update via trigger)
+
+/merchant-withdraw-success:
+  Purpose: Withdrawal confirmation
+
+/merchant-payout-history:
+  Purpose: Payout transaction history
+  Tables: merchant_payouts (read)
+
+/merchant-profile:
+  Purpose: Business profile overview
+  Tables: merchants (read)
+
+/merchant-profile/edit:
+  Purpose: Edit business details
+  Tables: merchants (update)
+
+/merchant-notifications:
+  Purpose: Merchant notification center
+  Tables: notifications (read/update)
+
+--- System Pages ---
+
+/* (catch-all):
+  Purpose: 404 Not Found page
+  Component: NotFound
+
+
+PART 4 — COMPLETE WORKFLOW MAPPING
+================================================================================
+
+WORKFLOW 1: CUSTOMER PAYMENT FLOW
+----------------------------------
+Trigger: Customer navigates to /payment/new
+Steps:
+  1. Customer enters merchant ID + amount + description
+  2. System validates merchant exists (merchants table SELECT)
+  3. Data stored in sessionStorage.pendingPayment
+  4. Redirect to /payment/review
+  5. Customer reviews breakdown (amount + 2% service fee)
+  6. Customer agrees to T&C, clicks "Pay with Razorpay"
+  7. System creates order in orders table (status: pending, escrow_status: held)
+  8. Edge function razorpay/create-order → creates Razorpay order
+  9. payment_transactions record created (status: pending)
+  10. Razorpay checkout modal opens in browser
+  11a. SUCCESS PATH:
+      - razorpay/verify-payment → verifies via Razorpay API
+      - payment_transactions updated (status: success)
+      - orders.escrow_status confirmed as "held"
+      - sessionStorage.paymentSuccess set
+      - Navigate to /payment/success
+  11b. FAILURE PATH:
+      - razorpay/update-failed → marks transaction failed
+      - orders updated (status: cancelled, escrow_status: refunded)
+      - sessionStorage.paymentStatus set with error
+      - Navigate to /payment/status
+  11c. CANCEL PATH:
+      - User closes Razorpay modal
+      - Same as failure path with "User cancelled payment" reason
+Data Reads: profiles, merchants (for validation)
+Data Writes: orders (insert), payment_transactions (insert/update)
+Failure Handling: Toast error, order marked cancelled
+Final State: Order in escrow (success) or cancelled (failure)
+
+WORKFLOW 2: MERCHANT TRACKING FLOW
+------------------------------------
+Trigger: Merchant clicks "Add Tracking" on order detail page
+Steps:
+  1. Navigate to /merchant-add-tracking/:orderId
+  2. Merchant enters tracking number, courier partner, dates
+  3. System inserts into order_tracking table
+  4. System inserts initial tracking_update
+  5. System updates orders.status → "shipped"
+  6. Database trigger fires → creates order_event
+  7. Database trigger fires → creates notification for customer
+  8. Customer sees tracking via real-time subscription at /orders/:id/tracking
+  9. Merchant can later edit at /merchant-edit-tracking/:orderId
+Data Reads: orders, order_tracking
+Data Writes: order_tracking (insert), tracking_updates (insert), orders (update)
+Failure Handling: Toast error on insert failure
+Final State: Order status "shipped", tracking visible to customer
+
+WORKFLOW 3: DELIVERY CONFIRMATION
+-----------------------------------
+Trigger: Customer clicks "Confirm Delivery" at /orders/:id/confirm
+Steps:
+  1. Customer views delivery details
+  2. Confirms delivery
+  3. orders.status → completed
+  4. orders.escrow_status → released
+  5. orders.delivered_at → now()
+  6. Database triggers fire:
+     - order_event created
+     - notification sent to customer
+  7. Merchant wallet should be credited (NOTE: no automatic credit logic found)
+Data Reads: orders
+Data Writes: orders (update)
+Final State: Order completed, escrow released
+
+WORKFLOW 4: DISPUTE FLOW
+--------------------------
+Trigger: Customer clicks "Raise Dispute" on order
+Steps:
+  1. Navigate to /dispute/:orderId
+  2. Customer selects issue type, enters reason/description
+  3. disputes record inserted (status: open)
+  4. Navigate to /dispute/:orderId/upload/:disputeId
+  5. Customer uploads evidence files to dispute-files bucket
+  6. dispute_files records created
+  7. Dispute visible at /disputes/:disputeId
+  8. Merchant sees dispute at /merchant-disputes
+  9. Merchant responds at /merchant-dispute-response/:disputeId
+  10. Merchant uploads counter-evidence at /merchant-dispute-upload/:disputeId
+  11. ADMIN RESOLUTION: NOT IMPLEMENTED — no admin can resolve disputes
+  12. Result viewable at /disputes/:disputeId/result
+Data Reads: orders, disputes, dispute_files, dispute_comments, dispute_updates
+Data Writes: disputes (insert), dispute_files (insert), dispute_comments (insert)
+Failure Handling: Toast errors
+Final State: Dispute open (stuck — no admin to resolve)
+CRITICAL GAP: No admin resolution flow exists
+
+WORKFLOW 5: MERCHANT PAYOUT
+-----------------------------
+Trigger: Merchant clicks "Withdraw" at /merchant-withdraw
+Steps:
+  1. Merchant must have bank account (/merchant-bank-account)
+  2. Enters withdrawal amount
+  3. merchant_payouts record inserted (status: processing)
+  4. Database trigger process_merchant_payout fires:
+     - merchant_wallets.balance -= amount
+     - merchant_wallets.pending_balance += amount
+  5. On completion (manual/admin):
+     - pending_balance -= amount
+     - total_withdrawn += amount
+  6. On failure:
+     - balance += amount (refund)
+     - pending_balance -= amount
+  7. Navigate to /merchant-withdraw-success
+Data Reads: merchant_wallets, merchant_bank_accounts
+Data Writes: merchant_payouts (insert), merchant_wallets (update via trigger)
+CRITICAL GAP: No mechanism to complete/fail payouts (no admin, no automation)
+
+WORKFLOW 6: AUTHENTICATION LIFECYCLE
+--------------------------------------
+Login:
+  Trigger: User submits phone + password
+  1. Edge function auth/login called
+  2. Phone normalized, variants generated for lookup
+  3. Profile found in profiles table
+  4. Password verified (PBKDF2 with salt, or legacy SHA-256)
+  5. Session token generated (64 hex chars)
+  6. user_sessions record created (expires: 30 days)
+  7. Wallet ensured (created if missing)
+  8. Token + user data stored in localStorage
+  9. AuthContext.user set → isAuthenticated = true
+
+Session Verification:
+  Trigger: App load (useEffect in AuthProvider)
+  1. Token read from localStorage
+  2. auth/verify-session called
+  3. Token matched against user_sessions (must not be expired)
+  4. If valid → user data refreshed
+  5. If invalid → localStorage cleared, user = null
+
+Logout:
+  Trigger: User clicks logout
+  1. auth/logout called with token
+  2. Session deleted from user_sessions
+  3. localStorage cleared
+  4. user set to null
+
+Password Change:
+  Trigger: User at /change-password
+  1. auth/change-password called with userId, currentPassword, newPassword, token
+  2. Session verified
+  3. Current password verified
+  4. New password validated (different from old)
+  5. Password hash updated (PBKDF2)
+  6. All other sessions invalidated
+  7. New session created
+
+Account Deletion:
+  Trigger: User at /delete-account
+  1. auth/delete-account called
+  2. Profile and related data deleted
+
+
+PART 5 — FEATURE INVENTORY
+================================================================================
+
+| #  | Feature                         | Pages                              | Tables                           | Status     |
+|----|--------------------------------|-------------------------------------|----------------------------------|------------|
+| 1  | Customer Auth (phone+password) | login, signup, verify, reset        | profiles, user_sessions          | COMPLETE   |
+| 2  | Merchant Auth                  | merchant-login, signup, verify      | profiles, merchants, sessions    | COMPLETE   |
+| 3  | Escrow Payments (Razorpay)     | payment/new, review, success, status| orders, payment_transactions     | COMPLETE   |
+| 4  | Order Management (Customer)    | orders, orders/:id                  | orders                           | COMPLETE   |
+| 5  | Order Management (Merchant)    | merchant-orders, order/:id          | orders                           | COMPLETE   |
+| 6  | Tracking (Add/Edit)            | merchant-add/edit-tracking          | order_tracking, tracking_updates | COMPLETE   |
+| 7  | Tracking (Customer View)       | orders/:id/tracking                 | order_tracking, order_events     | COMPLETE   |
+| 8  | Delivery Confirmation          | orders/:id/confirm                  | orders                           | COMPLETE   |
+| 9  | Delivery Proof Upload          | merchant-delivery-proof             | delivery_proofs                  | COMPLETE   |
+| 10 | Disputes (Customer)            | dispute/:id, disputes, status       | disputes, dispute_files/comments | COMPLETE   |
+| 11 | Disputes (Merchant)            | merchant-disputes, response, upload | disputes                         | COMPLETE   |
+| 12 | Refunds                        | refunds, :id, success, failed       | refunds, refund_events           | COMPLETE   |
+| 13 | Customer Wallet                | wallet, transactions, withdraw      | wallets, wallet_transactions     | COMPLETE   |
+| 14 | Customer Bank Account          | wallet/bank-account                 | bank_accounts                    | COMPLETE   |
+| 15 | Merchant Payouts               | payouts, withdraw, history          | merchant_payouts, wallets        | COMPLETE   |
+| 16 | Merchant Bank Account          | merchant-bank-account               | merchant_bank_accounts           | COMPLETE   |
+| 17 | KYC                            | profile/kyc                         | kyc_records                      | COMPLETE   |
+| 18 | Notifications (Customer)       | notifications                       | notifications                    | COMPLETE   |
+| 19 | Notifications (Merchant)       | merchant-notifications              | notifications                    | COMPLETE   |
+| 20 | Profile Management             | profile, edit, security             | profiles                         | COMPLETE   |
+| 21 | Merchant Profile               | merchant-profile, edit              | merchants                        | COMPLETE   |
+| 22 | Password Change                | change-password                     | profiles                         | COMPLETE   |
+| 23 | Account Deletion               | delete-account                      | profiles                         | COMPLETE   |
+| 24 | Order Event Audit Trail        | (automatic via triggers)            | order_events                     | COMPLETE   |
+| 25 | Cancelled Order Cleanup        | (edge fn: scheduled)                | orders                           | COMPLETE   |
+| 26 | Transaction History            | transactions, :id                   | payment_transactions             | COMPLETE   |
+| 27 | Help & Support                 | help                                | support_tickets                  | COMPLETE   |
+| 28 | Social Login (Google/Apple)    | customer-login                      | —                                | MISSING    |
+| 29 | OTP Verification               | customer-verify                     | —                                | PARTIAL    |
+| 30 | Admin Panel                    | —                                   | —                                | MISSING    |
+| 31 | Merchant Verification (Admin)  | —                                   | merchants                        | MISSING    |
+
+
+PART 6 — SUPABASE & BACKEND AUDIT
+================================================================================
+
+A. DATABASE TABLES (22 tables)
+-------------------------------
+
+1. profiles
+   Columns: id (uuid PK), phone, password_hash, full_name, email, auth_method,
+            account_source, account_claimed, avatar_url, address, city, country,
+            last_login_at, created_at, updated_at
+   RLS: INSERT (true), SELECT (true — SECURITY RISK), UPDATE (true — SECURITY RISK)
+   Note: password_hash is readable by any anon key user
+
+2. user_sessions
+   Columns: id (uuid PK), user_id (FK→profiles), token, expires_at, created_at
+   RLS: ALL (true)
+
+3. user_roles
+   Columns: id (uuid PK), user_id, role (enum: customer/merchant/admin), created_at
+   RLS: INSERT (true), SELECT (own only)
+   Unique: (user_id, role)
+
+4. orders
+   Columns: id (uuid PK), customer_id (FK→profiles), merchant_id (FK→merchants),
+            order_number, merchant_name, merchant_avatar, product_name,
+            product_description, amount, currency, status, escrow_status,
+            expected_delivery, delivered_at, notes, created_at, updated_at
+   RLS: INSERT (true), SELECT (customer own + merchant own), UPDATE (customer + merchant),
+        DELETE (cancelled only)
+   Status values: pending, awaiting_shipment, shipped, delivered, completed, disputed, refunded, cancelled
+   Escrow values: held, released, refunded
+
+5. order_events
+   Columns: id (uuid PK), order_id, event_type, previous_status, new_status,
+            title, description, actor_type, metadata (jsonb), created_at
+   RLS: INSERT (true), SELECT (customer via orders join)
+
+6. order_tracking
+   Columns: id (uuid PK), order_id (FK→orders, unique), merchant_id (FK→merchants),
+            tracking_number, courier_partner, status, shipment_date,
+            estimated_delivery, actual_delivery, notes, created_at, updated_at
+   RLS: SELECT (customer via orders + merchant own), INSERT/UPDATE (merchant own)
+
+7. tracking_updates
+   Columns: id (uuid PK), tracking_id (FK→order_tracking), status, location,
+            description, updated_by, created_at
+   RLS: INSERT (true), SELECT (customer via join + merchant own)
+
+8. payment_transactions
+   Columns: id (uuid PK), customer_id (FK→profiles), order_id (FK→orders),
+            amount, currency, status, customer_name, customer_email,
+            customer_phone, razorpay_order_id, razorpay_payment_id,
+            razorpay_signature, failure_reason, created_at, updated_at
+   RLS: INSERT/SELECT/UPDATE (customer own)
+
+9. disputes
+   Columns: id (uuid PK), order_id (FK→orders), customer_id (FK→profiles),
+            reason, description, issue_type, status, resolution, admin_notes,
+            merchant_not_responded, refund_amount, refund_transaction_id,
+            resolved_at, created_at, updated_at
+   RLS: INSERT (true), SELECT/UPDATE (customer own)
+
+10. dispute_files
+    Columns: id (uuid PK), dispute_id (FK→disputes), file_url, file_name,
+             file_type, file_size, upload_status, created_at
+    RLS: INSERT/SELECT/DELETE (customer via disputes)
+
+11. dispute_comments
+    Columns: id (uuid PK), dispute_id (FK→disputes), user_id, message,
+             is_admin, created_at
+    RLS: INSERT/SELECT (customer via disputes)
+
+12. dispute_updates
+    Columns: id (uuid PK), dispute_id (FK→disputes), title, description,
+             update_type, actor_type, created_at
+    RLS: INSERT (true), SELECT (customer via disputes)
+
+13. refunds
+    Columns: id (uuid PK), order_id (FK→orders), dispute_id (FK→disputes),
+             customer_id (FK→profiles), amount, currency, status, reason,
+             payment_method, payment_details, transaction_id, receipt_url,
+             failure_reason, retry_allowed, completed_at, created_at, updated_at
+    RLS: INSERT (true), SELECT/UPDATE (customer own)
+
+14. refund_events
+    Columns: id (uuid PK), refund_id (FK→refunds), title, description,
+             event_type, status, created_at
+    RLS: INSERT (true), SELECT (customer via refunds)
+
+15. wallets
+    Columns: id (uuid PK), customer_id (FK→profiles, unique), balance, currency,
+             last_updated, created_at
+    RLS: INSERT/SELECT/UPDATE (customer own)
+
+16. wallet_transactions
+    Columns: id (uuid PK), wallet_id (FK→wallets), customer_id (FK→profiles),
+             amount, type, currency, description, reference_id, reference_type,
+             bank_account_id (FK→bank_accounts), status, metadata (jsonb), created_at
+    RLS: INSERT (true), SELECT (customer own)
+
+17. bank_accounts
+    Columns: id (uuid PK), customer_id (FK→profiles), account_holder_name,
+             account_number, ifsc_code, bank_name, account_type, is_default,
+             verification_status, verified_at, created_at, updated_at
+    RLS: Full CRUD (customer own)
+
+18. merchants
+    Columns: id (uuid PK), user_id, business_name, business_category, gst_number,
+             business_address/city/state/pincode/phone/email, business_logo_url,
+             verification_status, rejection_reason, is_active, total_orders,
+             total_revenue, average_rating, verified_at, created_at, updated_at
+    RLS: INSERT/SELECT/UPDATE (own via profiles)
+
+19. merchant_wallets
+    Columns: id (uuid PK), merchant_id (FK→merchants, unique), balance,
+             pending_balance, total_earned, total_withdrawn, currency,
+             last_updated, created_at
+    RLS: INSERT (true), SELECT/UPDATE (merchant own)
+
+20. merchant_bank_accounts
+    Columns: id (uuid PK), merchant_id (FK→merchants), account_holder_name,
+             account_number, ifsc_code, bank_name, branch, account_type,
+             is_default, verification_status, verified_at, created_at, updated_at
+    RLS: Full CRUD (merchant own)
+
+21. merchant_payouts
+    Columns: id (uuid PK), merchant_id (FK→merchants), bank_account_id
+             (FK→merchant_bank_accounts), amount, currency, status, notes,
+             failure_reason, transaction_id, processing_started_at, completed_at,
+             created_at, updated_at
+    RLS: INSERT/SELECT/UPDATE (merchant own)
+
+22. merchant_activity
+    Columns: id (uuid PK), merchant_id (FK→merchants), activity_type, title,
+             description, reference_id, reference_type, created_at
+    RLS: INSERT (true), SELECT (merchant own)
+
+23. notifications
+    Columns: id (uuid PK), user_id (FK→profiles), title, message, type, link,
+             read, created_at
+    RLS: INSERT (true), SELECT/UPDATE (user own)
+
+24. kyc_records
+    Columns: id (uuid PK), customer_id, status, kyc_level, full_legal_name,
+             date_of_birth, address/city/state/pincode/country, id_type,
+             id_number, id_front/back_url, selfie_url, address_proof_url,
+             rejection_reason, admin_notes, submitted/verified/rejected_at,
+             created_at, updated_at
+    RLS: INSERT/SELECT/UPDATE (customer own)
+
+25. support_tickets
+    Columns: id (uuid PK), customer_id, order_id, subject, category, description,
+             status, priority, created_at, updated_at
+    RLS: INSERT/SELECT/UPDATE (customer own)
+
+26. delivery_proofs
+    Columns: id (uuid PK), order_id (FK→orders), merchant_id (FK→merchants),
+             file_urls (text[]), delivery_notes, delivery_date, created_at, updated_at
+    RLS: INSERT/SELECT/UPDATE (merchant own)
+
+B. EDGE FUNCTIONS (5)
+-----------------------
+
+1. auth (736 lines)
+   Actions: signup, login, verify-session, logout, change-password, reset-password,
+            delete-account, update-profile
+   Security: PBKDF2 password hashing (100k iterations), legacy SHA-256 support
+   Session: 30-day token expiry
+   Validation: Phone format, password strength (8+ chars, uppercase, lowercase, number)
+
+2. merchant-auth (640 lines)
+   Actions: signup, login, verify-session, logout, get-status
+   Extra: Creates merchant profile on signup, handles existing user→merchant upgrade
+
+3. razorpay (268 lines)
+   Actions: create-order, verify-payment, update-failed
+   Security: Razorpay API verification (signature check returns true — uses API check)
+   Note: verifyPaymentSignature() always returns true (acceptable — API used instead)
+
+4. cleanup-cancelled-orders (63 lines)
+   Purpose: Deletes cancelled orders older than 3 days
+   Trigger: Manual/scheduled invocation
+
+5. notify-order-deletion (87 lines)
+   Purpose: Sends warning notifications for orders about to be deleted (2-3 days old)
+
+C. DATABASE FUNCTIONS & TRIGGERS (14 functions)
+-------------------------------------------------
+
+Functions:
+- has_role(user_id, role) — SECURITY DEFINER role check
+- track_order_creation() — Creates order_events on INSERT
+- track_order_status_change() — Creates order_events on status/escrow UPDATE
+- notify_order_status_change() — Creates notifications on order status change
+- notify_dispute_status_change() — Dispute notifications
+- notify_refund_status_change() — Refund notifications
+- notify_refund_initiated() — New refund notification
+- notify_kyc_status_change() — KYC notifications
+- assign_customer_role() — Auto-assigns customer role on profile creation
+- assign_merchant_role() — Auto-assigns merchant role on merchant creation
+- create_wallet_for_new_user() — Auto-creates wallet
+- create_wallet_for_new_merchant() — Auto-creates merchant wallet
+- ensure_single_default_bank_account() — Enforces one default bank account
+- process_merchant_payout() — Manages wallet balance on payouts
+- update_updated_at_column() — Timestamp management
+
+WARNING: Supabase reports "no triggers" — functions may not be attached to tables.
+         This needs verification.
+
+D. AUTHENTICATION
+------------------
+Provider: Custom phone+password (NOT Supabase Auth)
+Session: Custom token-based (user_sessions table)
+Role Mapping: user_roles table with app_role enum
+Security Gaps:
+  - No rate limiting on auth endpoints
+  - CORS allows * (all origins)
+  - profiles table RLS is too permissive (SELECT/UPDATE use "true")
+  - password_hash potentially readable via anon key
+
+E. STORAGE BUCKETS (4)
+------------------------
+| Bucket          | Public | Purpose              |
+|-----------------|--------|----------------------|
+| dispute-files   | Yes    | Dispute evidence     |
+| kyc-documents   | No     | KYC docs (secure)    |
+| avatars         | Yes    | Profile photos       |
+| delivery-proofs | Yes    | POD images           |
+
+
+PART 7 — ROLE & PERMISSION MATRIX
+================================================================================
+
+ROLES: Guest, Customer, Merchant, Admin (enum exists but not implemented)
+
+GUEST (Unauthenticated):
+  Accessible: /, /customer-login, /customer-signup, /customer-verify,
+              /reset-password, /merchant-login, /merchant-signup, /merchant-verify,
+              /privacy-policy, /terms-of-service, /about
+  Actions: View public pages, login, signup
+  Restricted: All dashboard/order/wallet/payment pages
+  Security: Protected routes redirect to login
+
+CUSTOMER (Authenticated via AuthContext):
+  Accessible: All /dashboard, /orders/*, /wallet/*, /payment/*, /transactions/*,
+              /dispute/*, /disputes/*, /refunds/*, /profile/*, /settings/*,
+              /notifications, /help, /delete-account
+  Actions: Make payments, view orders, confirm delivery, raise disputes,
+           manage wallet, manage profile, upload KYC
+  Restricted: All /merchant-* pages, admin pages
+  Escalation: Can raise disputes → needs admin resolution (MISSING)
+  Security Risk: Can potentially read other profiles via permissive RLS
+
+MERCHANT (Authenticated via MerchantAuthContext):
+  Accessible: All /merchant-* pages
+  Actions: View orders, add/edit tracking, upload delivery proof, respond to disputes,
+           manage payouts, manage bank accounts, manage profile
+  Restricted: Customer pages, admin pages
+  Security Risk: Auto-approved on signup (no verification)
+
+ADMIN:
+  Accessible: NONE — no admin pages exist
+  Actions: NONE
+  CRITICAL: Admin role exists in enum but is completely unimplemented
+
+
+PART 8 — EDGE CASES & FAILURE HANDLING
+================================================================================
+
+| Scenario                              | Handled? | Notes                                    |
+|---------------------------------------|----------|------------------------------------------|
+| Network failure during payment        | YES      | Razorpay modal dismiss → order cancelled |
+| Duplicate payment submission          | YES      | isSubmittingRef prevents double-submit   |
+| Invalid order ID in URL               | PARTIAL  | Loading state shown, fails silently      |
+| Deleted/archived resources            | PARTIAL  | Cleanup deletes orders but may orphan    |
+|                                       |          | related data (events, tracking)          |
+| Session expiry mid-action             | PARTIAL  | Verified on app load, not during ops     |
+| Permission mismatch (customer→merch)  | YES      | Separate auth contexts + protected routes|
+| Razorpay signature verification       | PARTIAL  | Function returns true, uses API instead  |
+| Social login buttons                  | MISSING  | Buttons exist, no backend implementation |
+| OTP verification                      | MISSING  | Page exists, no SMS service configured   |
+| Merchant auto-approval                | MISSING  | verification_status hardcoded "approved" |
+| API timeout handling                  | PARTIAL  | Generic catch blocks, no retry logic     |
+| Invalid/missing dynamic route IDs     | PARTIAL  | Most pages show loading, no 404 redirect |
+| Concurrent wallet updates             | PARTIAL  | Trigger-based but no explicit locking    |
+| Orphaned payment_transactions         | MISSING  | Failed txns not cleaned up              |
+| Rate limiting on auth                 | MISSING  | No protection against brute force       |
+| CSRF protection                       | MISSING  | CORS allows all origins                  |
+
+
+PART 9 — GAP & BREAKAGE REPORT
+================================================================================
+
+| #  | Issue                                    | Severity | Impact                                    | Fix                                        |
+|----|------------------------------------------|----------|-------------------------------------------|--------------------------------------------|
+| 1  | Admin panel completely missing            | BLOCKER  | No dispute resolution, no merchant        | Build minimal admin: login, dashboard,     |
+|    |                                          |          | verification, no operational control      | disputes, merchants                        |
+| 2  | Profiles RLS too permissive              | HIGH     | All profiles (incl password_hash)         | Fix RLS to restrict by user ID or use      |
+|    |                                          |          | readable by any anon key user             | service-role-only pattern for sensitive     |
+|    |                                          |          |                                           | columns                                    |
+| 3  | Custom auth bypasses Supabase Auth       | HIGH     | RLS policies can't use auth.uid()         | Accept architectural decision but ensure   |
+|    |                                          |          | All data readable via anon key            | service-role-only access for sensitive ops  |
+| 4  | Social login buttons non-functional      | MEDIUM   | UX confusion — suggests Google/Apple      | Remove buttons or implement OAuth          |
+|    |                                          |          | login works when it doesn't               |                                            |
+| 5  | OTP verification page non-functional     | MEDIUM   | Dead end if OTP flow is triggered         | Remove or implement SMS integration        |
+| 6  | Merchant verification auto-approved      | MEDIUM   | Any signup creates approved merchant      | Add admin review workflow                  |
+| 7  | Razorpay signature verification skipped  | MEDIUM   | verifyPaymentSignature returns true       | Implement proper HMAC-SHA256 or keep       |
+|    |                                          |          | (uses API verification as fallback)       | API verification (acceptable)              |
+| 8  | No rate limiting on auth endpoints       | MEDIUM   | Brute force attacks possible              | Add rate limiting to edge functions        |
+| 9  | Password hash in profiles visible        | HIGH     | password_hash readable via permissive RLS | Exclude from SELECT or fix RLS             |
+| 10 | Triggers may not be attached             | HIGH     | Events, notifications, role assignment,   | Verify trigger attachments in Supabase     |
+|    |                                          |          | wallet creation may not fire              | dashboard                                  |
+| 11 | No email/SMS notification delivery       | LOW      | Notifications only in-app                 | Add email/SMS integration post-MVP         |
+| 12 | Duplicate change-password routes         | LOW      | /change-password and                      | Remove one route                           |
+|    |                                          |          | /settings/change-password both exist      |                                            |
+| 13 | Order cleanup may orphan related data    | MEDIUM   | Deleting orders doesn't cascade to        | Add CASCADE or clean related data          |
+|    |                                          |          | order_events, tracking, etc.              |                                            |
+| 14 | No CSRF protection on edge functions     | MEDIUM   | CORS allows * origin                      | Restrict to app domain in production       |
+| 15 | No merchant wallet credit on delivery    | MEDIUM   | Confirming delivery releases escrow but   | Add trigger/logic to credit merchant       |
+|    |                                          |          | no automatic merchant wallet credit found | wallet on order completion                 |
+| 16 | Payout completion has no mechanism       | MEDIUM   | merchant_payouts created but no way to    | Build admin payout management or           |
+|    |                                          |          | mark as completed/failed                  | automation                                 |
+
+
+PART 10 — FINAL VERDICT
+================================================================================
+
+IS THE APP PRODUCTION-DEPLOYABLE TODAY?
+
+  ╔═══════╗
+  ║  NO   ║
+  ╚═══════╝
+
+WHAT BLOCKS DEPLOYMENT:
+-------------------------
+1. BLOCKER: No admin panel — disputes cannot be resolved, merchants cannot be
+   properly verified, no operational control over the platform
+2. HIGH: RLS security gaps — custom auth model combined with permissive RLS
+   means anon key can potentially read all data including password hashes
+3. HIGH: Triggers may not be attached — order events, notifications, role
+   assignment, and wallet creation may not be firing automatically
+
+MUST FIX BEFORE LAUNCH:
+-------------------------
+1. Build minimal admin panel (dispute resolution + merchant management)
+2. Audit and fix ALL RLS policies for the custom auth model
+3. Verify all database triggers are properly attached
+4. Remove non-functional social login buttons
+5. Implement proper Razorpay signature verification (or document API-only approach)
+6. Add rate limiting to auth endpoints
+7. Restrict CORS to production domain
+8. Add merchant wallet credit logic on delivery confirmation
+
+CAN DEFER POST-LAUNCH:
+-------------------------
+- Full admin panel (21 pages) — minimal dispute/merchant management sufficient
+- Email/SMS notification delivery
+- Social login (Google/Apple OAuth)
+- OTP verification via SMS
+- Merchant verification/KYB workflow
+- Advanced analytics and reporting
+- KYC admin review flow
+- Automated payout processing
+
+================================================================================
+END OF AUDIT REPORT
+================================================================================
