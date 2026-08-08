@@ -11,6 +11,7 @@ ALTER TABLE public.dispute_updates
   ADD COLUMN IF NOT EXISTS actor_type TEXT;
 
 -- Allow customer_id to substitute for user_id on kyc_records when only one is provided
+ALTER TABLE public.kyc_records ADD COLUMN IF NOT EXISTS user_id UUID;
 ALTER TABLE public.kyc_records ALTER COLUMN user_id DROP NOT NULL;
 
 CREATE OR REPLACE FUNCTION public.sync_kyc_user_customer_id()
