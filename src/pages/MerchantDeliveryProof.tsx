@@ -8,6 +8,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft, CheckCircle2, CloudUpload, FileText, UploadCloud, Video, X } from 'lucide-react';
+import { FullPageLoading, LoadingSpinner, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface UploadedFile {
   file: File;
@@ -229,11 +231,7 @@ export default function MerchantDeliveryProof() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (isLoading) {
@@ -242,7 +240,7 @@ export default function MerchantDeliveryProof() {
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
           <div className="flex items-center h-14 px-4">
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <Skeleton className="h-5 w-36 ml-2" />
           </div>
@@ -257,16 +255,11 @@ export default function MerchantDeliveryProof() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <span className="material-symbols-outlined text-xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-semibold text-foreground ml-2">Upload Proof</h1>
         </div>
@@ -318,9 +311,7 @@ export default function MerchantDeliveryProof() {
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <span className="material-symbols-outlined text-3xl text-muted-foreground mb-1.5 block">
-                  cloud_upload
-                </span>
+                <CloudUpload className="h-7 w-7 text-muted-foreground mb-1.5 block" />
                 <p className="text-sm font-medium text-foreground">Tap to upload</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   JPG, PNG, PDF, MP4 (Max 20MB)
@@ -340,19 +331,21 @@ export default function MerchantDeliveryProof() {
                           <img src={file.preview} alt={file.file.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <span className="material-symbols-outlined text-2xl text-muted-foreground">
-                              {file.file.type === 'application/pdf' ? 'picture_as_pdf' : 'videocam'}
-                            </span>
+                            {file.file.type === 'application/pdf' ? (
+                              <FileText className="h-6 w-6 text-muted-foreground" />
+                            ) : (
+                              <Video className="h-6 w-6 text-muted-foreground" />
+                            )}
                           </div>
                         )}
                         {file.uploading && (
                           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+                            <LoadingSpinner className="h-5 w-5" />
                           </div>
                         )}
                         {file.uploaded && (
                           <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-green-600 text-xl">check_circle</span>
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
                           </div>
                         )}
                       </div>
@@ -362,7 +355,7 @@ export default function MerchantDeliveryProof() {
                         className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
                         disabled={file.uploading}
                       >
-                        <span className="material-symbols-outlined text-xs">close</span>
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
@@ -416,12 +409,12 @@ export default function MerchantDeliveryProof() {
           >
             {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent mr-2" />
+                <ButtonSpinner className="h-4 w-4 mr-2" />
                 Uploading...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-sm mr-1.5">upload_file</span>
+                <UploadCloud className="h-3.5 w-3.5 mr-1.5" />
                 Upload Proof
               </>
             )}

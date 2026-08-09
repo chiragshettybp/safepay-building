@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface MerchantProtectedRouteProps {
   children: ReactNode;
@@ -11,11 +12,7 @@ export function MerchantProtectedRoute({ children }: MerchantProtectedRouteProps
   const location = useLocation();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (!isAuthenticated) {

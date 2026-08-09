@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Bell, Mail, Megaphone, MessageSquare, Truck, type LucideIcon } from 'lucide-react';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Preferences {
   email_notifications: boolean;
@@ -81,20 +83,16 @@ export default function NotificationSettings() {
     }
   };
 
-  const rows: { key: keyof Preferences; label: string; description: string; icon: string }[] = [
-    { key: 'push_notifications', label: 'Push Notifications', description: 'In-app alerts for orders, refunds, disputes and tickets', icon: 'notifications' },
-    { key: 'order_updates', label: 'Order Updates', description: 'Status changes, shipping and delivery alerts', icon: 'local_shipping' },
-    { key: 'email_notifications', label: 'Email Notifications', description: 'Send important updates to your email', icon: 'mail' },
-    { key: 'sms_notifications', label: 'SMS Notifications', description: 'Text alerts for critical account activity', icon: 'sms' },
-    { key: 'marketing_emails', label: 'Marketing Emails', description: 'Promotions, offers and product news', icon: 'campaign' },
+  const rows: { key: keyof Preferences; label: string; description: string; icon: LucideIcon }[] = [
+    { key: 'push_notifications', label: 'Push Notifications', description: 'In-app alerts for orders, refunds, disputes and tickets', icon: Bell },
+    { key: 'order_updates', label: 'Order Updates', description: 'Status changes, shipping and delivery alerts', icon: Truck },
+    { key: 'email_notifications', label: 'Email Notifications', description: 'Send important updates to your email', icon: Mail },
+    { key: 'sms_notifications', label: 'SMS Notifications', description: 'Text alerts for critical account activity', icon: MessageSquare },
+    { key: 'marketing_emails', label: 'Marketing Emails', description: 'Promotions, offers and product news', icon: Megaphone },
   ];
 
   if (isLoading) {
-    return (
-      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -102,7 +100,7 @@ export default function NotificationSettings() {
       <header className="sticky-header bg-card">
         <div className="sticky-header-content px-4 sm:px-6">
           <button onClick={() => navigate(-1)} className="back-btn">
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground">Notifications</h1>
@@ -116,7 +114,10 @@ export default function NotificationSettings() {
           {rows.map((row) => (
             <div key={row.key} className="flex items-center gap-3.5 p-4 bg-card border border-border rounded-xl">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-primary text-lg">{row.icon}</span>
+                {(() => {
+                  const TypeIcon = row.icon;
+                  return <TypeIcon className="h-[18px] w-[18px] text-primary" />;
+                })()}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{row.label}</p>

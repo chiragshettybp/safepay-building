@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import Confetti from '@/components/ui/confetti';
+import { Check, Download, Eye, Lock } from 'lucide-react';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface SuccessData {
   orderId: string;
@@ -15,7 +17,6 @@ interface SuccessData {
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
   const [showConfetti, setShowConfetti] = useState(true);
 
@@ -40,11 +41,7 @@ export default function PaymentSuccess() {
   };
 
   if (!successData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -65,7 +62,7 @@ export default function PaymentSuccess() {
         <div className="relative mb-6">
           <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center animate-bounce">
             <div className="w-16 h-16 rounded-full bg-success flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+              <Check className="text-white h-[36px] w-[36px]" />
             </div>
           </div>
           {/* Pulse ring */}
@@ -105,7 +102,7 @@ export default function PaymentSuccess() {
 
             {/* Status */}
             <div className="flex items-center justify-center gap-2 p-3 bg-success/5 rounded-xl border border-success/20">
-              <span className="material-symbols-outlined text-success text-[18px]">lock</span>
+              <Lock className="text-success h-[18px] w-[18px]" />
               <span className="text-success text-sm font-medium">Locked in SafePay</span>
             </div>
           </div>
@@ -141,7 +138,7 @@ export default function PaymentSuccess() {
           onClick={handleDownloadReceipt}
           className="flex items-center gap-2 text-primary text-sm font-medium mb-4"
         >
-          <span className="material-symbols-outlined text-[18px]">download</span>
+          <Download className="h-[18px] w-[18px]" />
           Download Receipt
         </button>
       </main>
@@ -151,7 +148,7 @@ export default function PaymentSuccess() {
         <div className="max-w-md mx-auto flex flex-col gap-2">
           <Link to={`/orders/${successData.orderId}`}>
             <Button variant="outline" className="w-full h-12 rounded-xl text-sm font-medium">
-              <span className="material-symbols-outlined mr-2 text-[18px]">visibility</span>
+              <Eye className="mr-2 h-[18px] w-[18px]" />
               View Order Details
             </Button>
           </Link>
@@ -162,9 +159,6 @@ export default function PaymentSuccess() {
           </Link>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

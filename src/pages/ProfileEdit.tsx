@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, Camera, User } from 'lucide-react';
+import { LoadingSpinner, FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface ProfileData {
   full_name: string | null;
@@ -19,7 +21,6 @@ interface ProfileData {
 export default function ProfileEdit() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<ProfileData>({
@@ -193,11 +194,7 @@ export default function ProfileEdit() {
   };
 
   if (authLoading || loadingProfile) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -209,7 +206,7 @@ export default function ProfileEdit() {
             onClick={() => navigate('/profile')}
             className="text-foreground flex w-10 h-10 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <h1 className="text-base sm:text-lg font-semibold text-foreground">Edit Profile</h1>
           <div className="w-10"></div>
@@ -229,11 +226,11 @@ export default function ProfileEdit() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="material-symbols-outlined text-primary text-5xl sm:text-6xl">person</span>
+                <User className="text-primary h-10 w-10 sm:h-12 sm:w-12" />
               )}
               {isUploading && (
                 <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <LoadingSpinner className="h-6 w-6" />
                 </div>
               )}
               <button 
@@ -242,7 +239,7 @@ export default function ProfileEdit() {
                 disabled={isUploading}
                 className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors"
               >
-                <span className="material-symbols-outlined text-base sm:text-lg">photo_camera</span>
+                <Camera className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
               </button>
             </div>
             <input
@@ -374,7 +371,7 @@ export default function ProfileEdit() {
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></span>
+                <ButtonSpinner className="h-5 w-5" />
                 Saving...
               </span>
             ) : (
@@ -383,9 +380,6 @@ export default function ProfileEdit() {
           </Button>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

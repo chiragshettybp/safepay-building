@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { Eye, EyeOff } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function CustomerLogin() {
   const [phone, setPhone] = useState('');
@@ -18,7 +20,6 @@ export default function CustomerLogin() {
   
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,9 +92,7 @@ export default function CustomerLogin() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <span className="material-symbols-outlined select-none text-xl sm:text-2xl">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff className="h-5 w-5 sm:h-6 sm:w-6" /> : <Eye className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </button>
               </div>
             </div>
@@ -161,7 +160,7 @@ export default function CustomerLogin() {
             <div className="mt-3 sm:mt-4 text-center">
               <Link 
                 to="/customer-signup" 
-                className="text-accent font-medium text-sm sm:text-base p-2 sm:p-3 hover:text-primary transition-colors inline-block"
+                className="text-primary font-medium text-sm sm:text-base p-2 sm:p-3 hover:text-primary/80 transition-colors inline-block"
               >
                 New? Create account
               </Link>
@@ -181,7 +180,7 @@ export default function CustomerLogin() {
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                <ButtonSpinner className="h-5 w-5" />
                 Logging in...
               </span>
             ) : (
@@ -190,9 +189,6 @@ export default function CustomerLogin() {
           </Button>
         </div>
       </footer>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

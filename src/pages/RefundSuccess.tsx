@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, CheckCircle, Download, ExternalLink, CreditCard, Building, Smartphone, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatAmount } from '@/lib/format';
 
 interface Refund {
   id: string;
@@ -40,7 +41,6 @@ export default function RefundSuccess() {
   const { refundId } = useParams<{ refundId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [refund, setRefund] = useState<Refund | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +93,7 @@ export default function RefundSuccess() {
     };
 
     fetchData();
-  }, [refundId, user?.id, navigate, toast]);
+  }, [refundId, user?.id, navigate]);
 
   const handleDownloadReceipt = async () => {
     if (!refund?.receipt_url) {
@@ -147,7 +147,7 @@ export default function RefundSuccess() {
           <div className="bg-background rounded-2xl border border-border p-5 w-full">
             <p className="text-sm text-muted-foreground mb-1">Amount Refunded</p>
             <p className="text-4xl font-bold text-success">
-              {refund.currency === 'USD' ? '$' : '₹'}{Number(refund.amount).toLocaleString()}
+              {formatAmount(refund.amount, refund.currency)}
             </p>
           </div>
         </div>

@@ -3,8 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { useRazorpay } from '@/hooks/useRazorpay';
+import {
+  ArrowLeft,
+  Check,
+  CircleAlert,
+  CreditCard,
+  HelpCircle,
+  Info,
+  Store,
+  X,
+} from 'lucide-react';
 import { z } from 'zod';
 import { PAYMENT_CONSTANTS, calculateServiceFee, calculateTotalWithFee } from '@/lib/constants';
 import {
@@ -13,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 // Razorpay integration is currently DISABLED for testing. The real payment flow
 // is replaced by a testing confirmation layer (Complete / Cancel). Set this to
@@ -34,7 +45,6 @@ type PaymentData = z.infer<typeof paymentSchema>;
 export default function PaymentReview() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const { initiatePayment, isLoading: razorpayLoading } = useRazorpay();
   
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
@@ -312,18 +322,14 @@ export default function PaymentReview() {
   if (validationError) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-        <span className="material-symbols-outlined text-destructive text-[48px] mb-4">error</span>
+        <CircleAlert className="text-destructive h-[48px] w-[48px] mb-4" />
         <p className="text-foreground font-medium text-center">{validationError}</p>
       </div>
     );
   }
 
   if (!paymentData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   const isButtonDisabled = !agreedToTerms || isProcessing || razorpayLoading;
@@ -332,17 +338,17 @@ export default function PaymentReview() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-sm border-b border-border h-14 flex items-center justify-between px-4">
         <button onClick={() => !isProcessing && navigate('/payment/new')} disabled={isProcessing} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted disabled:opacity-50">
-          <span className="material-symbols-outlined text-[22px]">arrow_back</span>
+          <ArrowLeft className="text-[22px]" />
         </button>
         <button className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted">
-          <span className="material-symbols-outlined text-[22px]">help</span>
+          <HelpCircle className="text-[22px]" />
         </button>
       </header>
 
       <main className="flex-1 w-full max-w-md mx-auto px-4 pt-4 pb-28">
         <div className="flex flex-col items-center justify-center py-5 text-center">
           <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success mb-4">
-            <span className="material-symbols-outlined text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+            <Check className="h-[32px] w-[32px]" />
           </div>
           <h1 className="text-foreground text-2xl font-bold mb-2">Review & Pay</h1>
           <p className="text-muted-foreground text-sm">
@@ -354,7 +360,7 @@ export default function PaymentReview() {
           <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center">
-                <span className="material-symbols-outlined text-muted-foreground text-[22px]">store</span>
+                <Store className="text-muted-foreground h-[22px] w-[22px]" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">{paymentData.merchantName}</p>
@@ -370,7 +376,7 @@ export default function PaymentReview() {
                   <TooltipTrigger asChild>
                     <span className="text-muted-foreground text-sm cursor-help flex items-center gap-1">
                       Service Fee <span className="text-xs">({PAYMENT_CONSTANTS.SERVICE_FEE_PERCENT}%)</span>
-                      <span className="material-symbols-outlined text-[14px]">info</span>
+                      <Info className="h-3.5 w-3.5" />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-[200px] p-3">
@@ -402,20 +408,19 @@ export default function PaymentReview() {
         <button onClick={() => !isProcessing && navigate('/payment/new')} disabled={isProcessing} className="text-muted-foreground text-sm font-medium px-3 disabled:opacity-50">Edit</button>
         {RAZORPAY_ENABLED ? (
           <Button onClick={handleConfirmPayment} disabled={isButtonDisabled} className="flex-1 ml-3 h-12 rounded-xl text-base font-semibold">
-            {isProcessing ? <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>Processing...</span> : <>Pay with Razorpay<span className="material-symbols-outlined ml-2 text-[18px]">payment</span></>}
+            {isProcessing ? <span className="flex items-center gap-2"><ButtonSpinner className="h-4 w-4" />Processing...</span> : <>Pay with Razorpay<CreditCard className="ml-2 h-[18px] w-[18px]" /></>}
           </Button>
         ) : (
           <div className="flex-1 ml-3 flex gap-2">
             <Button onClick={() => handleTestPayment('cancel')} disabled={isButtonDisabled} variant="outline" className="flex-1 h-12 rounded-xl text-sm font-medium">
-              {isProcessing ? <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-muted-foreground"></span>Processing...</span> : <><span className="material-symbols-outlined mr-1 text-[18px]">close</span>Cancel Payment</>}
+              {isProcessing ? <span className="flex items-center gap-2"><ButtonSpinner className="h-4 w-4" />Processing...</span> : <><X className="mr-1 h-[18px] w-[18px]" />Cancel Payment</>}
             </Button>
             <Button onClick={() => handleTestPayment('complete')} disabled={isButtonDisabled} className="flex-1 h-12 rounded-xl text-sm font-semibold bg-success hover:bg-success/90">
-              {isProcessing ? <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>Processing...</span> : <><span className="material-symbols-outlined mr-1 text-[18px]">check</span>Complete Payment</>}
+              {isProcessing ? <span className="flex items-center gap-2"><ButtonSpinner className="h-4 w-4" />Processing...</span> : <><Check className="mr-1 h-[18px] w-[18px]" />Complete Payment</>}
             </Button>
           </div>
         )}
       </div>
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

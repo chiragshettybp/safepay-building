@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, XCircle } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
+import { CountryCodeSelect } from '@/components/shared/CountryCodeSelect';
 
 export default function CustomerSignup() {
   const [fullName, setFullName] = useState('');
@@ -20,7 +23,6 @@ export default function CustomerSignup() {
 
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   // Password strength calculation
   const passwordStrength = useMemo(() => {
@@ -96,7 +98,7 @@ export default function CustomerSignup() {
             onClick={() => navigate(-1)}
             className="text-foreground flex w-10 h-10 sm:w-11 sm:h-11 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="text-xs sm:text-sm font-medium text-muted-foreground">Step 1 of 3</div>
         </div>
@@ -128,7 +130,7 @@ export default function CustomerSignup() {
               />
               {fullName.length >= 2 && (
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-success">
-                  <span className="material-symbols-outlined text-lg sm:text-xl">check_circle</span>
+                  <CheckCircle2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </div>
               )}
             </div>
@@ -140,19 +142,7 @@ export default function CustomerSignup() {
               Phone Number
             </Label>
             <div className="flex rounded-xl shadow-sm ring-1 ring-inset ring-border focus-within:ring-2 focus-within:ring-primary bg-surface overflow-hidden transition-all">
-              <div className="flex items-center border-r border-border bg-muted px-2 sm:px-3">
-                <span className="text-base sm:text-lg mr-1 sm:mr-2">🇮🇳</span>
-                <select 
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="h-full border-0 bg-transparent py-0 pl-0 pr-5 sm:pr-7 text-foreground focus:ring-0 text-xs sm:text-sm font-medium"
-                >
-                  <option value="+91">+91</option>
-                  <option value="+1">+1</option>
-                  <option value="+44">+44</option>
-                  <option value="+234">+234</option>
-                </select>
-              </div>
+              <CountryCodeSelect value={countryCode} onChange={setCountryCode} />
               <input
                 type="tel"
                 placeholder="98765 43210"
@@ -180,9 +170,7 @@ export default function CustomerSignup() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-primary transition-colors"
               >
-                <span className="material-symbols-outlined text-lg sm:text-xl">
-                  {showPassword ? 'visibility' : 'visibility_off'}
-                </span>
+                {showPassword ? <Eye className="h-[18px] w-[18px] sm:h-5 sm:w-5" /> : <EyeOff className="h-[18px] w-[18px] sm:h-5 sm:w-5" />}
               </button>
             </div>
             {/* Strength Meter */}
@@ -220,9 +208,11 @@ export default function CustomerSignup() {
               />
               {confirmPassword.length > 0 && (
                 <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 ${passwordsMatch ? 'text-success' : 'text-destructive'}`}>
-                  <span className="material-symbols-outlined text-lg sm:text-xl">
-                    {passwordsMatch ? 'check_circle' : 'error'}
-                  </span>
+                  {passwordsMatch ? (
+                    <CheckCircle2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                  ) : (
+                    <XCircle className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                  )}
                 </div>
               )}
             </div>
@@ -246,13 +236,13 @@ export default function CustomerSignup() {
             <div className="ml-2 sm:ml-3 text-xs sm:text-sm leading-5 sm:leading-6">
               <label htmlFor="terms" className="font-medium text-muted-foreground">
                 I agree to the{' '}
-                <a href="#" className="font-semibold text-primary hover:text-primary/80">
+                <Link to="/terms-of-service" className="font-semibold text-primary hover:text-primary/80">
                   Terms of Service
-                </a>{' '}
+                </Link>{' '}
                 and{' '}
-                <a href="#" className="font-semibold text-primary hover:text-primary/80">
+                <Link to="/privacy-policy" className="font-semibold text-primary hover:text-primary/80">
                   Privacy Policy
-                </a>.
+                </Link>.
               </label>
             </div>
           </div>
@@ -264,11 +254,11 @@ export default function CustomerSignup() {
             <Button
               onClick={handleSubmit}
               disabled={!isFormValid || isLoading}
-              className="flex w-full items-center justify-center rounded-xl bg-primary px-6 py-3 sm:py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none h-12 sm:h-14"
+              className="flex w-full items-center justify-center rounded-xl bg-primary px-6 py-3 sm:py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none h-12 sm:h-14"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                  <ButtonSpinner className="h-5 w-5" />
                   Creating Account...
                 </span>
               ) : (
@@ -284,9 +274,6 @@ export default function CustomerSignup() {
           </div>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

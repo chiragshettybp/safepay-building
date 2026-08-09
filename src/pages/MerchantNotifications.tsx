@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isToday, isYesterday } from 'date-fns';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { AlertCircle, AlertTriangle, ArrowLeft, BellOff, CheckCircle2, Gavel, Info, ShoppingBag, Wallet } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 interface Notification {
   id: string;
@@ -145,13 +147,13 @@ export default function MerchantNotifications() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'success': return 'check_circle';
-      case 'error': return 'error';
-      case 'warning': return 'warning';
-      case 'order': return 'shopping_bag';
-      case 'payout': return 'payments';
-      case 'dispute': return 'gavel';
-      default: return 'info';
+      case 'success': return CheckCircle2;
+      case 'error': return AlertCircle;
+      case 'warning': return AlertTriangle;
+      case 'order': return ShoppingBag;
+      case 'payout': return Wallet;
+      case 'dispute': return Gavel;
+      default: return Info;
     }
   };
 
@@ -175,7 +177,7 @@ export default function MerchantNotifications() {
             onClick={() => navigate('/merchant-dashboard')}
             className="back-btn"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground">Notifications</h1>
@@ -198,12 +200,12 @@ export default function MerchantNotifications() {
       <main className="pb-20">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <LoadingSpinner className="h-8 w-8" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-muted-foreground text-3xl">notifications_off</span>
+              <BellOff className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="text-base sm:text-lg font-semibold text-foreground mb-1">No notifications</h2>
             <p className="text-muted-foreground text-xs sm:text-sm">You're all caught up!</p>
@@ -223,11 +225,10 @@ export default function MerchantNotifications() {
                       !notification.read ? 'bg-primary/10' : 'bg-muted'
                     }`}
                   >
-                    <span
-                      className={`material-symbols-outlined text-lg sm:text-xl ${getTypeColor(notification.type)}`}
-                    >
-                      {getTypeIcon(notification.type)}
-                    </span>
+                    {(() => {
+                      const TypeIcon = getTypeIcon(notification.type);
+                      return <TypeIcon className={`h-5 w-5 sm:h-6 sm:w-6 ${getTypeColor(notification.type)}`} />;
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -270,9 +271,6 @@ export default function MerchantNotifications() {
           </div>
         )}
       </main>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

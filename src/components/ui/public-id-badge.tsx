@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 import type { PublicIdPrefix } from '@/lib/public-ids';
@@ -26,7 +26,6 @@ export function PublicIdBadge({
   monospace = true,
   copyLabel,
 }: PublicIdBadgeProps) {
-  const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

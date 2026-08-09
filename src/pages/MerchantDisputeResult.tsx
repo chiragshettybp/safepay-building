@@ -6,6 +6,9 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, ExternalLink, FileText, Gavel, Image, RefreshCw, ShieldCheck, Store, Tag, User, XCircle } from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Dispute {
   id: string;
@@ -161,7 +164,7 @@ export default function MerchantDisputeResult() {
     switch (resolution) {
       case 'merchant_favor':
         return {
-          icon: 'check_circle',
+          icon: CheckCircle2,
           title: 'Resolved in Your Favor',
           subtitle: 'Funds will be released to you.',
           color: 'text-green-600',
@@ -170,7 +173,7 @@ export default function MerchantDisputeResult() {
         };
       case 'customer_favor':
         return {
-          icon: 'cancel',
+          icon: XCircle,
           title: 'Customer Won',
           subtitle: 'Refund issued to customer.',
           color: 'text-destructive',
@@ -179,7 +182,7 @@ export default function MerchantDisputeResult() {
         };
       case 'partial_refund':
         return {
-          icon: 'price_change',
+          icon: Tag,
           title: 'Partial Refund',
           subtitle: 'A partial refund was issued.',
           color: 'text-amber-600',
@@ -188,7 +191,7 @@ export default function MerchantDisputeResult() {
         };
       default:
         return {
-          icon: 'pending',
+          icon: Clock,
           title: 'Pending Resolution',
           subtitle: 'Still under review.',
           color: 'text-muted-foreground',
@@ -199,21 +202,16 @@ export default function MerchantDisputeResult() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
           <div className="flex items-center h-14 px-4 gap-2">
             <button onClick={() => navigate('/merchant-disputes')} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <Skeleton className="h-5 w-28" />
           </div>
@@ -231,7 +229,7 @@ export default function MerchantDisputeResult() {
     return (
       <div className="min-h-[100dvh] bg-background flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-outlined text-3xl text-muted-foreground mb-2">error</span>
+          <AlertCircle className="h-7 w-7 text-muted-foreground mb-2" />
           <p className="text-muted-foreground mb-4">Not found</p>
           <Button variant="outline" onClick={() => navigate('/merchant-disputes')}>
             Back to Disputes
@@ -245,13 +243,11 @@ export default function MerchantDisputeResult() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate('/merchant-disputes')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-semibold text-foreground ml-2">Dispute Result</h1>
         </div>
@@ -264,9 +260,7 @@ export default function MerchantDisputeResult() {
           <div className={`rounded-xl p-5 border ${resolutionConfig.bgColor} ${resolutionConfig.borderColor}`}>
             <div className="flex flex-col items-center text-center">
               <div className={`w-14 h-14 rounded-full ${resolutionConfig.bgColor} flex items-center justify-center mb-3`}>
-                <span className={`material-symbols-outlined text-3xl ${resolutionConfig.color}`}>
-                  {resolutionConfig.icon}
-                </span>
+                <resolutionConfig.icon className={`h-7 w-7 ${resolutionConfig.color}`} />
               </div>
               <h2 className={`text-lg font-bold ${resolutionConfig.color}`}>
                 {resolutionConfig.title}
@@ -294,7 +288,7 @@ export default function MerchantDisputeResult() {
           {dispute.admin_notes && (
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="material-symbols-outlined text-blue-600 text-lg">admin_panel_settings</span>
+                <ShieldCheck className="h-[18px] w-[18px] text-blue-600" />
                 <p className="text-sm font-medium text-blue-600">Admin Notes</p>
               </div>
               <p className="text-sm text-foreground">{dispute.admin_notes}</p>
@@ -351,7 +345,7 @@ export default function MerchantDisputeResult() {
             <div className="space-y-3">
               <div className="flex gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-sm text-destructive">gavel</span>
+                  <Gavel className="h-3.5 w-3.5 text-destructive" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">Dispute Opened</p>
@@ -366,15 +360,15 @@ export default function MerchantDisputeResult() {
                     update.actor_type === 'admin' ? 'bg-blue-500/20' : 
                     update.actor_type === 'customer' ? 'bg-amber-500/20' : 'bg-muted'
                   }`}>
-                    <span className={`material-symbols-outlined text-sm ${
-                      update.actor_type === 'merchant' ? 'text-primary' : 
-                      update.actor_type === 'admin' ? 'text-blue-500' : 
-                      update.actor_type === 'customer' ? 'text-amber-500' : 'text-muted-foreground'
-                    }`}>
-                      {update.actor_type === 'merchant' ? 'storefront' : 
-                       update.actor_type === 'admin' ? 'admin_panel_settings' : 
-                       update.actor_type === 'customer' ? 'person' : 'update'}
-                    </span>
+                    {update.actor_type === 'merchant' ? (
+                      <Store className="h-3.5 w-3.5 text-primary" />
+                    ) : update.actor_type === 'admin' ? (
+                      <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+                    ) : update.actor_type === 'customer' ? (
+                      <User className="h-3.5 w-3.5 text-amber-500" />
+                    ) : (
+                      <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{update.title}</p>
@@ -389,9 +383,7 @@ export default function MerchantDisputeResult() {
               {dispute.resolved_at && (
                 <div className="flex gap-2.5">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${resolutionConfig.bgColor}`}>
-                    <span className={`material-symbols-outlined text-sm ${resolutionConfig.color}`}>
-                      {resolutionConfig.icon}
-                    </span>
+                    <resolutionConfig.icon className={`h-3.5 w-3.5 ${resolutionConfig.color}`} />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{resolutionConfig.title}</p>
@@ -415,11 +407,13 @@ export default function MerchantDisputeResult() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2.5 p-2.5 bg-background rounded-lg active:bg-muted"
                   >
-                    <span className="material-symbols-outlined text-muted-foreground text-lg">
-                      {file.file_type.startsWith('image/') ? 'image' : 'description'}
-                    </span>
+                    {file.file_type.startsWith('image/') ? (
+                      <Image className="h-[18px] w-[18px] text-muted-foreground" />
+                    ) : (
+                      <FileText className="h-[18px] w-[18px] text-muted-foreground" />
+                    )}
                     <p className="text-sm font-medium text-foreground truncate flex-1">{file.file_name}</p>
-                    <span className="material-symbols-outlined text-muted-foreground text-sm">open_in_new</span>
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                   </a>
                 ))}
               </div>
@@ -442,31 +436,7 @@ export default function MerchantDisputeResult() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px]">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px] font-medium">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px]">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }

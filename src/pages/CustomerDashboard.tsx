@@ -5,11 +5,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { format } from 'date-fns';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { publicIdOf } from '@/lib/public-ids';
+import { formatAmount } from '@/lib/format';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import {
+  CheckCircle2,
+  Eye,
+  Filter,
+  Hourglass,
+  Info,
+  Plus,
+  ReceiptText,
+  ShoppingBag,
+  Store,
+  Wallet,
+} from 'lucide-react';
 
 interface Order {
   id: string;
@@ -49,7 +63,6 @@ const statusConfig: Record<string, { color: string; label: string; icon?: string
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [metrics, setMetrics] = useState<OrderMetrics>({
     total: 0,
@@ -205,8 +218,8 @@ export default function CustomerDashboard() {
               </div>
               <Link to="/payment/new" className="shrink-0">
                 <Button size="sm" className="h-9 sm:h-10 rounded-xl text-xs sm:text-sm font-medium px-3 sm:px-4">
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px] mr-1">add</span>
-                  <span className="hidden xs:inline">New </span>Payment
+                  <Plus className="h-4 w-4 sm:h-[18px] sm:w-[18px] mr-1" />
+                  <span className="hidden sm:inline">New </span>Payment
                 </Button>
               </Link>
             </div>
@@ -229,7 +242,7 @@ export default function CustomerDashboard() {
                               className="w-full h-full rounded-full object-cover"
                             />
                           ) : (
-                            <span className="material-symbols-outlined text-muted-foreground text-[20px]">store</span>
+                            <Store className="text-muted-foreground h-[20px] w-[20px]" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -239,12 +252,9 @@ export default function CustomerDashboard() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="font-bold text-lg text-foreground">
-                          {order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toFixed(2)}
+                          {formatAmount(order.amount, order.currency, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
-                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-warning"></span>
-                          {statusConfig[order.status]?.label || order.status}
-                        </span>
+                        <StatusBadge dot tone="warning" label={statusConfig[order.status]?.label || order.status} />
                       </div>
                     </div>
 
@@ -253,7 +263,7 @@ export default function CustomerDashboard() {
                       <p className="text-sm font-medium text-foreground mb-1">{order.product_name}</p>
                       <p className="text-xs text-muted-foreground mb-2">Order {publicIdOf(order, 'public_order_id', 'ORD', 'order_number')}</p>
                       <p className="text-xs text-muted-foreground flex items-start gap-1.5">
-                        <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5">info</span>
+                        <Info className="h-4 w-4 shrink-0 mt-0.5" />
                         <span>
                           {order.status === 'delivered' && 'Confirm receipt to release funds'}
                           {order.status === 'awaiting_shipment' && 'Waiting for seller to ship'}
@@ -267,13 +277,13 @@ export default function CustomerDashboard() {
                           onClick={() => handleConfirmDelivery(order.id)}
                           className="w-full mt-3 h-11 rounded-xl font-semibold text-sm"
                         >
-                          <span className="material-symbols-outlined text-[18px] mr-1.5">check_circle</span>
+                          <CheckCircle2 className="h-[18px] w-[18px] mr-1.5" />
                           Confirm Delivery
                         </Button>
                       ) : (
                         <Link to={`/orders/${order.id}`} className="block mt-3">
                           <Button variant="outline" className="w-full h-11 rounded-xl font-semibold text-sm">
-                            <span className="material-symbols-outlined text-[18px] mr-1.5">visibility</span>
+                            <Eye className="h-[18px] w-[18px] mr-1.5" />
                             View Details
                           </Button>
                         </Link>
@@ -291,7 +301,7 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div className="bg-card border border-border rounded-2xl p-6 text-center">
-                <span className="material-symbols-outlined text-[40px] text-success mb-2">check_circle</span>
+                <CheckCircle2 className="h-[40px] w-[40px] text-success mb-2" />
                 <p className="text-foreground font-medium text-sm">All caught up!</p>
                 <p className="text-muted-foreground text-xs">No pending actions</p>
               </div>
@@ -305,7 +315,7 @@ export default function CustomerDashboard() {
                 <div className="bg-card border border-border rounded-xl p-3 hover:bg-muted/50 active:bg-muted transition-colors">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-primary text-[18px] sm:text-[20px]">receipt_long</span>
+                      <ReceiptText className="text-primary h-[18px] w-[18px] sm:h-[20px] sm:w-[20px]" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-foreground text-sm sm:text-base font-medium truncate">Transactions</p>
@@ -318,7 +328,7 @@ export default function CustomerDashboard() {
                 <div className="bg-card border border-border rounded-xl p-3 hover:bg-muted/50 active:bg-muted transition-colors">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-success text-[18px] sm:text-[20px]">account_balance_wallet</span>
+                      <Wallet className="text-success h-[18px] w-[18px] sm:h-[20px] sm:w-[20px]" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-foreground text-sm sm:text-base font-medium truncate">Wallet</p>
@@ -346,7 +356,7 @@ export default function CustomerDashboard() {
                 className="flex-1 h-10 sm:h-11 rounded-xl bg-muted/50 border-0 text-sm"
               />
               <button className="w-10 h-10 sm:w-11 sm:h-11 bg-muted/50 rounded-xl flex items-center justify-center text-muted-foreground active:bg-muted shrink-0">
-                <span className="material-symbols-outlined text-[20px]">filter_list</span>
+                <Filter className="h-[20px] w-[20px]" />
               </button>
             </div>
 
@@ -367,7 +377,7 @@ export default function CustomerDashboard() {
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
-                        <span className="material-symbols-outlined text-muted-foreground text-[18px]">store</span>
+                        <Store className="text-muted-foreground h-[18px] w-[18px]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -376,7 +386,7 @@ export default function CustomerDashboard() {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-semibold text-sm text-foreground">
-                        {order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toFixed(2)}
+                        {formatAmount(order.amount, order.currency, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                       <span className={`text-xs font-medium ${
                         statusConfig[order.status]?.color === 'success' ? 'text-success' :
@@ -392,7 +402,7 @@ export default function CustomerDashboard() {
                 ))
               ) : (
                 <div className="text-center py-10">
-                  <span className="material-symbols-outlined text-[40px] text-muted-foreground mb-2">receipt_long</span>
+                  <ReceiptText className="h-[40px] w-[40px] text-muted-foreground mb-2" />
                   <p className="text-muted-foreground text-sm">
                     {searchQuery ? 'No results found' : 'No transactions yet'}
                   </p>
@@ -415,15 +425,15 @@ export default function CustomerDashboard() {
           {/* Stats Grid */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted/50 rounded-lg">
-              <span className="material-symbols-outlined text-primary text-[16px]">shopping_bag</span>
+              <ShoppingBag className="text-primary h-4 w-4" />
               <span className="text-xs font-semibold text-foreground">{metrics.total}</span>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted/50 rounded-lg">
-              <span className="material-symbols-outlined text-warning text-[16px]">hourglass_top</span>
+              <Hourglass className="text-warning h-4 w-4" />
               <span className="text-xs font-semibold text-foreground">{metrics.pending}</span>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted/50 rounded-lg">
-              <span className="material-symbols-outlined text-success text-[16px]">check_circle</span>
+              <CheckCircle2 className="text-success h-4 w-4" />
               <span className="text-xs font-semibold text-foreground">{metrics.completed}</span>
             </div>
           </div>

@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, XCircle, RefreshCw, MessageCircle, Edit, ExternalLink, AlertTriangle, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatAmount } from '@/lib/format';
 
 interface Refund {
   id: string;
@@ -43,7 +44,6 @@ export default function RefundFailed() {
   const { refundId } = useParams<{ refundId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [refund, setRefund] = useState<Refund | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<RefundEvent[]>([]);
@@ -106,7 +106,7 @@ export default function RefundFailed() {
     };
 
     fetchData();
-  }, [refundId, user?.id, navigate, toast]);
+  }, [refundId, user?.id, navigate]);
 
   const handleRetry = async () => {
     if (!refund || !refund.retry_allowed) return;
@@ -140,7 +140,7 @@ export default function RefundFailed() {
           user_id: user.id,
           type: 'info',
           title: 'Refund Retry Started',
-          message: `Refund of ${refund.currency === 'USD' ? '$' : '₹'}${refund.amount} is being retried`,
+          message: `Refund of ${formatAmount(refund.amount, refund.currency)} is being retried`,
           link: `/refunds/${refund.id}`
         });
       }
@@ -189,7 +189,7 @@ export default function RefundFailed() {
           <div className="bg-background rounded-2xl border border-border p-5 w-full">
             <p className="text-sm text-muted-foreground mb-1">Refund Amount</p>
             <p className="text-4xl font-bold text-destructive">
-              {refund.currency === 'USD' ? '$' : '₹'}{Number(refund.amount).toLocaleString()}
+              {formatAmount(refund.amount, refund.currency)}
             </p>
           </div>
         </div>

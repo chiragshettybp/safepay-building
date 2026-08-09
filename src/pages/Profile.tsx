@@ -4,6 +4,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Bell,
+  ChevronRight,
+  HelpCircle,
+  Info,
+  Lock,
+  LogOut,
+  Pencil,
+  Scale,
+  ShieldCheck,
+  User,
+  Wallet,
+} from 'lucide-react';
 
 interface KycRecord {
   status: string;
@@ -141,11 +157,7 @@ export default function Profile() {
   };
 
   if (isLoading || loadingData) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   const kycStatus = getKycStatusDisplay();
@@ -159,7 +171,7 @@ export default function Profile() {
             onClick={() => navigate('/dashboard')}
             className="back-btn"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <h1 className="text-sm sm:text-base font-semibold text-foreground">Profile</h1>
           <Link to="/profile/edit">
@@ -174,7 +186,7 @@ export default function Profile() {
       <main className="max-w-2xl mx-auto mobile-section pb-28 sm:pb-24">
         {/* Avatar & Name */}
         <div className="flex flex-col items-center mb-5 sm:mb-8">
-          <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full bg-primary/10 flex items-center justify-center mb-2.5 sm:mb-4 overflow-hidden" style={{ width: '72px', height: '72px' }}>
+          <div className="w-[72px] h-[72px] sm:w-24 sm:h-24 rounded-full bg-primary/10 flex items-center justify-center mb-2.5 sm:mb-4 overflow-hidden">
             {profileData?.avatar_url ? (
               <img 
                 src={profileData.avatar_url} 
@@ -182,7 +194,7 @@ export default function Profile() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="material-symbols-outlined text-primary text-3xl sm:text-5xl">person</span>
+              <User className="text-primary h-7 w-7 sm:h-10 sm:w-10" />
             )}
           </div>
           <h2 className="text-base sm:text-xl font-bold text-foreground">
@@ -197,7 +209,7 @@ export default function Profile() {
           {/* Personal Info Card */}
           <div className="info-card p-3.5 sm:p-4">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2.5 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-              <span className="material-symbols-outlined text-primary text-base sm:text-lg">person</span>
+              <User className="text-primary h-4 w-4 sm:h-[18px] sm:w-[18px]" />
               Personal Information
             </h3>
             <div className="space-y-2.5 sm:space-y-3">
@@ -222,7 +234,7 @@ export default function Profile() {
           {/* Account Info Card */}
           <div className="bg-card border border-border rounded-xl p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-lg">info</span>
+              <Info className="text-primary h-[18px] w-[18px]" />
               Account Information
             </h3>
             <div className="space-y-3">
@@ -249,7 +261,7 @@ export default function Profile() {
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-lg">verified_user</span>
+                <BadgeCheck className="text-primary h-[18px] w-[18px]" />
                 KYC Verification
               </h3>
               <span className={`text-xs px-2 py-1 rounded-full ${kycStatus.bg} ${kycStatus.color}`}>
@@ -296,13 +308,13 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-xl">account_balance_wallet</span>
+              <Wallet className="text-primary h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm">Wallet</p>
               <p className="text-xs text-muted-foreground">View balance & transactions</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
           </Link>
         </div>
 
@@ -313,13 +325,13 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-amber-600 text-lg sm:text-xl">gavel</span>
+              <Scale className="text-amber-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">My Disputes</p>
               <p className="text-xs sm:text-sm text-muted-foreground">View & track disputes</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
           </Link>
 
           <Link 
@@ -327,13 +339,13 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-lg sm:text-xl">lock</span>
+              <Lock className="text-primary h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Security Settings</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Password, sessions</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
           </Link>
 
           <Link 
@@ -341,13 +353,13 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-emerald-600 text-lg sm:text-xl">notifications</span>
+              <Bell className="text-emerald-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Notification Settings</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Choose what you hear about</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
           </Link>
 
           <Link 
@@ -355,13 +367,13 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-purple-600 text-lg sm:text-xl">shield</span>
+              <ShieldCheck className="text-purple-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Privacy Settings</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Data, visibility & exports</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
           </Link>
 
           <Link 
@@ -369,13 +381,13 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-blue-600 text-lg sm:text-xl">help</span>
+              <HelpCircle className="text-blue-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Help & Support</p>
               <p className="text-xs sm:text-sm text-muted-foreground">FAQs, contact us</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
           </Link>
 
           <button 
@@ -383,7 +395,7 @@ export default function Profile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors w-full text-left"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-destructive text-lg sm:text-xl">logout</span>
+              <LogOut className="text-destructive h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-destructive text-sm sm:text-base">Log Out</p>
@@ -397,14 +409,11 @@ export default function Profile() {
       <div className="bottom-action sm:hidden">
         <Link to="/profile/edit" className="block">
           <Button className="bottom-action-btn bg-primary text-primary-foreground">
-            <span className="material-symbols-outlined text-base sm:text-lg">edit</span>
+            <Pencil className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
             Edit Profile
           </Button>
         </Link>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

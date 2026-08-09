@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, MapPin, Store, User, XCircle } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 const BUSINESS_CATEGORIES = [
   { value: 'electronics', label: 'Electronics & Gadgets' },
@@ -60,10 +62,11 @@ export default function MerchantSignup() {
   const [error, setError] = useState('');
 
   // Redirect if already authenticated
-  if (isAuthenticated) {
-    navigate('/merchant-verify', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/merchant-verify', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   // Password strength calculation
   const passwordStrength = useMemo(() => {
@@ -75,6 +78,10 @@ export default function MerchantSignup() {
     if (/[^A-Za-z0-9]/.test(password)) strength++;
     return strength;
   }, [password]);
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   const getStrengthColor = () => {
     if (passwordStrength <= 1) return 'bg-destructive';
@@ -134,17 +141,11 @@ export default function MerchantSignup() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Google Fonts */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full">
-            <span className="material-symbols-outlined">arrow_back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="ml-2 text-lg font-semibold">Create Merchant Account</h1>
         </div>
@@ -163,7 +164,7 @@ export default function MerchantSignup() {
             {/* Personal Information Section */}
             <div className="space-y-4">
               <h2 className="text-base font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">person</span>
+                <User className="h-5 w-5 text-primary" />
                 Personal Information
               </h2>
 
@@ -216,9 +217,7 @@ export default function MerchantSignup() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                   >
-                    <span className="material-symbols-outlined text-xl">
-                      {showPassword ? 'visibility_off' : 'visibility'}
-                    </span>
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
                 {password && (
@@ -254,15 +253,12 @@ export default function MerchantSignup() {
                       confirmPassword && !passwordsMatch ? 'border-destructive' : ''
                     } ${passwordsMatch ? 'border-success' : ''}`}
                   />
-                  {confirmPassword && (
-                    <span
-                      className={`absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-xl ${
-                        passwordsMatch ? 'text-success' : 'text-destructive'
-                      }`}
-                    >
-                      {passwordsMatch ? 'check_circle' : 'cancel'}
-                    </span>
-                  )}
+                  {confirmPassword &&
+                    (passwordsMatch ? (
+                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-success" />
+                    ) : (
+                      <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-destructive" />
+                    ))}
                 </div>
               </div>
             </div>
@@ -270,7 +266,7 @@ export default function MerchantSignup() {
             {/* Business Information Section */}
             <div className="space-y-4 pt-4 border-t border-border">
               <h2 className="text-base font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">storefront</span>
+                <Store className="h-5 w-5 text-primary" />
                 Business Information
               </h2>
 
@@ -339,7 +335,7 @@ export default function MerchantSignup() {
             {/* Business Address Section */}
             <div className="space-y-4 pt-4 border-t border-border">
               <h2 className="text-base font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">location_on</span>
+                <MapPin className="h-5 w-5 text-primary" />
                 Business Address <span className="text-muted-foreground font-normal text-sm">(Optional)</span>
               </h2>
 
@@ -404,7 +400,7 @@ export default function MerchantSignup() {
             {/* Error Message */}
             {error && (
               <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <span className="material-symbols-outlined text-destructive text-lg mt-0.5">error</span>
+                <AlertCircle className="h-[18px] w-[18px] text-destructive mt-0.5" />
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
@@ -443,12 +439,12 @@ export default function MerchantSignup() {
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-                <span className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                <ButtonSpinner className="h-5 w-5" />
                 Creating Account...
               </span>
             ) : (
               <>
-                <span className="material-symbols-outlined mr-2">storefront</span>
+                <Store className="h-5 w-5 mr-2" />
                 Create Merchant Account
               </>
             )}

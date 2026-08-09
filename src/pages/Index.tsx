@@ -99,27 +99,27 @@ const Index = () => {
       <section className="relative pt-24 pb-12 sm:pt-32 sm:pb-20 md:pt-40 md:pb-32 px-4 sm:px-6">
         {/* Background Effects - simplified on mobile */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 -left-20 sm:-left-40 w-48 sm:w-80 h-48 sm:h-80 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-          <div className="absolute top-40 -right-20 sm:-right-40 w-56 sm:w-96 h-56 sm:h-96 bg-success/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute top-20 -left-20 sm:-left-40 w-48 sm:w-80 h-48 sm:h-80 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute top-40 -right-20 sm:-right-40 w-56 sm:w-96 h-56 sm:h-96 bg-success/5 rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-4xl mx-auto text-center relative">
           {/* Trust Badge */}
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-success/10 border border-success/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-6 sm:mb-8 opacity-0 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-success/10 border border-success/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-6 sm:mb-8 opacity-0 animate-fade-in" style={{ animationDelay: '0.05s' }}>
             <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
             <span className="text-xs sm:text-sm font-medium text-success">SafePay Protection for Every Transaction</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground tracking-tight leading-[1.15] sm:leading-[1.1] mb-4 sm:mb-6 opacity-0 animate-fade-in-up px-2" style={{ animationDelay: '0.2s' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground tracking-tight leading-[1.15] sm:leading-[1.1] mb-4 sm:mb-6 opacity-0 animate-fade-in-up px-2" style={{ animationDelay: '0.12s' }}>
             Stop Paying Strangers.<br />
             <span className="text-primary">Start Paying Safe.</span>
           </h1>
           
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl sm:max-w-2xl mx-auto mb-8 sm:mb-10 opacity-0 animate-fade-in-up px-2" style={{ animationDelay: '0.4s' }}>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl sm:max-w-2xl mx-auto mb-8 sm:mb-10 opacity-0 animate-fade-in-up px-2" style={{ animationDelay: '0.22s' }}>
             When you pay through Safepay, your money is <span className="text-foreground font-medium">locked in SafePay</span> until you receive what you paid for. No delivery? <span className="text-foreground font-medium">Full refund.</span>
           </p>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center mb-8 sm:mb-12 opacity-0 animate-fade-in-up px-4 sm:px-0" style={{ animationDelay: '0.6s' }}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center mb-8 sm:mb-12 opacity-0 animate-fade-in-up px-4 sm:px-0" style={{ animationDelay: '0.32s' }}>
             {isAuthenticated ? (
               <Link to="/dashboard" className="w-full sm:w-auto">
                 <Button size="lg" className="h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base rounded-full w-full group">
@@ -145,7 +145,7 @@ const Index = () => {
           </div>
 
           {/* Social Proof */}
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground opacity-0 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground opacity-0 animate-fade-in" style={{ animationDelay: '0.42s' }}>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
               <span>No credit card required</span>
@@ -182,29 +182,25 @@ const Index = () => {
               {
                 icon: AlertTriangle,
                 title: "Pay First, Pray Later",
-                desc: "Traditional payments require you to trust a stranger with your money before seeing the product.",
-                color: "destructive"
+                desc: "Traditional payments require you to trust a stranger with your money before seeing the product."
               },
               {
                 icon: Ban,
                 title: "No Recourse",
-                desc: "When things go wrong, getting your money back is nearly impossible. Banks don't help with disputes.",
-                color: "destructive"
+                desc: "When things go wrong, getting your money back is nearly impossible. Banks don't help with disputes."
               },
               {
                 icon: Users,
                 title: "Fake Seller Profiles",
-                desc: "Instagram shops, WhatsApp sellers, unknown websites — anyone can pretend to be legitimate.",
-                color: "destructive"
+                desc: "Instagram shops, WhatsApp sellers, unknown websites — anyone can pretend to be legitimate."
               }
             ].map((item, i) => (
-              <div 
+              <div
                 key={i}
-                className="bg-background border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 opacity-0 animate-fade-in-up"
-                style={{ animationDelay: `${0.2 + i * 0.1}s` }}
+                className="bg-background border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6"
               >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-${item.color}/10 flex items-center justify-center mb-3 sm:mb-4`}>
-                  <item.icon className={`w-5 h-5 sm:w-6 sm:h-6 text-${item.color}`} />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-destructive/10 flex items-center justify-center mb-3 sm:mb-4">
+                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
                 </div>
                 <h3 className="font-bold text-foreground mb-1.5 sm:mb-2 text-sm sm:text-base">{item.title}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
@@ -326,10 +322,9 @@ const Index = () => {
                 desc: "Received your order? Confirm delivery and funds are released. Any issues? We resolve it."
               }
             ].map((item, i) => (
-              <div 
+              <div
                 key={i}
-                className="relative opacity-0 animate-fade-in-up"
-                style={{ animationDelay: `${0.2 + i * 0.15}s` }}
+                className="relative"
               >
                 <div className="bg-background border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 h-full">
                   <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-bold text-primary/20 mb-3 sm:mb-4 block">{item.step}</span>
@@ -393,10 +388,9 @@ const Index = () => {
                 desc: "UPI, cards, net banking — all payment methods supported. Fast and secure."
               }
             ].map((feature, i) => (
-              <div 
+              <div
                 key={i}
-                className="group bg-background border border-border rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 hover:border-primary/50 hover:shadow-lg transition-all duration-300 opacity-0 animate-fade-in-up active:scale-[0.98]"
-                style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+                className="group bg-background border border-border rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 hover:border-primary/50 hover:shadow-lg transition-all duration-300 active:scale-[0.98]"
               >
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-primary/20 transition-colors">
                   <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />

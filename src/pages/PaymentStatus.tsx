@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Confetti from '@/components/ui/confetti';
+import {
+  BadgeCheck,
+  Check,
+  CircleAlert,
+  Clock,
+  Eye,
+  Hourglass,
+  ReceiptText,
+  RefreshCw,
+  X,
+} from 'lucide-react';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
+import { formatAmount } from '@/lib/format';
 
 interface PaymentStatusData {
   status: 'success' | 'failed' | 'pending';
@@ -56,11 +69,7 @@ export default function PaymentStatus() {
   }, [navigate, searchParams]);
 
   if (!statusData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   const isSuccess = statusData.status === 'success';
@@ -88,9 +97,13 @@ export default function PaymentStatus() {
             <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
               isSuccess ? 'bg-success' : isFailed ? 'bg-destructive' : 'bg-warning'
             }`}>
-              <span className="material-symbols-outlined text-white text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                {isSuccess ? 'check' : isFailed ? 'close' : 'hourglass_top'}
-              </span>
+              {isSuccess ? (
+                <Check className="text-white h-[36px] w-[36px]" />
+              ) : isFailed ? (
+                <X className="text-white h-[36px] w-[36px]" />
+              ) : (
+                <Hourglass className="text-white h-[36px] w-[36px]" />
+              )}
             </div>
           </div>
           {isSuccess && (
@@ -117,7 +130,7 @@ export default function PaymentStatus() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Amount</span>
               <span className="text-foreground text-lg font-bold">
-                {statusData.currency === 'INR' ? '₹' : '$'}{statusData.amount.toLocaleString('en-IN')}
+                {formatAmount(statusData.amount, statusData.currency)}
               </span>
             </div>
 
@@ -153,11 +166,12 @@ export default function PaymentStatus() {
                   ? 'bg-destructive/5 border-destructive/20'
                   : 'bg-warning/5 border-warning/20'
             }`}>
-              <span className={`material-symbols-outlined text-[18px] ${
-                isSuccess ? 'text-success' : isFailed ? 'text-destructive' : 'text-warning'
-              }`}>
-                {isSuccess ? 'verified' : isFailed ? 'error' : 'schedule'}
-              </span>
+              {(() => {
+                const StatusIcon = isSuccess ? BadgeCheck : isFailed ? CircleAlert : Clock;
+                return <StatusIcon className={`h-[18px] w-[18px] ${
+                  isSuccess ? 'text-success' : isFailed ? 'text-destructive' : 'text-warning'
+                }`} />;
+              })()}
               <span className={`text-sm font-medium ${
                 isSuccess ? 'text-success' : isFailed ? 'text-destructive' : 'text-warning'
               }`}>
@@ -173,7 +187,7 @@ export default function PaymentStatus() {
             to={`/orders/${statusData.orderId}`}
             className="flex items-center gap-2 text-primary text-sm font-medium mb-4"
           >
-            <span className="material-symbols-outlined text-[18px]">visibility</span>
+            <Eye className="h-[18px] w-[18px]" />
             View Order {statusData.publicOrderId || `#${statusData.orderNumber}`}
           </Link>
         )}
@@ -185,14 +199,14 @@ export default function PaymentStatus() {
           {isFailed && (
             <Link to="/payment/new">
               <Button className="w-full h-12 rounded-xl text-sm font-semibold">
-                <span className="material-symbols-outlined mr-2 text-[18px]">refresh</span>
+                <RefreshCw className="mr-2 h-[18px] w-[18px]" />
                 Retry Payment
               </Button>
             </Link>
           )}
           <Link to={`/transactions/${statusData.transactionId}`}>
             <Button variant={isFailed ? "outline" : "default"} className="w-full h-12 rounded-xl text-sm font-medium">
-              <span className="material-symbols-outlined mr-2 text-[18px]">receipt_long</span>
+              <ReceiptText className="mr-2 h-[18px] w-[18px]" />
               View Transaction Details
             </Button>
           </Link>
@@ -203,9 +217,6 @@ export default function PaymentStatus() {
           </Link>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

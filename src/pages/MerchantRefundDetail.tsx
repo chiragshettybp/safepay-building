@@ -3,7 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatAmount } from '@/lib/format';
+import { AlertCircle, ArrowLeft, Check, Circle, Headphones, ReceiptText } from 'lucide-react';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Refund {
   id: string;
@@ -43,11 +47,11 @@ interface RefundEvent {
   created_at: string;
 }
 
-const statusConfig: Record<string, { label: string; className: string; icon: string }> = {
-  initiated: { label: 'Initiated', className: 'bg-primary/10 text-primary', icon: 'schedule' },
-  processing: { label: 'Processing', className: 'bg-warning/10 text-warning', icon: 'sync' },
-  success: { label: 'Completed', className: 'bg-success/10 text-success', icon: 'check_circle' },
-  failed: { label: 'Failed', className: 'bg-destructive/10 text-destructive', icon: 'error' },
+const statusConfig: Record<string, { tone: StatusTone; label: string }> = {
+  initiated: { tone: 'info', label: 'Initiated' },
+  processing: { tone: 'warning', label: 'Processing' },
+  success: { tone: 'success', label: 'Completed' },
+  failed: { tone: 'destructive', label: 'Failed' },
 };
 
 export default function MerchantRefundDetail() {
@@ -97,11 +101,7 @@ export default function MerchantRefundDetail() {
   }, [refundId, merchant?.id, navigate]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (!refund) return null;
@@ -113,16 +113,13 @@ export default function MerchantRefundDetail() {
       <header className="sticky-header bg-card">
         <div className="sticky-header-content px-4 sm:px-6">
           <button onClick={() => navigate('/merchant-refunds')} className="back-btn">
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground">Refund Details</h1>
             <p className="text-[10px] sm:text-xs text-muted-foreground font-mono">{refund.public_refund_id || `#${refund.id.slice(0, 8).toUpperCase()}`}</p>
           </div>
-          <span className={`text-[10px] sm:text-xs px-2 py-1 rounded-full capitalize shrink-0 flex items-center gap-1 ${config.className}`}>
-            <span className="material-symbols-outlined text-xs">{config.icon}</span>
-            {config.label}
-          </span>
+          <StatusBadge tone={config.tone} label={config.label} className="text-[10px] sm:text-xs px-2 py-1 capitalize shrink-0" />
         </div>
       </header>
 
@@ -131,7 +128,7 @@ export default function MerchantRefundDetail() {
         <div className="bg-card border border-border rounded-xl p-5 text-center">
           <p className="text-xs text-muted-foreground mb-1">Refund Amount</p>
           <p className="text-3xl font-extrabold text-foreground">
-            {refund.currency === 'USD' ? '$' : '₹'}{Number(refund.amount).toLocaleString('en-IN')}
+            {formatAmount(refund.amount, refund.currency)}
           </p>
           <p className="text-[10px] text-muted-foreground mt-1 capitalize">
             {refund.reason?.replace(/_/g, ' ') || 'Refund'}
@@ -199,9 +196,13 @@ export default function MerchantRefundDetail() {
                     : event.status === 'success' ? 'bg-success/10 text-success'
                     : 'bg-primary/10 text-primary'
                   }`}>
-                    <span className="material-symbols-outlined text-base">
-                      {event.status === 'failed' ? 'error' : event.status === 'completed' || event.status === 'success' ? 'check' : 'circle'}
-                    </span>
+                    {event.status === 'failed' ? (
+                      <AlertCircle className="h-4 w-4" />
+                    ) : event.status === 'completed' || event.status === 'success' ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Circle className="h-4 w-4" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0 pt-0.5">
                     <p className="text-sm font-medium text-foreground">{event.title}</p>
@@ -225,7 +226,7 @@ export default function MerchantRefundDetail() {
               to={`/merchant-order/${refund.order_id}`}
               className="flex items-center justify-center gap-2 h-11 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
             >
-              <span className="material-symbols-outlined text-base">receipt_long</span>
+              <ReceiptText className="h-4 w-4" />
               View Order
             </Link>
           )}
@@ -233,7 +234,7 @@ export default function MerchantRefundDetail() {
             to="/merchant-support"
             className="flex items-center justify-center gap-2 h-11 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
           >
-            <span className="material-symbols-outlined text-base">support_agent</span>
+              <Headphones className="h-4 w-4" />
             Contact Support
           </Link>
         </div>

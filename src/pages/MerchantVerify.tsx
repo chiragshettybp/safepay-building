@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { BadgeCheck, Headphones, HelpCircle, Hourglass, LayoutDashboard, Mail, RefreshCw, Store, XCircle } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function MerchantVerify() {
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ export default function MerchantVerify() {
     switch (merchant?.verificationStatus) {
       case 'approved':
         return {
-          icon: 'verified',
+          icon: BadgeCheck,
           color: 'text-success',
           bgColor: 'bg-success/10',
           borderColor: 'border-success/20',
@@ -75,7 +77,7 @@ export default function MerchantVerify() {
         };
       case 'rejected':
         return {
-          icon: 'cancel',
+          icon: XCircle,
           color: 'text-destructive',
           bgColor: 'bg-destructive/10',
           borderColor: 'border-destructive/20',
@@ -84,7 +86,7 @@ export default function MerchantVerify() {
         };
       default:
         return {
-          icon: 'hourglass_top',
+          icon: Hourglass,
           color: 'text-warning',
           bgColor: 'bg-warning/10',
           borderColor: 'border-warning/20',
@@ -102,18 +104,12 @@ export default function MerchantVerify() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Google Fonts */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary text-xl">storefront</span>
+              <Store className="h-5 w-5 text-primary" />
             </div>
             <span className="font-semibold text-foreground">Merchant Portal</span>
           </div>
@@ -132,9 +128,7 @@ export default function MerchantVerify() {
           {/* Status Card */}
           <div className={`rounded-2xl ${statusConfig.bgColor} border ${statusConfig.borderColor} p-6 text-center mb-6`}>
             <div className={`w-20 h-20 rounded-full ${statusConfig.bgColor} flex items-center justify-center mx-auto mb-4`}>
-              <span className={`material-symbols-outlined text-5xl ${statusConfig.color}`}>
-                {statusConfig.icon}
-              </span>
+              <statusConfig.icon className={`h-12 w-12 ${statusConfig.color}`} />
             </div>
             <h1 className="text-xl font-bold text-foreground mb-2">{statusConfig.title}</h1>
             <p className="text-muted-foreground text-sm">{statusConfig.description}</p>
@@ -207,12 +201,12 @@ export default function MerchantVerify() {
               >
                 {isRefreshing ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <ButtonSpinner className="h-4 w-4" />
                     Checking Status...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-lg">refresh</span>
+                    <RefreshCw className="h-[18px] w-[18px]" />
                     Check Verification Status
                   </span>
                 )}
@@ -223,7 +217,7 @@ export default function MerchantVerify() {
           {merchant.verificationStatus === 'approved' && (
             <Link to="/merchant-dashboard">
               <Button className="w-full h-12">
-                <span className="material-symbols-outlined mr-2">dashboard</span>
+                <LayoutDashboard className="h-5 w-5 mr-2" />
                 Go to Dashboard
               </Button>
             </Link>
@@ -241,7 +235,7 @@ export default function MerchantVerify() {
 
               {/* Contact Support */}
               <Button variant="outline" className="w-full h-12">
-                <span className="material-symbols-outlined mr-2">support_agent</span>
+                <Headphones className="h-5 w-5 mr-2" />
                 Contact Support
               </Button>
 
@@ -250,7 +244,7 @@ export default function MerchantVerify() {
                 onClick={() => navigate('/merchant-signup')}
                 className="w-full h-12"
               >
-                <span className="material-symbols-outlined mr-2">refresh</span>
+                <RefreshCw className="h-5 w-5 mr-2" />
                 Submit New Application
               </Button>
             </div>
@@ -259,13 +253,13 @@ export default function MerchantVerify() {
           {/* Help Section */}
           <div className="mt-8 pt-6 border-t border-border">
             <div className="flex items-center justify-center gap-4 text-sm">
-              <Link to="/help-support" className="text-primary hover:underline flex items-center gap-1">
-                <span className="material-symbols-outlined text-lg">help</span>
+              <Link to="/merchant-support" className="text-primary hover:underline flex items-center gap-1">
+                <HelpCircle className="h-[18px] w-[18px]" />
                 Help Center
               </Link>
               <span className="text-muted-foreground">•</span>
               <a href="mailto:support@safepay.com" className="text-primary hover:underline flex items-center gap-1">
-                <span className="material-symbols-outlined text-lg">mail</span>
+                <Mail className="h-[18px] w-[18px]" />
                 Email Support
               </a>
             </div>

@@ -1,9 +1,32 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ChevronRight,
+  Download,
+  FileText,
+  Gavel,
+  Globe,
+  Lock,
+  Mail,
+  Share2,
+  Shield,
+  ShieldCheck,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react';
 
 const APP_VERSION = '1.0.0';
+
+const FEATURE_ICONS: Record<string, LucideIcon> = {
+  lock: Lock,
+  verified_user: ShieldCheck,
+  gavel: Gavel,
+  flash_on: Zap,
+};
 
 export default function About() {
   const navigate = useNavigate();
@@ -67,7 +90,7 @@ export default function About() {
             aria-label="Go back"
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl text-foreground">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <h1 className="text-base font-semibold text-foreground">About Safepay</h1>
           <div className="w-10" />
@@ -78,7 +101,7 @@ export default function About() {
         {/* App Info */}
         <div className="text-center mb-6">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <span className="material-symbols-outlined text-primary text-4xl">shield</span>
+            <Shield className="text-primary h-8 w-8" />
           </div>
           <h2 className="text-xl font-bold text-foreground">Safepay</h2>
           <p className="text-muted-foreground text-sm mt-1">Secure Protected Payments</p>
@@ -86,7 +109,7 @@ export default function About() {
             <span className="text-xs text-muted-foreground">Version {APP_VERSION}</span>
             {updateStatus === 'up-to-date' && (
               <span className="inline-flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-0.5 rounded-full">
-                <span className="material-symbols-outlined text-xs">check_circle</span>
+                <CheckCircle2 className="h-3 w-3" />
                 Up to date
               </span>
             )}
@@ -108,7 +131,7 @@ export default function About() {
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">system_update</span>
+                <Download className="h-[18px] w-[18px]" />
                 Check for Updates
               </span>
             )}
@@ -118,7 +141,7 @@ export default function About() {
             className="flex-1 h-12 rounded-xl"
           >
             <span className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg">share</span>
+              <Share2 className="h-[18px] w-[18px]" />
               Share App
             </span>
           </Button>
@@ -141,17 +164,20 @@ export default function About() {
               { icon: 'verified_user', title: 'Fraud Protection', desc: 'Reduces risk of scams and non-delivery' },
               { icon: 'gavel', title: 'Fair Disputes', desc: 'Neutral resolution for transaction issues' },
               { icon: 'flash_on', title: 'Fast Refunds', desc: 'Quick processing when disputes are resolved' },
-            ].map((feature, index) => (
-              <div key={index} className="flex items-start gap-3 bg-card border border-border rounded-xl p-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary text-lg">{feature.icon}</span>
+            ].map((feature, index) => {
+              const FeatureIcon = FEATURE_ICONS[feature.icon] ?? Lock;
+              return (
+                <div key={index} className="flex items-start gap-3 bg-card border border-border rounded-xl p-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <FeatureIcon className="text-primary h-[18px] w-[18px]" />
                 </div>
                 <div>
                   <h4 className="font-medium text-foreground text-sm">{feature.title}</h4>
                   <p className="text-xs text-muted-foreground">{feature.desc}</p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -164,20 +190,20 @@ export default function About() {
               className="flex items-center justify-between p-4 hover:bg-muted transition-colors border-b border-border"
             >
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-muted-foreground">description</span>
+                <FileText className="text-muted-foreground h-5 w-5" />
                 <span className="text-sm font-medium text-foreground">Privacy Policy</span>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground">chevron_right</span>
+              <ChevronRight className="text-muted-foreground h-5 w-5" />
             </Link>
             <Link
               to="/terms-of-service"
               className="flex items-center justify-between p-4 hover:bg-muted transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-muted-foreground">gavel</span>
+                <Gavel className="text-muted-foreground h-5 w-5" />
                 <span className="text-sm font-medium text-foreground">Terms of Service</span>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground">chevron_right</span>
+              <ChevronRight className="text-muted-foreground h-5 w-5" />
             </Link>
           </div>
         </div>
@@ -187,11 +213,11 @@ export default function About() {
           <h3 className="text-sm font-medium text-muted-foreground mb-3">Contact</h3>
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <a href="mailto:support@safepay.com" className="flex items-center gap-3 text-sm">
-              <span className="material-symbols-outlined text-muted-foreground">mail</span>
+              <Mail className="text-muted-foreground h-5 w-5" />
               <span className="text-foreground">support@safepay.com</span>
             </a>
             <a href="https://safepay.com" className="flex items-center gap-3 text-sm">
-              <span className="material-symbols-outlined text-muted-foreground">language</span>
+              <Globe className="text-muted-foreground h-5 w-5" />
               <span className="text-primary">www.safepay.com</span>
             </a>
           </div>
@@ -202,8 +228,6 @@ export default function About() {
           © 2026 Safepay. All rights reserved.
         </p>
       </main>
-
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

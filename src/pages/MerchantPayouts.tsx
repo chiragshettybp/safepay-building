@@ -1,12 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  Banknote,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  History,
+  Hourglass,
+  Landmark,
+  Lock,
+  PiggyBank,
+  Plus,
+  ReceiptText,
+  Wallet,
+  XCircle,
+} from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
 
 interface MerchantWallet {
   id: string;
@@ -206,13 +223,13 @@ export default function MerchantPayouts() {
     };
   }, [merchant?.id, fetchData]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusTone = (status: string): StatusTone => {
     switch (status) {
-      case 'completed': return 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30';
-      case 'processing': return 'bg-amber-500/15 text-amber-600 border-amber-500/30';
-      case 'pending': return 'bg-blue-500/15 text-blue-600 border-blue-500/30';
-      case 'failed': return 'bg-red-500/15 text-red-600 border-red-500/30';
-      default: return 'bg-muted text-muted-foreground';
+      case 'completed': return 'success';
+      case 'processing': return 'warning';
+      case 'pending': return 'info';
+      case 'failed': return 'destructive';
+      default: return 'neutral';
     }
   };
 
@@ -251,7 +268,7 @@ export default function MerchantPayouts() {
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/merchant-dashboard')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-              <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
               <h1 className="text-lg font-semibold">Payouts</h1>
@@ -259,7 +276,7 @@ export default function MerchantPayouts() {
             </div>
           </div>
           <Link to="/merchant-payout-history" className="p-2 rounded-lg hover:bg-muted">
-            <span className="material-symbols-outlined text-xl">history</span>
+            <History className="h-5 w-5" />
           </Link>
         </div>
       </header>
@@ -269,7 +286,7 @@ export default function MerchantPayouts() {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-outlined text-primary text-lg">account_balance_wallet</span>
+              <Wallet className="text-primary h-[18px] w-[18px]" />
               <span className="text-[10px] text-muted-foreground">Available</span>
             </div>
             <p className="text-xl font-bold text-primary">{formatCurrency(wallet?.balance || 0)}</p>
@@ -277,7 +294,7 @@ export default function MerchantPayouts() {
 
           <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-outlined text-amber-500 text-lg">pending</span>
+              <Hourglass className="text-amber-500 h-[18px] w-[18px]" />
               <span className="text-[10px] text-muted-foreground">Pending</span>
             </div>
             <p className="text-xl font-bold">{formatCurrency(wallet?.pending_balance || 0)}</p>
@@ -285,7 +302,7 @@ export default function MerchantPayouts() {
 
           <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-outlined text-emerald-500 text-lg">savings</span>
+              <PiggyBank className="text-emerald-500 h-[18px] w-[18px]" />
               <span className="text-[10px] text-muted-foreground">Total Earned</span>
             </div>
             <p className="text-lg font-semibold">{formatCurrency(wallet?.total_earned || 0)}</p>
@@ -293,7 +310,7 @@ export default function MerchantPayouts() {
 
           <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-outlined text-blue-500 text-lg">payments</span>
+              <Banknote className="text-blue-500 h-[18px] w-[18px]" />
               <span className="text-[10px] text-muted-foreground">Withdrawn</span>
             </div>
             <p className="text-lg font-semibold">{formatCurrency(wallet?.total_withdrawn || 0)}</p>
@@ -304,7 +321,7 @@ export default function MerchantPayouts() {
         {heldFunds > 0 && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
             <div className="flex items-center gap-2 mb-1">
-              <span className="material-symbols-outlined text-amber-600 text-lg">lock</span>
+              <Lock className="text-amber-600 h-[18px] w-[18px]" />
               <span className="text-[10px] text-amber-700">Held in Escrow</span>
             </div>
             <p className="text-xl font-bold text-amber-700">{formatCurrency(heldFunds)}</p>
@@ -331,9 +348,7 @@ export default function MerchantPayouts() {
                 <p className="text-base font-semibold">{formatCurrency(lastPayout.amount)}</p>
                 <p className="text-[10px] text-muted-foreground">{format(new Date(lastPayout.created_at), 'dd MMM yyyy')}</p>
               </div>
-              <Badge className={`${getStatusColor(lastPayout.status)} text-[10px]`}>
-                {lastPayout.status}
-              </Badge>
+              <StatusBadge tone={getStatusTone(lastPayout.status)} label={lastPayout.status} className="text-[10px]" />
             </div>
           </div>
         )}
@@ -351,7 +366,7 @@ export default function MerchantPayouts() {
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                  <span className="material-symbols-outlined text-lg">account_balance</span>
+                  <Landmark className="h-[18px] w-[18px]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{bankAccount.bank_name}</p>
@@ -359,15 +374,11 @@ export default function MerchantPayouts() {
                     ****{bankAccount.account_number.slice(-4)} • {bankAccount.account_holder_name}
                   </p>
                 </div>
-                <Badge className={`text-[10px] ${
-                  bankAccount.verification_status === 'verified'
-                    ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30'
-                    : bankAccount.verification_status === 'pending'
-                    ? 'bg-amber-500/15 text-amber-600 border-amber-500/30'
-                    : 'bg-red-500/15 text-red-600 border-red-500/30'
-                }`}>
-                  {bankAccount.verification_status}
-                </Badge>
+                <StatusBadge
+                  tone={bankAccount.verification_status === 'verified' ? 'success' : bankAccount.verification_status === 'pending' ? 'warning' : 'destructive'}
+                  label={bankAccount.verification_status}
+                  className="text-[10px]"
+                />
               </div>
               {bankAccount.verification_status !== 'verified' && (
                 <p className="text-[10px] text-amber-600 bg-amber-500/10 rounded-lg p-2">
@@ -378,12 +389,12 @@ export default function MerchantPayouts() {
           ) : (
             <div className="text-center py-4">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-2">
-                <span className="material-symbols-outlined text-2xl text-muted-foreground">add_card</span>
+                <CreditCard className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground mb-3">No bank account linked</p>
               <Link to="/merchant-bank-account">
                 <Button size="sm" className="text-xs">
-                  <span className="material-symbols-outlined text-sm mr-1">add</span>
+                  <Plus className="h-3.5 w-3.5 mr-1" />
                   Add Bank Account
                 </Button>
               </Link>
@@ -402,7 +413,7 @@ export default function MerchantPayouts() {
 
           {recentPayouts.length === 0 ? (
             <div className="text-center py-6">
-              <span className="material-symbols-outlined text-3xl text-muted-foreground mb-2">receipt_long</span>
+              <ReceiptText className="h-7 w-7 text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">No payouts yet</p>
             </div>
           ) : (
@@ -414,13 +425,13 @@ export default function MerchantPayouts() {
                       payout.status === 'completed' ? 'bg-emerald-500/15' :
                       payout.status === 'failed' ? 'bg-red-500/15' : 'bg-amber-500/15'
                     }`}>
-                      <span className={`material-symbols-outlined text-base ${
-                        payout.status === 'completed' ? 'text-emerald-600' :
-                        payout.status === 'failed' ? 'text-red-600' : 'text-amber-600'
-                      }`}>
-                        {payout.status === 'completed' ? 'check_circle' :
-                         payout.status === 'failed' ? 'cancel' : 'schedule'}
-                      </span>
+                      {payout.status === 'completed' ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : payout.status === 'failed' ? (
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      ) : (
+                        <Clock className="h-4 w-4 text-amber-600" />
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{formatCurrency(payout.amount)}</p>
@@ -429,9 +440,7 @@ export default function MerchantPayouts() {
                       </p>
                     </div>
                   </div>
-                  <Badge className={`${getStatusColor(payout.status)} text-[10px]`}>
-                    {payout.status}
-                  </Badge>
+                  <StatusBadge tone={getStatusTone(payout.status)} label={payout.status} className="text-[10px]" />
                 </div>
               ))}
             </div>
@@ -446,7 +455,7 @@ export default function MerchantPayouts() {
             className="w-full h-12 text-sm font-semibold rounded-xl"
             disabled={!canWithdraw}
           >
-            <span className="material-symbols-outlined text-lg mr-2">payments</span>
+            <Banknote className="h-[18px] w-[18px] mr-2" />
             {!bankAccount ? 'Add Bank Account First' :
              bankAccount.verification_status !== 'verified' ? 'Bank Verification Pending' :
              wallet?.balance === 0 && heldFunds > 0 ? 'Funds Held in Escrow' :
@@ -455,31 +464,7 @@ export default function MerchantPayouts() {
         </Link>
       </div>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px]">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px]">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px] font-medium">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }

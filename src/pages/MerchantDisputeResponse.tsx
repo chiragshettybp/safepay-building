@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { AlertCircle, ArrowLeft, ExternalLink, FileText, Gavel, Image, RefreshCw, Send, ShieldCheck, Store, UploadCloud } from 'lucide-react';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface Dispute {
   id: string;
@@ -220,16 +222,16 @@ export default function MerchantDisputeResponse() {
   };
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      pending: { variant: 'secondary', label: 'Pending' },
-      under_review: { variant: 'default', label: 'Reviewing' },
-      info_required: { variant: 'destructive', label: 'Info Needed' },
-      escalated: { variant: 'destructive', label: 'Escalated' },
-      resolved: { variant: 'outline', label: 'Resolved' },
-      closed: { variant: 'outline', label: 'Closed' },
+    const config: Record<string, { tone: StatusTone; label: string }> = {
+      pending: { tone: 'neutral', label: 'Pending' },
+      under_review: { tone: 'info', label: 'Reviewing' },
+      info_required: { tone: 'destructive', label: 'Info Needed' },
+      escalated: { tone: 'destructive', label: 'Escalated' },
+      resolved: { tone: 'neutral', label: 'Resolved' },
+      closed: { tone: 'neutral', label: 'Closed' },
     };
-    const c = config[status] || { variant: 'secondary', label: status };
-    return <Badge variant={c.variant} className="text-xs">{c.label}</Badge>;
+    const c = config[status] || { tone: 'neutral', label: status };
+    return <StatusBadge tone={c.tone} label={c.label} className="text-xs" />;
   };
 
   const formatDate = (dateString: string) => {
@@ -250,21 +252,16 @@ export default function MerchantDisputeResponse() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
           <div className="flex items-center h-14 px-4 gap-2">
             <button onClick={() => navigate('/merchant-disputes')} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <Skeleton className="h-5 w-28" />
           </div>
@@ -282,7 +279,7 @@ export default function MerchantDisputeResponse() {
     return (
       <div className="min-h-[100dvh] bg-background flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-outlined text-3xl text-muted-foreground mb-2">error</span>
+          <AlertCircle className="h-7 w-7 text-muted-foreground mb-2" />
           <p className="text-muted-foreground mb-4">Dispute not found</p>
           <Button variant="outline" onClick={() => navigate('/merchant-disputes')}>
             Back to Disputes
@@ -296,14 +293,12 @@ export default function MerchantDisputeResponse() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
             <button onClick={() => navigate('/merchant-disputes')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-              <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-base font-semibold text-foreground">Dispute Response</h1>
           </div>
@@ -353,7 +348,7 @@ export default function MerchantDisputeResponse() {
             <div className="space-y-3">
               <div className="flex gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-sm text-destructive">gavel</span>
+                  <Gavel className="h-3.5 w-3.5 text-destructive" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">Dispute Opened</p>
@@ -367,13 +362,13 @@ export default function MerchantDisputeResponse() {
                     update.actor_type === 'merchant' ? 'bg-primary/20' : 
                     update.actor_type === 'admin' ? 'bg-blue-500/20' : 'bg-muted'
                   }`}>
-                    <span className={`material-symbols-outlined text-sm ${
-                      update.actor_type === 'merchant' ? 'text-primary' : 
-                      update.actor_type === 'admin' ? 'text-blue-500' : 'text-muted-foreground'
-                    }`}>
-                      {update.actor_type === 'merchant' ? 'storefront' : 
-                       update.actor_type === 'admin' ? 'admin_panel_settings' : 'update'}
-                    </span>
+                    {update.actor_type === 'merchant' ? (
+                      <Store className="h-3.5 w-3.5 text-primary" />
+                    ) : update.actor_type === 'admin' ? (
+                      <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+                    ) : (
+                      <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{update.title}</p>
@@ -422,11 +417,13 @@ export default function MerchantDisputeResponse() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2.5 p-2.5 bg-background rounded-lg active:bg-muted"
                   >
-                    <span className="material-symbols-outlined text-muted-foreground text-lg">
-                      {file.file_type.startsWith('image/') ? 'image' : 'description'}
-                    </span>
+                    {file.file_type.startsWith('image/') ? (
+                      <Image className="h-[18px] w-[18px] text-muted-foreground" />
+                    ) : (
+                      <FileText className="h-[18px] w-[18px] text-muted-foreground" />
+                    )}
                     <p className="text-sm font-medium text-foreground truncate flex-1">{file.file_name}</p>
-                    <span className="material-symbols-outlined text-muted-foreground text-sm">open_in_new</span>
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                   </a>
                 ))}
               </div>
@@ -437,7 +434,7 @@ export default function MerchantDisputeResponse() {
           {canRespond && (
             <Link to={`/merchant-dispute-upload/${disputeId}`}>
               <Button variant="outline" className="w-full h-10">
-                <span className="material-symbols-outlined text-sm mr-1.5">upload_file</span>
+                <UploadCloud className="h-3.5 w-3.5 mr-1.5" />
                 Upload Evidence
               </Button>
             </Link>
@@ -463,12 +460,12 @@ export default function MerchantDisputeResponse() {
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent mr-2" />
+                  <ButtonSpinner className="h-4 w-4 mr-2" />
                   Submitting...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-sm mr-1.5">send</span>
+                  <Send className="h-3.5 w-3.5 mr-1.5" />
                   Submit Response
                 </>
               )}

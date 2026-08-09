@@ -3,7 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isToday, isYesterday } from 'date-fns';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  BellOff,
+  CheckCircle2,
+  Info,
+  type LucideIcon,
+} from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -23,7 +32,7 @@ export default function Notifications() {
 
   useEffect(() => {
     if (!user?.id) {
-      navigate('/login');
+      navigate('/customer-login');
       return;
     }
 
@@ -129,16 +138,12 @@ export default function Notifications() {
     return format(date, 'MMM d, h:mm a');
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): LucideIcon => {
     switch (type) {
-      case 'success':
-        return 'check_circle';
-      case 'error':
-        return 'error';
-      case 'warning':
-        return 'warning';
-      default:
-        return 'info';
+      case 'success': return CheckCircle2;
+      case 'error': return AlertCircle;
+      case 'warning': return AlertTriangle;
+      default: return Info;
     }
   };
 
@@ -167,7 +172,7 @@ export default function Notifications() {
               onClick={() => navigate(-1)}
               className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-muted transition-colors"
             >
-              <span className="material-symbols-outlined text-foreground">arrow_back</span>
+              <ArrowLeft className="h-5 w-5 text-foreground" />
             </button>
             <div>
               <h1 className="text-lg font-semibold text-foreground">Notifications</h1>
@@ -196,7 +201,7 @@ export default function Notifications() {
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-muted-foreground text-3xl">notifications_off</span>
+              <BellOff className="text-muted-foreground h-7 w-7" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-1">No notifications</h2>
             <p className="text-muted-foreground text-sm">You're all caught up!</p>
@@ -216,11 +221,10 @@ export default function Notifications() {
                       !notification.read ? 'bg-primary/10' : 'bg-muted'
                     }`}
                   >
-                    <span
-                      className={`material-symbols-outlined text-xl ${getTypeColor(notification.type)}`}
-                    >
-                      {getTypeIcon(notification.type)}
-                    </span>
+                    {(() => {
+                      const TypeIcon = getTypeIcon(notification.type);
+                      return <TypeIcon className={`h-5 w-5 ${getTypeColor(notification.type)}`} />;
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">

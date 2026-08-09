@@ -4,6 +4,25 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Banknote,
+  ChevronRight,
+  ContactRound,
+  Headset,
+  Hourglass,
+  IndianRupee,
+  Info,
+  Landmark,
+  LogOut,
+  Scale,
+  Settings,
+  Store,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface MerchantData {
   public_merchant_id: string;
@@ -92,22 +111,18 @@ export default function MerchantProfile() {
     const status = merchantData?.verification_status || merchant?.verificationStatus || 'pending';
     switch (status) {
       case 'approved':
-        return { label: 'Verified', color: 'text-success', bg: 'bg-success/10', icon: 'verified' };
+        return { label: 'Verified', color: 'text-success', bg: 'bg-success/10', icon: BadgeCheck };
       case 'pending':
-        return { label: 'Pending', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: 'hourglass_top' };
+        return { label: 'Pending', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: Hourglass };
       case 'rejected':
-        return { label: 'Rejected', color: 'text-destructive', bg: 'bg-destructive/10', icon: 'cancel' };
+        return { label: 'Rejected', color: 'text-destructive', bg: 'bg-destructive/10', icon: XCircle };
       default:
-        return { label: 'Pending', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: 'hourglass_top' };
+        return { label: 'Pending', color: 'text-amber-600', bg: 'bg-amber-500/10', icon: Hourglass };
     }
   };
 
   if (isLoading || loadingData) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   const verification = getVerificationDisplay();
@@ -123,7 +138,7 @@ export default function MerchantProfile() {
             onClick={() => navigate('/merchant-dashboard')}
             className="back-btn"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <h1 className="text-sm sm:text-base font-semibold text-foreground">Business Profile</h1>
           <Link to="/merchant-profile/edit">
@@ -146,13 +161,13 @@ export default function MerchantProfile() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="material-symbols-outlined text-primary text-3xl sm:text-5xl">storefront</span>
+              <Store className="text-primary h-7 w-7 sm:h-10 sm:w-10" />
             )}
           </div>
           <h2 className="text-base sm:text-xl font-bold text-foreground text-center">{displayName}</h2>
           <p className="text-muted-foreground text-xs sm:text-sm capitalize">{category}</p>
           <div className={`mt-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full ${verification.bg}`}>
-            <span className={`material-symbols-outlined text-sm ${verification.color}`}>{verification.icon}</span>
+            <verification.icon className={`text-sm ${verification.color}`} />
             <span className={`text-[11px] sm:text-xs font-medium ${verification.color}`}>{verification.label}</span>
           </div>
         </div>
@@ -182,7 +197,7 @@ export default function MerchantProfile() {
           {/* Business Info */}
           <div className="info-card p-3.5 sm:p-4">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2.5 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-              <span className="material-symbols-outlined text-primary text-base sm:text-lg">store</span>
+              <Store className="text-primary h-4 w-4 sm:h-[18px] sm:w-[18px]" />
               Business Information
             </h3>
             <div className="space-y-2.5 sm:space-y-3">
@@ -212,7 +227,7 @@ export default function MerchantProfile() {
           {/* Contact Info */}
           <div className="info-card p-3.5 sm:p-4">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2.5 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-              <span className="material-symbols-outlined text-primary text-base sm:text-lg">contact_phone</span>
+              <ContactRound className="text-primary h-4 w-4 sm:h-[18px] sm:w-[18px]" />
               Contact Details
             </h3>
             <div className="space-y-2.5 sm:space-y-3">
@@ -240,7 +255,7 @@ export default function MerchantProfile() {
           {/* Account Info */}
           <div className="info-card p-3.5 sm:p-4">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-2.5 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-              <span className="material-symbols-outlined text-primary text-base sm:text-lg">info</span>
+              <Info className="text-primary h-4 w-4 sm:h-[18px] sm:w-[18px]" />
               Account Information
             </h3>
             <div className="space-y-2.5 sm:space-y-3">
@@ -273,13 +288,13 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-lg sm:text-xl">payments</span>
+              <Banknote className="text-primary h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Payouts</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Withdraw & payout history</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5 shrink-0" />
           </Link>
 
           <Link
@@ -287,13 +302,13 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-blue-600 text-lg sm:text-xl">account_balance</span>
+              <Landmark className="text-blue-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Bank Accounts</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Manage bank accounts</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5 shrink-0" />
           </Link>
 
           <Link
@@ -301,13 +316,13 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-amber-600 text-lg sm:text-xl">gavel</span>
+              <Scale className="text-amber-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Disputes</p>
               <p className="text-xs sm:text-sm text-muted-foreground">View & respond to disputes</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5 shrink-0" />
           </Link>
 
           <Link
@@ -315,13 +330,13 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-success text-lg sm:text-xl">currency_rupee</span>
+              <IndianRupee className="text-success h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Refunds</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Refunds issued on your orders</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5 shrink-0" />
           </Link>
 
           <Link
@@ -329,13 +344,13 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-blue-600 text-lg sm:text-xl">support_agent</span>
+              <Headset className="text-blue-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Help & Support</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Tickets & contact us</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5 shrink-0" />
           </Link>
 
           <Link
@@ -343,13 +358,13 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-lg sm:text-xl">settings</span>
+              <Settings className="text-primary h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground text-sm sm:text-base">Settings</p>
               <p className="text-xs sm:text-sm text-muted-foreground">Notifications & account</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5 shrink-0" />
           </Link>
 
           <button
@@ -357,7 +372,7 @@ export default function MerchantProfile() {
             className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 bg-card border border-border rounded-xl hover:bg-muted/50 transition-colors w-full text-left"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-destructive text-lg sm:text-xl">logout</span>
+              <LogOut className="text-destructive h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-destructive text-sm sm:text-base">Log Out</p>
@@ -366,9 +381,6 @@ export default function MerchantProfile() {
           </button>
         </div>
       </main>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

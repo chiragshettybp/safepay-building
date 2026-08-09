@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { ArrowRight, CheckCircle, Clock, AlertCircle, IndianRupee, Search, Filter, RefreshCw } from 'lucide-react';
 
 interface Refund {
@@ -23,30 +25,34 @@ interface Refund {
   };
 }
 
-const statusConfig: Record<string, { color: string; bgColor: string; icon: React.ReactNode; label: string }> = {
+const statusConfig: Record<string, { color: string; bgColor: string; icon: React.ReactNode; label: string; tone: 'success' | 'warning' | 'destructive' | 'info' | 'neutral' }> = {
   initiated: { 
     color: 'text-warning', 
     bgColor: 'bg-warning/10', 
     icon: <Clock className="w-4 h-4" />,
-    label: 'Initiated'
+    label: 'Initiated',
+    tone: 'warning'
   },
   processing: { 
     color: 'text-primary', 
     bgColor: 'bg-primary/10', 
     icon: <RefreshCw className="w-4 h-4 animate-spin" />,
-    label: 'Processing'
+    label: 'Processing',
+    tone: 'info'
   },
   success: { 
     color: 'text-success', 
     bgColor: 'bg-success/10', 
     icon: <CheckCircle className="w-4 h-4" />,
-    label: 'Completed'
+    label: 'Completed',
+    tone: 'success'
   },
   failed: { 
     color: 'text-destructive', 
     bgColor: 'bg-destructive/10', 
     icon: <AlertCircle className="w-4 h-4" />,
-    label: 'Failed'
+    label: 'Failed',
+    tone: 'destructive'
   },
 };
 
@@ -183,7 +189,7 @@ export default function Refunds() {
         <main className="flex-1 p-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <LoadingSpinner className="h-8 w-8" />
             </div>
           ) : filteredRefunds.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -223,9 +229,7 @@ export default function Refunds() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}>
-                          {status.label}
-                        </span>
+                        <StatusBadge tone={status.tone} label={status.label} />
                         <ArrowRight className="w-4 h-4 text-muted-foreground" />
                       </div>
                     </div>

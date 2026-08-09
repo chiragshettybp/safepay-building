@@ -1,13 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ChevronRight,
+  CircleHelp,
+  Clock,
+  Hourglass,
+  ListFilter,
+  ReceiptText,
+  Search,
+  Wallet,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
 import {
   Select,
   SelectContent,
@@ -165,23 +180,23 @@ export default function MerchantPayoutHistory() {
     setFilteredPayouts(filtered);
   }, [payouts, statusFilter, searchQuery]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusTone = (status: string): StatusTone => {
     switch (status) {
-      case 'completed': return 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30';
-      case 'processing': return 'bg-amber-500/15 text-amber-600 border-amber-500/30';
-      case 'pending': return 'bg-blue-500/15 text-blue-600 border-blue-500/30';
-      case 'failed': return 'bg-red-500/15 text-red-600 border-red-500/30';
-      default: return 'bg-muted text-muted-foreground';
+      case 'completed': return 'success';
+      case 'processing': return 'warning';
+      case 'pending': return 'info';
+      case 'failed': return 'destructive';
+      default: return 'neutral';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): LucideIcon => {
     switch (status) {
-      case 'completed': return 'check_circle';
-      case 'processing': return 'schedule';
-      case 'pending': return 'hourglass_empty';
-      case 'failed': return 'cancel';
-      default: return 'help';
+      case 'completed': return CheckCircle2;
+      case 'processing': return Clock;
+      case 'pending': return Hourglass;
+      case 'failed': return XCircle;
+      default: return CircleHelp;
     }
   };
 
@@ -235,7 +250,7 @@ export default function MerchantPayoutHistory() {
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/merchant-payouts')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-              <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
               <h1 className="text-lg font-semibold">Payout History</h1>
@@ -245,7 +260,7 @@ export default function MerchantPayoutHistory() {
           <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <SheetTrigger asChild>
               <button className="relative p-2 rounded-lg hover:bg-muted">
-                <span className="material-symbols-outlined text-xl">filter_list</span>
+                <ListFilter className="h-5 w-5" />
                 {statusFilter !== 'all' && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
                 )}
@@ -287,7 +302,7 @@ export default function MerchantPayoutHistory() {
         {/* Search */}
         <div className="px-4 pb-3">
           <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-[18px] w-[18px]" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -327,7 +342,7 @@ export default function MerchantPayoutHistory() {
               <p className="text-2xl font-bold text-emerald-600">{formatCurrency(totalWithdrawn)}</p>
             </div>
             <div className="w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center">
-              <span className="material-symbols-outlined text-2xl text-emerald-600">payments</span>
+              <Wallet className="h-6 w-6 text-emerald-600" />
             </div>
           </div>
         </div>
@@ -336,7 +351,7 @@ export default function MerchantPayoutHistory() {
         {filteredPayouts.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-3xl text-muted-foreground">receipt_long</span>
+              <ReceiptText className="h-7 w-7 text-muted-foreground" />
             </div>
             <h3 className="text-base font-semibold mb-1">No Payouts Found</h3>
             <p className="text-sm text-muted-foreground mb-4">
@@ -363,19 +378,18 @@ export default function MerchantPayoutHistory() {
                       payout.status === 'completed' ? 'bg-emerald-500/15' :
                       payout.status === 'failed' ? 'bg-red-500/15' : 'bg-amber-500/15'
                     }`}>
-                      <span className={`material-symbols-outlined text-lg ${
-                        payout.status === 'completed' ? 'text-emerald-600' :
-                        payout.status === 'failed' ? 'text-red-600' : 'text-amber-600'
-                      }`}>
-                        {getStatusIcon(payout.status)}
-                      </span>
+                      {(() => {
+                        const StatusIcon = getStatusIcon(payout.status);
+                        return <StatusIcon className={`h-[18px] w-[18px] ${
+                          payout.status === 'completed' ? 'text-emerald-600' :
+                          payout.status === 'failed' ? 'text-red-600' : 'text-amber-600'
+                        }`} />;
+                      })()}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-base font-semibold">{formatCurrency(payout.amount)}</span>
-                        <Badge className={`${getStatusColor(payout.status)} text-[9px] capitalize`}>
-                          {payout.status}
-                        </Badge>
+                        <StatusBadge tone={getStatusTone(payout.status)} label={payout.status} className="text-[9px] capitalize" />
                       </div>
                       <p className="text-[10px] text-muted-foreground truncate">
                         {payout.bank_account ? (
@@ -405,7 +419,7 @@ export default function MerchantPayoutHistory() {
                     </div>
                   </div>
                   {payout.status === 'completed' && (
-                    <span className="material-symbols-outlined text-lg text-muted-foreground">chevron_right</span>
+                    <ChevronRight className="h-[18px] w-[18px] text-muted-foreground" />
                   )}
                 </div>
               </div>
@@ -414,31 +428,7 @@ export default function MerchantPayoutHistory() {
         )}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px]">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px]">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px] font-medium">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }

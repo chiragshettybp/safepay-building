@@ -3,8 +3,11 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ArrowLeft, Search, ShoppingBag, Truck, Gavel, ChevronRight, CheckCircle, Flag, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Search, ShoppingBag, Truck, Gavel, ChevronRight, CheckCircle, Flag } from 'lucide-react';
 import { publicIdOf } from '@/lib/public-ids';
+import { formatAmount } from '@/lib/format';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 interface Order {
   id: string;
@@ -26,15 +29,15 @@ interface OrderMetrics {
   disputed: number;
 }
 
-const statusConfig: Record<string, { color: string; label: string; bgColor: string; icon?: React.ReactNode }> = {
-  pending: { color: 'text-primary', label: 'In SafePay', bgColor: 'bg-primary/10' },
-  awaiting_shipment: { color: 'text-primary', label: 'In SafePay', bgColor: 'bg-primary/10' },
-  shipped: { color: 'text-warning', label: 'Shipped', bgColor: 'bg-warning/10', icon: <Truck className="w-3.5 h-3.5" /> },
-  delivered: { color: 'text-warning', label: 'Delivered', bgColor: 'bg-warning/10' },
-  completed: { color: 'text-success', label: 'Released', bgColor: 'bg-success/10', icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  disputed: { color: 'text-destructive', label: 'Disputed', bgColor: 'bg-destructive/10', icon: <AlertTriangle className="w-3.5 h-3.5" /> },
-  refunded: { color: 'text-destructive', label: 'Refunded', bgColor: 'bg-destructive/10' },
-  cancelled: { color: 'text-muted-foreground', label: 'Cancelled', bgColor: 'bg-muted' },
+const statusConfig: Record<string, { tone: 'success' | 'warning' | 'destructive' | 'info' | 'neutral'; label: string }> = {
+  pending: { tone: 'info', label: 'In SafePay' },
+  awaiting_shipment: { tone: 'info', label: 'In SafePay' },
+  shipped: { tone: 'warning', label: 'Shipped' },
+  delivered: { tone: 'warning', label: 'Delivered' },
+  completed: { tone: 'success', label: 'Released' },
+  disputed: { tone: 'destructive', label: 'Disputed' },
+  refunded: { tone: 'destructive', label: 'Refunded' },
+  cancelled: { tone: 'neutral', label: 'Cancelled' },
 };
 
 const statusFilters = [
@@ -168,11 +171,13 @@ export default function Orders() {
       <div className="flex-1 overflow-y-auto pb-28 sm:pb-32">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <LoadingSpinner className="h-8 w-8" />
           </div>
         ) : orders.length > 0 ? (
           <div className="divide-y divide-border">
-            {orders.map((order) => (
+            {orders.map((order) => {
+              const orderStatus = statusConfig[order.status];
+              return (
               <Link
                 key={order.id}
                 to={`/orders/${order.id}`}
@@ -188,22 +193,22 @@ export default function Orders() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                     <p className="font-medium text-sm sm:text-base text-foreground truncate max-w-[140px] sm:max-w-none">{order.product_name}</p>
-                    <span className={`status-badge ${statusConfig[order.status]?.bgColor} ${statusConfig[order.status]?.color}`}>
-                      {statusConfig[order.status]?.icon}
-                      {statusConfig[order.status]?.label}
-                    </span>
+                    {orderStatus && (
+                      <StatusBadge tone={orderStatus.tone} label={orderStatus.label} />
+                    )}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">{order.merchant_name}</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">{publicIdOf(order, 'public_order_id', 'ORD', 'order_number')} • {format(new Date(order.created_at), 'MMM d, yyyy')}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="font-bold text-sm sm:text-base text-foreground">
-                    {order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}
+                    {formatAmount(order.amount, order.currency)}
                   </p>
                   <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto mt-1" />
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="empty-state">

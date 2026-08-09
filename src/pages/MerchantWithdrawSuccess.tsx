@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import Confetti from '@/components/ui/confetti';
+import { Bell, CheckCircle2, Clock, History, Home, Landmark, X } from 'lucide-react';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
 
 interface Payout {
   id: string;
@@ -132,13 +133,13 @@ export default function MerchantWithdrawSuccess() {
     }).format(amount);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusTone = (status: string): StatusTone => {
     switch (status) {
-      case 'completed': return 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30';
-      case 'processing': return 'bg-amber-500/15 text-amber-600 border-amber-500/30';
-      case 'pending': return 'bg-blue-500/15 text-blue-600 border-blue-500/30';
-      case 'failed': return 'bg-red-500/15 text-red-600 border-red-500/30';
-      default: return 'bg-muted text-muted-foreground';
+      case 'completed': return 'success';
+      case 'processing': return 'warning';
+      case 'pending': return 'info';
+      case 'failed': return 'destructive';
+      default: return 'neutral';
     }
   };
 
@@ -171,7 +172,7 @@ export default function MerchantWithdrawSuccess() {
         <div className="flex items-center justify-between h-14 px-4">
           <h1 className="text-lg font-semibold">Withdrawal Submitted</h1>
           <button onClick={() => navigate('/merchant-payouts')} className="p-2 rounded-lg hover:bg-muted">
-            <span className="material-symbols-outlined text-xl">close</span>
+            <X className="h-5 w-5" />
           </button>
         </div>
       </header>
@@ -180,7 +181,7 @@ export default function MerchantWithdrawSuccess() {
         {/* Success Animation */}
         <div className="text-center py-6">
           <div className="w-20 h-20 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-4 animate-bounce">
-            <span className="material-symbols-outlined text-4xl text-emerald-600">check_circle</span>
+            <CheckCircle2 className="h-9 w-9 text-emerald-600" />
           </div>
           <h2 className="text-xl font-bold mb-1">Request Submitted!</h2>
           <p className="text-sm text-muted-foreground">
@@ -199,9 +200,7 @@ export default function MerchantWithdrawSuccess() {
             {/* Status */}
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Status</span>
-              <Badge className={`${getStatusColor(payout.status)} text-xs capitalize`}>
-                {payout.status}
-              </Badge>
+              <StatusBadge tone={getStatusTone(payout.status)} label={payout.status} className="text-xs capitalize" />
             </div>
 
             {/* Payout ID */}
@@ -222,7 +221,7 @@ export default function MerchantWithdrawSuccess() {
                 <p className="text-[10px] text-muted-foreground mb-2">Depositing to</p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">account_balance</span>
+                    <Landmark className="h-[18px] w-[18px]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">{payout.bank_account.bank_name}</p>
@@ -248,7 +247,7 @@ export default function MerchantWithdrawSuccess() {
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl text-blue-600">schedule</span>
+              <Clock className="h-5 w-5 text-blue-600" />
             </div>
             <div>
               <p className="text-sm font-medium text-blue-700">Estimated Deposit Time</p>
@@ -262,15 +261,15 @@ export default function MerchantWithdrawSuccess() {
           <h3 className="text-sm font-semibold mb-2">What's Next?</h3>
           <ul className="space-y-2 text-xs text-muted-foreground">
             <li className="flex items-start gap-2">
-              <span className="material-symbols-outlined text-sm text-primary mt-0.5">check_circle</span>
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5" />
               <span>Your withdrawal request is being processed</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="material-symbols-outlined text-sm text-muted-foreground mt-0.5">pending</span>
+              <Clock className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
               <span>Funds will be transferred to your bank account</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="material-symbols-outlined text-sm text-muted-foreground mt-0.5">notifications</span>
+              <Bell className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
               <span>You'll be notified when the transfer is complete</span>
             </li>
           </ul>
@@ -282,13 +281,13 @@ export default function MerchantWithdrawSuccess() {
         <div className="flex gap-3">
           <Link to="/merchant-payout-history" className="flex-1">
             <Button variant="outline" className="w-full h-12 rounded-xl text-sm">
-              <span className="material-symbols-outlined text-lg mr-2">history</span>
+              <History className="h-[18px] w-[18px] mr-2" />
               View History
             </Button>
           </Link>
           <Link to="/merchant-payouts" className="flex-1">
             <Button className="w-full h-12 rounded-xl text-sm font-semibold">
-              <span className="material-symbols-outlined text-lg mr-2">home</span>
+              <Home className="h-[18px] w-[18px] mr-2" />
               Back to Payouts
             </Button>
           </Link>

@@ -4,8 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, HelpCircle, Lock, CheckCircle, Truck, Package, AlertTriangle, MapPin, FileText, Clock } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { publicIdOf } from '@/lib/public-ids';
+import { formatAmount } from '@/lib/format';
 
 interface Order {
   id: string;
@@ -58,7 +59,6 @@ export default function OrderDetails() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,7 +174,7 @@ export default function OrderDetails() {
             <div className="flex items-center justify-center gap-1.5 sm:gap-2">
               <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               <span className="text-2xl sm:text-3xl font-bold text-primary">
-                {order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}
+                {formatAmount(order.amount, order.currency)}
               </span>
             </div>
             <div className={`inline-flex items-center gap-1 sm:gap-1.5 mt-2 sm:mt-3 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wide ${

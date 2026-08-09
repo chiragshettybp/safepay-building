@@ -2,12 +2,26 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import {
+  ArrowLeft,
+  Bell,
+  ChevronRight,
+  FileText,
+  Info,
+  Lock,
+  LogOut,
+  Phone,
+  Scale,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+} from 'lucide-react';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 export default function SecuritySettings() {
   const { user, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -25,11 +39,7 @@ export default function SecuritySettings() {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -41,7 +51,7 @@ export default function SecuritySettings() {
             onClick={() => navigate(-1)}
             className="text-foreground flex w-10 h-10 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <h1 className="text-base sm:text-lg font-semibold text-foreground">Security</h1>
           <div className="w-10"></div>
@@ -59,13 +69,13 @@ export default function SecuritySettings() {
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-primary text-lg sm:text-xl">lock</span>
+                <Lock className="text-primary h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">Change Password</p>
                 <p className="text-xs sm:text-sm text-muted-foreground">Update your account password</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </div>
           </div>
         </section>
@@ -76,7 +86,7 @@ export default function SecuritySettings() {
           <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-success/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-success text-lg sm:text-xl">smartphone</span>
+                <Smartphone className="text-success h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">Current Device</p>
@@ -93,7 +103,7 @@ export default function SecuritySettings() {
                 onClick={handleLogoutAllDevices}
                 className="w-full h-11 sm:h-12 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 text-sm sm:text-base"
               >
-                <span className="material-symbols-outlined mr-2 text-lg sm:text-xl">logout</span>
+                <LogOut className="h-[18px] w-[18px] sm:h-5 sm:w-5 mr-2" />
                 Log Out All Devices
               </Button>
             </div>
@@ -109,13 +119,13 @@ export default function SecuritySettings() {
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-emerald-600 text-lg sm:text-xl">notifications</span>
+                <Bell className="text-emerald-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">Notification Preferences</p>
                 <p className="text-xs sm:text-sm text-muted-foreground">Choose what you hear about</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </div>
           </div>
         </section>
@@ -129,13 +139,13 @@ export default function SecuritySettings() {
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-purple-600 text-lg sm:text-xl">shield</span>
+                <ShieldCheck className="text-purple-600 h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">Privacy Settings</p>
                 <p className="text-xs sm:text-sm text-muted-foreground">Data, visibility & exports</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </div>
           </div>
         </section>
@@ -146,7 +156,7 @@ export default function SecuritySettings() {
           <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-primary text-lg sm:text-xl">phone</span>
+                <Phone className="text-primary h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground">Login Method</p>
@@ -168,36 +178,36 @@ export default function SecuritySettings() {
               className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 cursor-pointer hover:bg-muted/50 transition-colors border-b border-border"
             >
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl">description</span>
+                <FileText className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">Privacy Policy</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </div>
             <div
               onClick={() => navigate('/terms-of-service')}
               className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 cursor-pointer hover:bg-muted/50 transition-colors border-b border-border"
             >
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl">gavel</span>
+                <Scale className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">Terms of Service</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </div>
             <div
               onClick={() => navigate('/about')}
               className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl">info</span>
+                <Info className="text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground text-sm sm:text-base">About Safepay</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </div>
           </div>
         </section>
@@ -211,20 +221,17 @@ export default function SecuritySettings() {
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-destructive text-lg sm:text-xl">delete_forever</span>
+                <Trash2 className="text-destructive h-[18px] w-[18px] sm:h-5 sm:w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-destructive text-sm sm:text-base">Delete Account</p>
                 <p className="text-xs sm:text-sm text-destructive/70">Permanently remove your account and data</p>
               </div>
-              <span className="material-symbols-outlined text-destructive text-lg sm:text-xl shrink-0">chevron_right</span>
+              <ChevronRight className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-destructive shrink-0" />
             </div>
           </div>
         </section>
       </main>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

@@ -5,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -18,6 +18,17 @@ import {
 } from '@/components/ui/select';
 import { format, startOfDay, endOfDay, subDays, subMonths, isWithinInterval } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { formatAmount } from '@/lib/format';
+import {
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  CircleX,
+  Clock,
+  Plus,
+  ReceiptText,
+  Search,
+} from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -144,13 +155,13 @@ export default function Transactions() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-success/10 text-success border-success/20">Success</Badge>;
+        return <StatusBadge tone="success" label="Success" />;
       case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
+        return <StatusBadge tone="destructive" label="Failed" />;
       case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return <StatusBadge tone="neutral" label="Pending" />;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <StatusBadge tone="neutral" label={status} />;
     }
   };
 
@@ -165,7 +176,7 @@ export default function Transactions() {
           </div>
           <Link to="/payment/new" className="self-start sm:self-auto">
             <Button size="sm" className="h-9 sm:h-10 rounded-xl text-xs sm:text-sm">
-              <span className="material-symbols-outlined mr-1.5 text-[16px] sm:text-[18px]">add</span>
+              <Plus className="h-4 w-4 sm:h-[18px] sm:w-[18px] mr-1.5" />
               New Payment
             </Button>
           </Link>
@@ -177,7 +188,7 @@ export default function Transactions() {
           <div className="flex gap-2">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                <span className="material-symbols-outlined text-[18px] sm:text-[20px]">search</span>
+                <Search className="h-[18px] w-[18px] sm:h-[20px] sm:w-[20px]" />
               </span>
               <Input
                 placeholder="Search..."
@@ -229,7 +240,7 @@ export default function Transactions() {
                     size="sm"
                     className="h-7 sm:h-8 text-[10px] sm:text-xs px-2 sm:px-3 rounded-lg shrink-0"
                   >
-                    <span className="material-symbols-outlined text-[14px] sm:text-[16px] mr-0.5 sm:mr-1">calendar_month</span>
+                    <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
                     {datePreset === 'custom' && dateRange.from ? (
                       dateRange.to ? (
                         `${format(dateRange.from, 'M/d')} - ${format(dateRange.to, 'M/d')}`
@@ -293,7 +304,7 @@ export default function Transactions() {
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="bg-card rounded-xl border border-border p-6 sm:p-8 text-center">
-            <span className="material-symbols-outlined text-muted-foreground text-[40px] sm:text-[48px] mb-3 sm:mb-4">receipt_long</span>
+            <ReceiptText className="text-muted-foreground h-[40px] w-[40px] sm:h-[48px] sm:w-[48px] mb-3 sm:mb-4" />
             <h3 className="text-foreground font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">No transactions found</h3>
             <p className="text-muted-foreground text-xs sm:text-sm mb-3 sm:mb-4">
               {searchQuery || statusFilter !== 'all'
@@ -315,12 +326,13 @@ export default function Transactions() {
                 className="flex items-center gap-3 bg-card rounded-xl border border-border p-3 sm:p-4 hover:border-primary/30 active:bg-muted/50 transition-all"
               >
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  <span className={`material-symbols-outlined text-lg ${
-                    tx.status === 'success' ? 'text-success' : 
-                    tx.status === 'failed' ? 'text-destructive' : 'text-warning'
-                  }`}>
-                    {tx.status === 'success' ? 'check_circle' : tx.status === 'failed' ? 'cancel' : 'schedule'}
-                  </span>
+                  {(() => {
+                    const TxnIcon = tx.status === 'success' ? CheckCircle2 : tx.status === 'failed' ? CircleX : Clock;
+                    return <TxnIcon className={`h-[18px] w-[18px] ${
+                      tx.status === 'success' ? 'text-success' : 
+                      tx.status === 'failed' ? 'text-destructive' : 'text-warning'
+                    }`} />;
+                  })()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5">
@@ -336,19 +348,16 @@ export default function Transactions() {
                 <div className="text-right shrink-0 flex items-center gap-1">
                   <div>
                     <p className="text-sm sm:text-base font-bold text-foreground">
-                      {tx.currency === 'INR' ? '₹' : '$'}{tx.amount.toLocaleString('en-IN')}
+                      {formatAmount(tx.amount, tx.currency)}
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-muted-foreground text-[16px] sm:text-[18px]">chevron_right</span>
+                  <ChevronRight className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-muted-foreground" />
                 </div>
               </Link>
             ))}
           </div>
         )}
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </DashboardLayout>
   );
 }

@@ -4,7 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { ArrowLeft, BadgeCheck, CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
+import { CountryCodeSelect } from '@/components/shared/CountryCodeSelect';
 
 export default function ResetPassword() {
   const [phone, setPhone] = useState('');
@@ -17,7 +20,6 @@ export default function ResetPassword() {
 
   const { resetPassword } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +59,7 @@ export default function ResetPassword() {
             onClick={() => navigate(-1)}
             className="text-foreground flex w-10 h-10 sm:w-11 sm:h-11 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="text-sm font-medium text-muted-foreground"></div>
         </div>
@@ -80,19 +82,7 @@ export default function ResetPassword() {
               Phone Number
             </Label>
             <div className="flex rounded-xl shadow-sm ring-1 ring-inset ring-border focus-within:ring-2 focus-within:ring-primary bg-surface overflow-hidden transition-all">
-              <div className="flex items-center border-r border-border bg-muted px-2 sm:px-3">
-                <span className="text-base sm:text-lg mr-1 sm:mr-2">🇮🇳</span>
-                <select 
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="h-full border-0 bg-transparent py-0 pl-0 pr-5 sm:pr-7 text-foreground focus:ring-0 text-xs sm:text-sm font-medium"
-                >
-                  <option value="+91">+91</option>
-                  <option value="+1">+1</option>
-                  <option value="+44">+44</option>
-                  <option value="+234">+234</option>
-                </select>
-              </div>
+              <CountryCodeSelect value={countryCode} onChange={setCountryCode} />
               <input
                 type="tel"
                 placeholder="98765 43210"
@@ -121,9 +111,11 @@ export default function ResetPassword() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground hover:text-primary transition-colors"
               >
-                <span className="material-symbols-outlined text-lg sm:text-xl">
-                  {showPassword ? 'visibility' : 'visibility_off'}
-                </span>
+                {showPassword ? (
+                  <EyeOff className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                ) : (
+                  <Eye className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -143,9 +135,11 @@ export default function ResetPassword() {
               />
               {confirmPassword.length > 0 && (
                 <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 ${passwordsMatch ? 'text-success' : 'text-destructive'}`}>
-                  <span className="material-symbols-outlined text-lg sm:text-xl">
-                    {passwordsMatch ? 'check_circle' : 'error'}
-                  </span>
+                  {passwordsMatch ? (
+                    <BadgeCheck className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                  ) : (
+                    <CircleAlert className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                  )}
                 </div>
               )}
             </div>
@@ -163,11 +157,11 @@ export default function ResetPassword() {
             <Button
               onClick={handleSubmit}
               disabled={!isFormValid || isLoading}
-              className="flex w-full items-center justify-center rounded-xl bg-primary px-6 py-3 sm:py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none h-12 sm:h-14"
+              className="flex w-full items-center justify-center rounded-xl bg-primary px-6 py-3 sm:py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none h-12 sm:h-14"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                  <ButtonSpinner className="h-5 w-5" />
                   Resetting...
                 </span>
               ) : (
@@ -183,9 +177,6 @@ export default function ResetPassword() {
           </div>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

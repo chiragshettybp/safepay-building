@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { ArrowLeft, IndianRupee, PlusCircle, Ticket, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { LoadingSpinner, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface Ticket {
   id: string;
@@ -19,13 +22,13 @@ interface Ticket {
   updated_at: string;
 }
 
-const getStatusColor = (status: string) => {
+const getStatusTone = (status: string): StatusTone => {
   switch (status) {
-    case 'open': return 'bg-primary/10 text-primary';
-    case 'in_progress': return 'bg-warning/10 text-warning';
-    case 'resolved': return 'bg-success/10 text-success';
-    case 'closed': return 'bg-muted text-muted-foreground';
-    default: return 'bg-muted text-muted-foreground';
+    case 'open': return 'info';
+    case 'in_progress': return 'warning';
+    case 'resolved': return 'success';
+    case 'closed': return 'neutral';
+    default: return 'neutral';
   }
 };
 
@@ -150,14 +153,14 @@ export default function MerchantSupport() {
       <header className="sticky-header bg-card">
         <div className="sticky-header-content px-4 sm:px-6">
           <button onClick={() => navigate('/merchant-dashboard')} className="back-btn">
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground">Help & Support</h1>
             <p className="text-[10px] sm:text-xs text-muted-foreground">Merchant support tickets</p>
           </div>
           <Button size="sm" onClick={() => setShowForm(true)} className="h-8 text-xs px-3 rounded-lg shrink-0">
-            <span className="material-symbols-outlined text-sm mr-1">add_circle</span>
+            <PlusCircle className="h-3.5 w-3.5 mr-1" />
             New
           </Button>
         </div>
@@ -171,7 +174,7 @@ export default function MerchantSupport() {
             className="flex items-center gap-3 p-3.5 bg-card rounded-xl border border-border hover:bg-muted/50 transition-colors"
           >
             <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-success text-lg">currency_rupee</span>
+              <IndianRupee className="h-[18px] w-[18px] text-success" />
             </div>
             <div className="text-left min-w-0">
               <p className="font-medium text-foreground text-xs">View Refunds</p>
@@ -183,7 +186,7 @@ export default function MerchantSupport() {
             className="flex items-center gap-3 p-3.5 bg-card rounded-xl border border-border hover:bg-muted/50 transition-colors text-left"
           >
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary text-lg">add_circle</span>
+              <PlusCircle className="h-[18px] w-[18px] text-primary" />
             </div>
             <div className="text-left min-w-0">
               <p className="font-medium text-foreground text-xs">New Ticket</p>
@@ -197,7 +200,7 @@ export default function MerchantSupport() {
           <h2 className="text-sm font-medium text-muted-foreground mb-3">My Tickets</h2>
           {isLoading ? (
             <div className="flex justify-center py-10">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <LoadingSpinner className="h-6 w-6" />
             </div>
           ) : tickets.length > 0 ? (
             <div className="space-y-2">
@@ -214,16 +217,14 @@ export default function MerchantSupport() {
                         {ticket.category.replace('_', ' ')} • {format(new Date(ticket.created_at), 'MMM d, h:mm a')}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full capitalize shrink-0 ${getStatusColor(ticket.status)}`}>
-                      {ticket.status.replace('_', ' ')}
-                    </span>
+                    <StatusBadge tone={getStatusTone(ticket.status)} label={ticket.status.replace('_', ' ')} className="text-xs px-2 py-1 capitalize shrink-0" />
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
             <div className="text-center py-10 bg-card border border-border rounded-xl">
-              <span className="material-symbols-outlined text-muted-foreground text-3xl">confirmation_number</span>
+              <Ticket className="h-7 w-7 text-muted-foreground mx-auto" />
               <p className="text-foreground font-medium text-sm mt-2">No tickets yet</p>
               <p className="text-muted-foreground text-xs mb-4">Create a ticket to get help</p>
               <Button size="sm" onClick={() => setShowForm(true)} className="rounded-xl">
@@ -244,7 +245,7 @@ export default function MerchantSupport() {
                 onClick={() => setShowForm(false)}
                 className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center"
               >
-                <span className="material-symbols-outlined text-muted-foreground">close</span>
+                <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
 
@@ -304,7 +305,7 @@ export default function MerchantSupport() {
                 className="w-full h-12 rounded-xl"
               >
                 {isSubmitting ? (
-                  <span className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <ButtonSpinner className="h-5 w-5" />
                 ) : (
                   'Submit Ticket'
                 )}

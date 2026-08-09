@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, Check, Download, ShoppingBag, Copy, Flag, HelpCircle, Clock, Image, FileText, IndianRupee, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Dispute {
   id: string;
@@ -66,7 +67,6 @@ export default function DisputeResult() {
   const { disputeId } = useParams<{ disputeId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const [dispute, setDispute] = useState<Dispute | null>(null);
   const [updates, setUpdates] = useState<DisputeUpdate[]>([]);
@@ -218,9 +218,7 @@ export default function DisputeResult() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+      <FullPageLoading />
     );
   }
 

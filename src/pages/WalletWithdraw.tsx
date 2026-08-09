@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { 
   ArrowLeft, Building, CheckCircle, AlertCircle, 
   Loader2, ArrowUpRight, Shield, Wallet
@@ -29,7 +29,6 @@ interface BankAccount {
 export default function WalletWithdraw() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);

@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { ArrowLeft, CheckCircle2, Mail } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function CustomerVerify() {
   const [countdown, setCountdown] = useState(30);
@@ -11,7 +13,6 @@ export default function CustomerVerify() {
   
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   // If authenticated and verified, redirect to dashboard
   useEffect(() => {
@@ -57,12 +58,7 @@ export default function CustomerVerify() {
         <div className="mb-6 sm:mb-8 relative flex items-center justify-center">
           {/* Decorative background blur for modern feel */}
           <div className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-success/20 rounded-full blur-xl"></div>
-          <span 
-            className="material-symbols-outlined text-success text-6xl sm:text-[80px]" 
-            style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48" }}
-          >
-            check_circle
-          </span>
+          <CheckCircle2 className="text-success h-12 w-12 sm:h-[80px] sm:w-[80px]" />
         </div>
 
         {/* Text Content */}
@@ -90,12 +86,12 @@ export default function CustomerVerify() {
           >
             {isResending ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                <ButtonSpinner className="h-5 w-5" />
                 Sending...
               </span>
             ) : (
               <>
-                <span className="material-symbols-outlined mr-2 text-lg sm:text-xl">mail</span>
+                <Mail className="mr-2 h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 Resend email
               </>
             )}
@@ -105,7 +101,7 @@ export default function CustomerVerify() {
           {!canResend && (
             <div className="h-6 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium">
               <span className="text-muted-foreground">You can resend in</span>
-              <span className="text-accent font-semibold tabular-nums">{formatTime(countdown)}</span>
+              <span className="text-primary font-semibold tabular-nums">{formatTime(countdown)}</span>
             </div>
           )}
         </div>
@@ -116,7 +112,7 @@ export default function CustomerVerify() {
             to="/customer-login"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium text-xs sm:text-sm transition-colors duration-200 py-2 px-4 rounded-lg hover:bg-surface"
           >
-            <span className="material-symbols-outlined text-base sm:text-lg">arrow_back</span>
+            <ArrowLeft className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
             Return to Login
           </Link>
         </div>
@@ -125,9 +121,6 @@ export default function CustomerVerify() {
       {/* Decorative Top/Bottom gradients for that 'Light Mode' sheen */}
       <div className="fixed top-0 left-0 right-0 h-24 sm:h-32 bg-gradient-to-b from-card to-transparent pointer-events-none z-10"></div>
       <div className="fixed bottom-0 left-0 right-0 h-10 sm:h-12 bg-gradient-to-t from-card to-transparent pointer-events-none z-10"></div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

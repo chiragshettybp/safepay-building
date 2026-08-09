@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft, ChevronRight, Download, Eye, ReceiptText, ShieldCheck } from 'lucide-react';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface PrivacyPrefs {
   profile_visibility: 'public' | 'private';
@@ -108,11 +110,7 @@ export default function PrivacySettings() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -120,7 +118,7 @@ export default function PrivacySettings() {
       <header className="sticky-header bg-card">
         <div className="sticky-header-content px-4 sm:px-6">
           <button onClick={() => navigate(-1)} className="back-btn">
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground">Privacy</h1>
@@ -133,7 +131,7 @@ export default function PrivacySettings() {
         {/* Visibility */}
         <div className="bg-card border border-border rounded-xl p-4">
           <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-lg">visibility</span>
+            <Eye className="text-primary h-[18px] w-[18px]" />
             Profile Visibility
           </h2>
           <div className="grid grid-cols-2 gap-2">
@@ -167,7 +165,7 @@ export default function PrivacySettings() {
         {/* Activity */}
         <div className="flex items-center gap-3.5 p-4 bg-card border border-border rounded-xl">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-primary text-lg">receipt_long</span>
+            <ReceiptText className="text-primary h-[18px] w-[18px]" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground">Show Order Activity</p>
@@ -183,7 +181,7 @@ export default function PrivacySettings() {
         {/* Data & privacy actions */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <h2 className="text-sm font-semibold text-foreground px-4 pt-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-lg">shield</span>
+            <ShieldCheck className="text-primary h-[18px] w-[18px]" />
             Your Data
           </h2>
           <div className="p-4">
@@ -193,7 +191,7 @@ export default function PrivacySettings() {
               disabled={exporting}
               className="w-full h-11 rounded-xl text-sm"
             >
-              <span className="material-symbols-outlined text-base mr-2">download</span>
+              <Download className="h-4 w-4 mr-2" />
               {exporting ? 'Exporting...' : 'Download My Data'}
             </Button>
           </div>
@@ -203,7 +201,7 @@ export default function PrivacySettings() {
                 <p className="text-sm font-medium text-foreground">Privacy Policy</p>
                 <p className="text-xs text-muted-foreground">How Safepay handles your data</p>
               </div>
-              <span className="material-symbols-outlined text-muted-foreground">chevron_right</span>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </Link>
           </div>
           <div className="border-t border-border">
@@ -212,7 +210,7 @@ export default function PrivacySettings() {
                 <p className="text-sm font-medium text-destructive">Delete My Account</p>
                 <p className="text-xs text-muted-foreground">Permanently remove your account and data</p>
               </div>
-              <span className="material-symbols-outlined text-destructive">chevron_right</span>
+              <ChevronRight className="h-5 w-5 text-destructive" />
             </Link>
           </div>
         </div>

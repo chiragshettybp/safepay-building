@@ -8,7 +8,9 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { AlertCircle, ArrowLeft, Clock, Landmark, Wallet } from 'lucide-react';
 import { PAYMENT_CONSTANTS, calculatePayoutFee, calculateNetPayout } from '@/lib/constants';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface MerchantWallet {
   id: string;
@@ -217,7 +219,7 @@ export default function MerchantWithdraw() {
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate('/merchant-payouts')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-            <span className="material-symbols-outlined text-xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="ml-3">
             <h1 className="text-lg font-semibold">Withdraw Funds</h1>
@@ -242,7 +244,7 @@ export default function MerchantWithdraw() {
             <p className="text-[10px] text-muted-foreground mb-2">Withdrawing to</p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                <span className="material-symbols-outlined text-lg">account_balance</span>
+                <Landmark className="h-[18px] w-[18px]" />
               </div>
               <div>
                 <p className="text-sm font-medium">{bankAccount.bank_name}</p>
@@ -270,7 +272,7 @@ export default function MerchantWithdraw() {
           </div>
           {error && (
             <p className="text-[10px] text-destructive flex items-center gap-1">
-              <span className="material-symbols-outlined text-xs">error</span>
+              <AlertCircle className="h-3 w-3" />
               {error}
             </p>
           )}
@@ -345,7 +347,7 @@ export default function MerchantWithdraw() {
         {/* Processing Time Notice */}
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
           <div className="flex gap-2">
-            <span className="material-symbols-outlined text-amber-600 text-lg">schedule</span>
+            <Clock className="text-amber-600 h-[18px] w-[18px]" />
             <div>
               <p className="text-xs font-medium text-amber-700">Processing Time</p>
               <p className="text-[10px] text-amber-600/80 mt-0.5">
@@ -375,12 +377,12 @@ export default function MerchantWithdraw() {
           >
             {isSubmitting ? (
               <>
-                <span className="material-symbols-outlined text-lg animate-spin mr-2">refresh</span>
+                <ButtonSpinner className="h-[18px] w-[18px] mr-2" />
                 Processing...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-lg mr-2">payments</span>
+                <Wallet className="h-[18px] w-[18px] mr-2" />
                 Confirm Withdrawal
               </>
             )}

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, BadgeCheck, Eye, Pencil, ShieldCheck, Trash2 } from 'lucide-react';
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function PrivacyPolicy() {
             aria-label="Go back"
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl text-foreground">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <h1 className="text-base font-semibold text-foreground">Privacy Policy</h1>
           <div className="w-10" />
@@ -55,23 +56,23 @@ export default function PrivacyPolicy() {
             <div className="bg-card border border-border rounded-xl p-4">
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">check_circle</span>
+                  <BadgeCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Process and secure escrow payments
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">check_circle</span>
+                  <BadgeCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Verify your identity for regulatory compliance
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">check_circle</span>
+                  <BadgeCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Communicate about transactions and disputes
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">check_circle</span>
+                  <BadgeCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Improve our services and prevent fraud
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">check_circle</span>
+                  <BadgeCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Comply with legal obligations
                 </li>
               </ul>
@@ -86,19 +87,19 @@ export default function PrivacyPolicy() {
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-success text-lg shrink-0">shield</span>
+                  <ShieldCheck className="text-success h-[18px] w-[18px] shrink-0" />
                   256-bit SSL encryption for all data transfers
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-success text-lg shrink-0">shield</span>
+                  <ShieldCheck className="text-success h-[18px] w-[18px] shrink-0" />
                   Secure, encrypted storage of sensitive information
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-success text-lg shrink-0">shield</span>
+                  <ShieldCheck className="text-success h-[18px] w-[18px] shrink-0" />
                   Regular security audits and penetration testing
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-success text-lg shrink-0">shield</span>
+                  <ShieldCheck className="text-success h-[18px] w-[18px] shrink-0" />
                   Strict access controls and monitoring
                 </li>
               </ul>
@@ -110,7 +111,7 @@ export default function PrivacyPolicy() {
             <div className="bg-card border border-border rounded-xl p-4 space-y-3">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary text-sm">visibility</span>
+                  <Eye className="text-primary h-3.5 w-3.5" />
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground text-sm">Access</h3>
@@ -119,7 +120,7 @@ export default function PrivacyPolicy() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary text-sm">edit</span>
+                  <Pencil className="text-primary h-3.5 w-3.5" />
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground text-sm">Correction</h3>
@@ -128,7 +129,7 @@ export default function PrivacyPolicy() {
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary text-sm">delete</span>
+                  <Trash2 className="text-primary h-3.5 w-3.5" />
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground text-sm">Deletion</h3>
@@ -151,8 +152,6 @@ export default function PrivacyPolicy() {
           </section>
         </div>
       </main>
-
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

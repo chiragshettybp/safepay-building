@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { ArrowLeft, CheckCircle2, Gavel, Lock, LucideIcon, Pencil, Plane, Plus, Reply, ShoppingCart, Truck, UploadCloud, Wallet } from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface OrderDetails {
   id: string;
@@ -43,7 +46,7 @@ interface TimelineEvent {
   id: string;
   title: string;
   description: string | null;
-  icon: string;
+  icon: LucideIcon;
   date: string;
   completed: boolean;
 }
@@ -131,7 +134,7 @@ export default function MerchantOrderDetails() {
           id: '1',
           title: 'Order Created',
           description: 'Payment initiated',
-          icon: 'shopping_cart',
+          icon: ShoppingCart,
           date: orderData.created_at,
           completed: true,
         },
@@ -139,7 +142,7 @@ export default function MerchantOrderDetails() {
           id: '2',
           title: 'Payment Locked',
           description: 'Funds in SafePay',
-          icon: 'lock',
+          icon: Lock,
           date: orderData.created_at,
           completed: orderData.escrow_status === 'held' || orderData.escrow_status === 'released',
         },
@@ -150,7 +153,7 @@ export default function MerchantOrderDetails() {
           id: '3',
           title: 'Tracking Added',
           description: `${trackingData.courier_partner}`,
-          icon: 'local_shipping',
+          icon: Truck,
           date: trackingData.created_at,
           completed: true,
         });
@@ -161,7 +164,7 @@ export default function MerchantOrderDetails() {
           id: '4',
           title: 'In Transit',
           description: 'Package on the way',
-          icon: 'flight_takeoff',
+          icon: Plane,
           date: trackingData?.shipment_date || orderData.updated_at,
           completed: true,
         });
@@ -172,7 +175,7 @@ export default function MerchantOrderDetails() {
           id: '5',
           title: 'Delivered',
           description: 'Package delivered',
-          icon: 'check_circle',
+          icon: CheckCircle2,
           date: orderData.delivered_at || orderData.updated_at,
           completed: true,
         });
@@ -183,7 +186,7 @@ export default function MerchantOrderDetails() {
           id: '6',
           title: 'Payment Released',
           description: 'Funds transferred',
-          icon: 'payments',
+          icon: Wallet,
           date: orderData.updated_at,
           completed: true,
         });
@@ -194,7 +197,7 @@ export default function MerchantOrderDetails() {
           id: '7',
           title: 'Dispute Raised',
           description: 'Customer dispute',
-          icon: 'gavel',
+          icon: Gavel,
           date: orderData.updated_at,
           completed: true,
         });
@@ -229,18 +232,18 @@ export default function MerchantOrderDetails() {
   }, [orderId, fetchOrderDetails]);
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      pending: { variant: 'secondary', label: 'Pending' },
-      awaiting_shipment: { variant: 'secondary', label: 'Awaiting Shipment' },
-      in_transit: { variant: 'default', label: 'In Transit' },
-      shipped: { variant: 'default', label: 'Shipped' },
-      delivered: { variant: 'default', label: 'Delivered' },
-      completed: { variant: 'default', label: 'Completed' },
-      disputed: { variant: 'destructive', label: 'Disputed' },
-      refunded: { variant: 'outline', label: 'Refunded' },
+    const config: Record<string, { tone: StatusTone; label: string }> = {
+      pending: { tone: 'neutral', label: 'Pending' },
+      awaiting_shipment: { tone: 'neutral', label: 'Awaiting Shipment' },
+      in_transit: { tone: 'info', label: 'In Transit' },
+      shipped: { tone: 'info', label: 'Shipped' },
+      delivered: { tone: 'info', label: 'Delivered' },
+      completed: { tone: 'info', label: 'Completed' },
+      disputed: { tone: 'destructive', label: 'Disputed' },
+      refunded: { tone: 'neutral', label: 'Refunded' },
     };
-    const c = config[status] || { variant: 'secondary' as const, label: status };
-    return <Badge variant={c.variant} className="text-xs">{c.label}</Badge>;
+    const c = config[status] || { tone: 'neutral' as const, label: status };
+    return <StatusBadge tone={c.tone} label={c.label} className="text-xs" />;
   };
 
   const formatDate = (dateString: string) => {
@@ -261,11 +264,7 @@ export default function MerchantOrderDetails() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (isLoading) {
@@ -274,7 +273,7 @@ export default function MerchantOrderDetails() {
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
           <div className="flex items-center h-14 px-4">
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <Skeleton className="h-5 w-24 ml-2" />
           </div>
@@ -301,17 +300,12 @@ export default function MerchantOrderDetails() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-              <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-base font-semibold text-foreground font-mono">{order.public_order_id || `#${order.order_number}`}</h1>
           </div>
@@ -340,9 +334,11 @@ export default function MerchantOrderDetails() {
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">SafePay</span>
-                <Badge variant={order.escrow_status === 'released' ? 'default' : 'secondary'} className="text-[10px]">
-                  {order.escrow_status === 'held' ? 'Held' : order.escrow_status === 'released' ? 'Released' : order.escrow_status}
-                </Badge>
+                <StatusBadge
+                  tone={order.escrow_status === 'released' ? 'info' : 'neutral'}
+                  label={order.escrow_status === 'held' ? 'Held' : order.escrow_status === 'released' ? 'Released' : order.escrow_status}
+                  className="text-[10px]"
+                />
               </div>
               {order.notes && (
                 <div className="pt-2 border-t border-border mt-2">
@@ -365,7 +361,7 @@ export default function MerchantOrderDetails() {
                         event.completed ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-sm">{event.icon}</span>
+                      <event.icon className="h-3.5 w-3.5" />
                     </div>
                     {index < timeline.length - 1 && (
                       <div className={`w-0.5 flex-1 mt-1 ${event.completed ? 'bg-primary' : 'bg-border'}`} />
@@ -392,14 +388,14 @@ export default function MerchantOrderDetails() {
               {tracking ? (
                 <Link to={`/merchant-edit-tracking/${order.id}`}>
                   <Button size="sm" variant="ghost" className="h-7 text-xs px-2">
-                    <span className="material-symbols-outlined text-sm mr-0.5">edit</span>
+                    <Pencil className="h-3.5 w-3.5 mr-0.5" />
                     Edit
                   </Button>
                 </Link>
               ) : (
                 <Link to={`/merchant-add-tracking/${order.id}`}>
                   <Button size="sm" className="h-7 text-xs px-2">
-                    <span className="material-symbols-outlined text-sm mr-0.5">add</span>
+                    <Plus className="h-3.5 w-3.5 mr-0.5" />
                     Add
                   </Button>
                 </Link>
@@ -417,7 +413,7 @@ export default function MerchantOrderDetails() {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Status</span>
-                  <Badge variant="secondary" className="text-[10px]">{tracking.status}</Badge>
+                  <StatusBadge tone="neutral" label={tracking.status} className="text-[10px]" />
                 </div>
                 {tracking.estimated_delivery && (
                   <div className="flex justify-between text-sm">
@@ -438,7 +434,7 @@ export default function MerchantOrderDetails() {
               {!deliveryProof && (
                 <Link to={`/merchant-delivery-proof/${order.id}`}>
                   <Button size="sm" className="h-7 text-xs px-2">
-                    <span className="material-symbols-outlined text-sm mr-0.5">upload_file</span>
+                    <UploadCloud className="h-3.5 w-3.5 mr-0.5" />
                     Upload
                   </Button>
                 </Link>
@@ -472,13 +468,13 @@ export default function MerchantOrderDetails() {
           {order.status === 'disputed' && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-destructive text-lg">gavel</span>
+                <Gavel className="h-[18px] w-[18px] text-destructive" />
                 <p className="text-sm font-medium text-destructive">Dispute Active</p>
               </div>
               <p className="text-xs text-destructive/80 mb-2">Customer has raised a dispute on this order.</p>
               <Link to={`/merchant-dispute-response/${order.id}`}>
                 <Button size="sm" variant="destructive" className="h-8 text-xs w-full">
-                  <span className="material-symbols-outlined text-sm mr-1">reply</span>
+                  <Reply className="h-3.5 w-3.5 mr-1" />
                   Respond to Dispute
                 </Button>
               </Link>
@@ -487,31 +483,7 @@ export default function MerchantOrderDetails() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px] font-medium">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px]">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px]">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }

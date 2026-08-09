@@ -2,9 +2,23 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { LoadingSpinner, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronRight,
+  CirclePlus,
+  Mail,
+  Phone,
+  Scale,
+  Search,
+  Ticket,
+  X,
+} from 'lucide-react';
 
 interface FAQItem {
   question: string;
@@ -213,13 +227,13 @@ export default function HelpSupport() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusTone = (status: string): 'info' | 'warning' | 'success' | 'neutral' => {
     switch (status) {
-      case 'open': return 'bg-primary/10 text-primary';
-      case 'in_progress': return 'bg-warning/10 text-warning';
-      case 'resolved': return 'bg-success/10 text-success';
-      case 'closed': return 'bg-muted text-muted-foreground';
-      default: return 'bg-muted text-muted-foreground';
+      case 'open': return 'info';
+      case 'in_progress': return 'warning';
+      case 'resolved': return 'success';
+      case 'closed': return 'neutral';
+      default: return 'neutral';
     }
   };
 
@@ -241,7 +255,7 @@ export default function HelpSupport() {
               onClick={() => navigate(-1)}
               className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-muted transition-colors"
             >
-              <span className="material-symbols-outlined text-foreground">arrow_back</span>
+              <ArrowLeft className="h-5 w-5 text-foreground" />
             </button>
             <h1 className="text-lg font-semibold text-foreground">Help & Support</h1>
           </div>
@@ -251,9 +265,7 @@ export default function HelpSupport() {
       {/* Search */}
       <div className="px-4 py-4 bg-card border-b border-border">
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xl">
-            search
-          </span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
           <input
             type="text"
             placeholder="Search for help..."
@@ -274,7 +286,7 @@ export default function HelpSupport() {
             className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:bg-muted transition-colors"
           >
             <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-amber-600">gavel</span>
+              <Scale className="text-amber-600 h-5 w-5" />
             </div>
             <div className="text-left">
               <p className="font-medium text-foreground text-sm">View Disputes</p>
@@ -286,7 +298,7 @@ export default function HelpSupport() {
             className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:bg-muted transition-colors"
           >
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary">add_circle</span>
+              <CirclePlus className="text-primary h-5 w-5" />
             </div>
             <div className="text-left">
               <p className="font-medium text-foreground text-sm">New Ticket</p>
@@ -313,7 +325,7 @@ export default function HelpSupport() {
           
           {loadingTickets ? (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <LoadingSpinner className="h-6 w-6" />
             </div>
           ) : myTickets.length > 0 ? (
             <div className="space-y-2">
@@ -330,16 +342,14 @@ export default function HelpSupport() {
                         {ticket.category.replace('_', ' ')} • {format(new Date(ticket.created_at), 'MMM d, h:mm a')}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full capitalize ${getStatusColor(ticket.status)}`}>
-                      {ticket.status.replace('_', ' ')}
-                    </span>
+                    <StatusBadge tone={getStatusTone(ticket.status)} label={ticket.status.replace('_', ' ')} />
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
             <div className="text-center py-8 bg-card border border-border rounded-xl">
-              <span className="material-symbols-outlined text-muted-foreground text-3xl">confirmation_number</span>
+              <Ticket className="text-muted-foreground h-7 w-7" />
               <p className="text-foreground font-medium text-sm mt-2">No tickets yet</p>
               <p className="text-muted-foreground text-xs mb-4">Create a ticket to get help</p>
               <Button size="sm" onClick={() => setShowTicketForm(true)} className="rounded-xl">
@@ -359,26 +369,26 @@ export default function HelpSupport() {
             className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:bg-muted transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary">mail</span>
+              <Mail className="text-primary h-5 w-5" />
             </div>
             <div className="flex-1">
               <p className="font-medium text-foreground">Email Support</p>
               <p className="text-sm text-muted-foreground">support@safepay.com</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-5 w-5" />
           </a>
           <a
             href="tel:+911800123456"
             className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:bg-muted transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-emerald-600">call</span>
+              <Phone className="text-emerald-600 h-5 w-5" />
             </div>
             <div className="flex-1">
               <p className="font-medium text-foreground">Phone Support</p>
               <p className="text-sm text-muted-foreground">1800-123-456 (Toll Free)</p>
             </div>
-            <span className="material-symbols-outlined text-muted-foreground">chevron_right</span>
+            <ChevronRight className="text-muted-foreground h-5 w-5" />
           </a>
         </div>
       </div>
@@ -419,10 +429,8 @@ export default function HelpSupport() {
                   className="w-full flex items-center justify-between p-4 text-left"
                 >
                   <span className="font-medium text-foreground pr-4">{faq.question}</span>
-                  <span className={`material-symbols-outlined text-muted-foreground transition-transform ${
-                    expandedIndex === index ? 'rotate-180' : ''
-                  }`}>
-                    expand_more
+                  <span className="text-muted-foreground shrink-0 transition-transform">
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedIndex === index ? 'rotate-180' : ''}`} />
                   </span>
                 </button>
                 {expandedIndex === index && (
@@ -449,7 +457,7 @@ export default function HelpSupport() {
                 onClick={() => setShowTicketForm(false)}
                 className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center"
               >
-                <span className="material-symbols-outlined text-muted-foreground">close</span>
+                <X className="text-muted-foreground h-5 w-5" />
               </button>
             </div>
 
@@ -507,7 +515,7 @@ export default function HelpSupport() {
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    <ButtonSpinner className="h-5 w-5" />
                     Submitting...
                   </span>
                 ) : (

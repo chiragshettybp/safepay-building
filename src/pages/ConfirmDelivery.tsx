@@ -3,8 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Check, Lock, Camera, AlertCircle, ShieldCheck, Package } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { publicIdOf } from '@/lib/public-ids';
+import { formatAmount } from '@/lib/format';
 
 interface Order {
   id: string;
@@ -23,7 +24,6 @@ export default function ConfirmDelivery() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -189,7 +189,7 @@ export default function ConfirmDelivery() {
             <p className="text-base sm:text-lg font-bold text-foreground">{order.product_name}</p>
             <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
               <span className="text-xl sm:text-2xl font-bold text-success">
-                {order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}
+                {formatAmount(order.amount, order.currency)}
               </span>
               <span className="bg-success/10 text-success text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1">
                 <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Locked
@@ -246,7 +246,7 @@ export default function ConfirmDelivery() {
         <div className="flex gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-warning/10 border border-warning/30 rounded-lg sm:rounded-xl">
           <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning shrink-0 mt-0.5" />
           <p className="text-xs sm:text-sm text-foreground">
-            This releases <span className="font-bold">{order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}</span> to the merchant. The dispute window closes immediately.
+            This releases <span className="font-bold">{formatAmount(order.amount, order.currency)}</span> to the merchant. The dispute window closes immediately.
           </p>
         </div>
 

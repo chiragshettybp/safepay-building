@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, HelpCircle, CheckCircle, Upload, Send, Package, MessageCircle, X, Trash2, Image, FileText, Film } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatAmount, formatFileSize } from '@/lib/format';
 
 interface Order {
   id: string;
@@ -37,12 +38,6 @@ interface UploadedFile {
   error?: string;
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-};
-
 const getFileIcon = (type: string) => {
   if (type.startsWith('image/')) return Image;
   if (type.startsWith('video/')) return Film;
@@ -53,7 +48,6 @@ export default function ReportIssue() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
@@ -125,7 +119,7 @@ export default function ReportIssue() {
     });
 
     setFiles(prev => [...prev, ...newFiles]);
-  }, [files.length, toast]);
+  }, [files.length]);
 
   const removeFile = (id: string) => {
     setFiles(prev => prev.filter(f => f.id !== id));
@@ -262,7 +256,7 @@ export default function ReportIssue() {
           <div>
             <p className="text-xs text-muted-foreground font-medium">Order #{order.order_number}</p>
             <p className="text-sm font-medium text-foreground">{order.product_name}</p>
-            <p className="text-sm font-bold text-foreground">{order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}</p>
+            <p className="text-sm font-bold text-foreground">{formatAmount(order.amount, order.currency)}</p>
           </div>
         </div>
       </div>

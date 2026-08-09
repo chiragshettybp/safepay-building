@@ -4,9 +4,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { LoadingSpinner, FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  CloudUpload,
+  FileText,
+  Hourglass,
+  Shield,
+  UploadCloud,
+  User,
+  X,
+  XCircle,
+} from 'lucide-react';
 
 interface KycFormData {
   full_legal_name: string;
@@ -48,7 +61,6 @@ type DocumentType = 'id_front' | 'id_back' | 'selfie' | 'address_proof';
 export default function CustomerKyc() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [kycRecord, setKycRecord] = useState<KycRecord | null>(null);
   const [formData, setFormData] = useState<KycFormData>({
@@ -325,7 +337,7 @@ export default function CustomerKyc() {
         return (
           <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-warning text-xl mt-0.5">hourglass_empty</span>
+              <Hourglass className="text-warning h-5 w-5 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-warning">Under Review</h3>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -344,7 +356,7 @@ export default function CustomerKyc() {
         return (
           <div className="bg-success/10 border border-success/20 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-success text-xl mt-0.5">verified</span>
+              <BadgeCheck className="text-success h-5 w-5 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-success">Verified</h3>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -363,7 +375,7 @@ export default function CustomerKyc() {
         return (
           <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-destructive text-xl mt-0.5">cancel</span>
+              <XCircle className="text-destructive h-5 w-5 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-destructive">Rejected</h3>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -387,11 +399,7 @@ export default function CustomerKyc() {
   const canSubmit = formData.full_legal_name && formData.date_of_birth && formData.id_number && documentUrls.id_front_url && documentUrls.id_back_url;
 
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -403,7 +411,7 @@ export default function CustomerKyc() {
             onClick={() => navigate('/profile')}
             className="text-foreground flex w-10 h-10 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <h1 className="text-base sm:text-lg font-semibold text-foreground">KYC Verification</h1>
           <div className="w-10"></div>
@@ -419,7 +427,7 @@ export default function CustomerKyc() {
         <div className="bg-card border border-border rounded-xl p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">shield</span>
+              <Shield className="text-primary h-5 w-5" />
               Verification Status
             </h3>
             <span className={`text-xs px-2 py-1 rounded-full ${
@@ -439,7 +447,7 @@ export default function CustomerKyc() {
         {/* Personal Information */}
         <div className="bg-card border border-border rounded-xl p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-lg">person</span>
+            <User className="text-primary h-[18px] w-[18px]" />
             Personal Information
           </h3>
           <div className="space-y-4">
@@ -540,7 +548,7 @@ export default function CustomerKyc() {
         {/* ID Information */}
         <div className="bg-card border border-border rounded-xl p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-lg">badge</span>
+            <BadgeCheck className="text-primary h-[18px] w-[18px]" />
             Identity Document
           </h3>
           <div className="space-y-4">
@@ -582,7 +590,7 @@ export default function CustomerKyc() {
         {/* Document Uploads */}
         <div className="bg-card border border-border rounded-xl p-4 mb-4">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-lg">upload_file</span>
+            <UploadCloud className="text-primary h-[18px] w-[18px]" />
             Document Upload
           </h3>
           <div className="space-y-4">
@@ -654,7 +662,7 @@ export default function CustomerKyc() {
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></span>
+                  <ButtonSpinner className="h-5 w-5" />
                   Submitting...
                 </span>
               ) : (
@@ -664,9 +672,6 @@ export default function CustomerKyc() {
           </div>
         </div>
       )}
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }
@@ -706,7 +711,7 @@ function DocumentUploadBox({
       {hasDocument ? (
         <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-primary">description</span>
+            <FileText className="text-primary h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">
@@ -722,7 +727,7 @@ function DocumentUploadBox({
               onClick={onRemove}
               className="w-8 h-8 rounded-full hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0"
             >
-              <span className="material-symbols-outlined text-destructive text-lg">close</span>
+              <X className="text-destructive h-[18px] w-[18px]" />
             </button>
           )}
         </div>
@@ -735,12 +740,12 @@ function DocumentUploadBox({
         >
           {isUploading ? (
             <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <LoadingSpinner className="h-8 w-8" />
               <span className="text-sm text-muted-foreground">Uploading...</span>
             </div>
           ) : (
             <>
-              <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2">cloud_upload</span>
+              <CloudUpload className="text-muted-foreground h-7 w-7 mb-2" />
               <p className="text-sm text-muted-foreground">
                 Tap to upload or drag & drop
               </p>

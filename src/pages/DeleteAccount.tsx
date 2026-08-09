@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { ArrowLeft, HelpCircle, Lock, TriangleAlert, Trash2, X } from 'lucide-react';
 
 export default function DeleteAccount() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [confirmText, setConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [step, setStep] = useState(1);
@@ -65,7 +65,7 @@ export default function DeleteAccount() {
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl text-foreground">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <h1 className="text-base font-semibold text-foreground">Delete Account</h1>
           <div className="w-10" />
@@ -78,7 +78,7 @@ export default function DeleteAccount() {
             {/* Warning Card */}
             <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
               <div className="flex gap-3">
-                <span className="material-symbols-outlined text-destructive text-xl shrink-0">warning</span>
+                <TriangleAlert className="text-destructive h-5 w-5 shrink-0" />
                 <div>
                   <h2 className="font-semibold text-destructive">Warning: This action is permanent</h2>
                   <p className="text-sm text-destructive/80 mt-1">
@@ -101,7 +101,7 @@ export default function DeleteAccount() {
                   'Support tickets and communications',
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <span className="material-symbols-outlined text-destructive text-lg shrink-0">close</span>
+                    <X className="text-destructive h-[18px] w-[18px] shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -119,14 +119,14 @@ export default function DeleteAccount() {
                   onClick={() => navigate('/help')}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/80 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-primary">help</span>
+                  <HelpCircle className="text-primary h-5 w-5" />
                   <span className="text-sm font-medium text-foreground">Contact Support</span>
                 </button>
                 <button
                   onClick={() => navigate('/change-password')}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-muted/80 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-primary">lock</span>
+                  <Lock className="text-primary h-5 w-5" />
                   <span className="text-sm font-medium text-foreground">Change Password</span>
                 </button>
               </div>
@@ -146,7 +146,7 @@ export default function DeleteAccount() {
           <div className="space-y-6">
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-destructive text-3xl">delete_forever</span>
+                <Trash2 className="text-destructive h-7 w-7" />
               </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">Confirm Account Deletion</h2>
               <p className="text-sm text-muted-foreground">
@@ -194,8 +194,6 @@ export default function DeleteAccount() {
           </div>
         )}
       </main>
-
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

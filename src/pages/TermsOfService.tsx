@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Ban, CircleCheck } from 'lucide-react';
 
 export default function TermsOfService() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function TermsOfService() {
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined text-xl text-foreground">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <h1 className="text-base font-semibold text-foreground">Terms of Service</h1>
           <div className="w-10" />
@@ -63,23 +64,23 @@ export default function TermsOfService() {
             <div className="bg-card border border-border rounded-xl p-4">
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">task_alt</span>
+                  <CircleCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Provide accurate and complete information
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">task_alt</span>
+                  <CircleCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Complete KYC verification as required
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">task_alt</span>
+                  <CircleCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Maintain security of your account credentials
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">task_alt</span>
+                  <CircleCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Use the platform only for lawful purposes
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg shrink-0">task_alt</span>
+                  <CircleCheck className="text-primary h-[18px] w-[18px] shrink-0" />
                   Report suspicious activity immediately
                 </li>
               </ul>
@@ -135,19 +136,19 @@ export default function TermsOfService() {
             <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
               <ul className="space-y-2 text-sm text-destructive/80">
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-destructive text-lg shrink-0">block</span>
+                  <Ban className="text-destructive h-[18px] w-[18px] shrink-0" />
                   Fraudulent transactions or money laundering
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-destructive text-lg shrink-0">block</span>
+                  <Ban className="text-destructive h-[18px] w-[18px] shrink-0" />
                   Selling prohibited or illegal items
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-destructive text-lg shrink-0">block</span>
+                  <Ban className="text-destructive h-[18px] w-[18px] shrink-0" />
                   Creating multiple accounts to bypass limits
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-destructive text-lg shrink-0">block</span>
+                  <Ban className="text-destructive h-[18px] w-[18px] shrink-0" />
                   Attempting to manipulate the dispute system
                 </li>
               </ul>
@@ -176,8 +177,6 @@ export default function TermsOfService() {
           </section>
         </div>
       </main>
-
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

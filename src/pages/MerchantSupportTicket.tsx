@@ -3,9 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatFileSize } from '@/lib/format';
+import { ArrowLeft, ExternalLink, FileText, MessagesSquare, Paperclip, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface Ticket {
   id: string;
@@ -41,21 +45,14 @@ interface Attachment {
   created_at: string;
 }
 
-const getStatusColor = (status: string) => {
+const getStatusTone = (status: string): StatusTone => {
   switch (status) {
-    case 'open': return 'bg-primary/10 text-primary';
-    case 'in_progress': return 'bg-warning/10 text-warning';
-    case 'resolved': return 'bg-success/10 text-success';
-    case 'closed': return 'bg-muted text-muted-foreground';
-    default: return 'bg-muted text-muted-foreground';
+    case 'open': return 'info';
+    case 'in_progress': return 'warning';
+    case 'resolved': return 'success';
+    case 'closed': return 'neutral';
+    default: return 'neutral';
   }
-};
-
-const formatFileSize = (bytes: number | null): string => {
-  if (!bytes) return '';
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
 export default function MerchantSupportTicket() {
@@ -243,11 +240,7 @@ export default function MerchantSupportTicket() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (!ticket) return null;
@@ -260,7 +253,7 @@ export default function MerchantSupportTicket() {
       <header className="sticky-header bg-card">
         <div className="sticky-header-content px-4 sm:px-6">
           <button onClick={() => navigate('/merchant-support')} className="back-btn">
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-sm sm:text-base font-semibold text-foreground truncate">Support Ticket</h1>
@@ -268,9 +261,7 @@ export default function MerchantSupportTicket() {
               {ticket.public_ticket_id || `#${ticket.id.slice(0, 8).toUpperCase()}`} • {ticket.category.replace(/_/g, ' ')}
             </p>
           </div>
-          <span className={`text-[10px] sm:text-xs px-2 py-1 rounded-full capitalize shrink-0 ${getStatusColor(ticket.status)}`}>
-            {ticket.status.replace('_', ' ')}
-          </span>
+          <StatusBadge tone={getStatusTone(ticket.status)} label={ticket.status.replace('_', ' ')} className="text-[10px] sm:text-xs px-2 py-1 capitalize shrink-0" />
         </div>
       </header>
 
@@ -285,7 +276,7 @@ export default function MerchantSupportTicket() {
         <div className="px-4 py-4 space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-10">
-              <span className="material-symbols-outlined text-muted-foreground text-3xl">forum</span>
+              <MessagesSquare className="h-7 w-7 text-muted-foreground mx-auto" />
               <p className="text-sm text-foreground mt-2">No messages yet</p>
             </div>
           )}
@@ -328,7 +319,7 @@ export default function MerchantSupportTicket() {
                               className="w-10 h-10 rounded object-cover"
                             />
                           ) : (
-                            <span className="material-symbols-outlined text-lg">attach_file</span>
+                            <Paperclip className="h-[18px] w-[18px]" />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="truncate font-medium">{att.file_name}</p>
@@ -338,7 +329,7 @@ export default function MerchantSupportTicket() {
                               </p>
                             )}
                           </div>
-                          <span className="material-symbols-outlined text-lg">open_in_new</span>
+                          <ExternalLink className="h-[18px] w-[18px]" />
                         </a>
                       ))}
                     </div>
@@ -385,20 +376,18 @@ export default function MerchantSupportTicket() {
               className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 hover:bg-muted/80 transition-colors"
               title="Attach file"
             >
-              <span className="material-symbols-outlined text-muted-foreground text-xl">
-                {selectedFile ? 'attach_file_added' : 'attach_file'}
-              </span>
+              <Paperclip className="h-5 w-5 text-muted-foreground" />
             </button>
             <div className="flex-1 min-w-0">
               {selectedFile && (
                 <div className="flex items-center gap-2 px-2 py-1 mb-1 bg-muted rounded-lg text-xs text-muted-foreground">
-                  <span className="material-symbols-outlined text-base">description</span>
+                  <FileText className="h-4 w-4" />
                   <span className="truncate flex-1">{selectedFile.name}</span>
                   <button
                     type="button"
                     onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
                   >
-                    <span className="material-symbols-outlined text-base">close</span>
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               )}
@@ -417,9 +406,9 @@ export default function MerchantSupportTicket() {
               className="h-10 px-4 rounded-xl shrink-0"
             >
               {isSending ? (
-                <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                <ButtonSpinner className="h-4 w-4" />
               ) : (
-                <span className="material-symbols-outlined text-lg">send</span>
+                <Send className="h-[18px] w-[18px]" />
               )}
             </Button>
           </form>

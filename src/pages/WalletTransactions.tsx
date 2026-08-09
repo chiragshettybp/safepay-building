@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { 
   ArrowLeft, Search, Filter, ArrowUpRight, ArrowDownLeft, 
   Plus, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp,
@@ -137,10 +138,10 @@ export default function WalletTransactions() {
     return <Clock className="w-4 h-4 text-warning" />;
   };
 
-  const getStatusColor = (status: string) => {
-    if (status === 'success') return 'bg-success/10 text-success';
-    if (status === 'failed') return 'bg-destructive/10 text-destructive';
-    return 'bg-warning/10 text-warning';
+  const getStatusTone = (status: string): 'success' | 'destructive' | 'warning' => {
+    if (status === 'success') return 'success';
+    if (status === 'failed') return 'destructive';
+    return 'warning';
   };
 
   const clearFilters = () => {
@@ -248,9 +249,7 @@ export default function WalletTransactions() {
                       <p className="font-semibold text-foreground capitalize">
                         {transaction.type.replace('_', ' ')}
                       </p>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getStatusColor(transaction.status)}`}>
-                        {transaction.status}
-                      </span>
+                      <StatusBadge tone={getStatusTone(transaction.status)} label={transaction.status} />
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
                       {transaction.description || 'Wallet transaction'}

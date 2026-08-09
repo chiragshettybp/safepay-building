@@ -37,16 +37,17 @@ export function generatePublicId(prefix: PublicIdPrefix): string {
  * falls back to a locally generated one (e.g. for brand-new rows that have not
  * been persisted yet) or a derived value when a legacy column is present.
  */
-export function publicIdOf(
-  row: Record<string, unknown> | null | undefined,
+export function publicIdOf<T>(
+  row: T | null | undefined,
   publicColumn: string,
   prefix: PublicIdPrefix,
   legacyColumn?: string
 ): string {
-  const publicValue = row?.[publicColumn];
+  const record = row as Record<string, unknown> | null | undefined;
+  const publicValue = record?.[publicColumn];
   if (isPublicId(publicValue as string)) return publicValue as string;
   if (publicValue) return String(publicValue);
-  const legacy = legacyColumn ? row?.[legacyColumn] : undefined;
+  const legacy = legacyColumn ? record?.[legacyColumn] : undefined;
   if (legacy && String(legacy).length > 0) return String(legacy);
   return generatePublicId(prefix);
 }

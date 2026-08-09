@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ArrowLeft, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Select,
   SelectContent,
@@ -219,11 +221,7 @@ export default function MerchantEditTracking() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (isLoading) {
@@ -232,7 +230,7 @@ export default function MerchantEditTracking() {
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
           <div className="flex items-center h-14 px-4">
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <Skeleton className="h-5 w-28 ml-2" />
           </div>
@@ -249,16 +247,11 @@ export default function MerchantEditTracking() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <span className="material-symbols-outlined text-xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-semibold text-foreground ml-2">Edit Tracking</h1>
         </div>
@@ -389,12 +382,12 @@ export default function MerchantEditTracking() {
           <Button onClick={handleSubmit} className="flex-1 h-11" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent mr-2" />
+                <ButtonSpinner className="h-4 w-4 mr-2" />
                 Saving...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-sm mr-1.5">save</span>
+                <Save className="h-3.5 w-3.5 mr-1.5" />
                 Save Changes
               </>
             )}

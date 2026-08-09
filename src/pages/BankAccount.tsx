@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { 
   ArrowLeft, Building, CheckCircle, Clock, AlertCircle, 
   Shield, Trash2, Loader2
@@ -40,7 +40,6 @@ export default function BankAccount() {
   const { accountId } = useParams<{ accountId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const isEditMode = !!accountId;
 
   const [formData, setFormData] = useState({

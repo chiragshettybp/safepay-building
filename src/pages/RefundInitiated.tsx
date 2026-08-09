@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, Clock, CheckCircle, Loader2, AlertCircle, CreditCard, Building, Smartphone, ExternalLink } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatAmount } from '@/lib/format';
 
 interface Refund {
   id: string;
@@ -47,7 +48,6 @@ export default function RefundInitiated() {
   const { refundId } = useParams<{ refundId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [refund, setRefund] = useState<Refund | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<RefundEvent[]>([]);
@@ -107,7 +107,7 @@ export default function RefundInitiated() {
     };
 
     fetchData();
-  }, [refundId, user?.id, navigate, toast]);
+  }, [refundId, user?.id, navigate]);
 
   // Realtime subscription
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function RefundInitiated() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [refundId, navigate, toast]);
+  }, [refundId, navigate]);
 
   if (isLoading) {
     return (
@@ -187,7 +187,7 @@ export default function RefundInitiated() {
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-1">Refund Amount</p>
             <p className="text-3xl font-bold text-warning">
-              {refund.currency === 'USD' ? '$' : '₹'}{Number(refund.amount).toLocaleString()}
+              {formatAmount(refund.amount, refund.currency)}
             </p>
           </div>
         </div>

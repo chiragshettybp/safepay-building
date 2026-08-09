@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { format } from 'date-fns';
 import { 
   Lock, TrendingUp, ArrowUpRight, ArrowDownLeft, Package, CheckCircle, 
@@ -188,7 +190,7 @@ export default function Wallet() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <LoadingSpinner className="h-8 w-8" />
         </div>
       </DashboardLayout>
     );
@@ -322,13 +324,10 @@ export default function Wallet() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${
-                      account.verification_status === 'verified' 
-                        ? 'bg-success/10 text-success' 
-                        : 'bg-warning/10 text-warning'
-                    }`}>
-                      {account.verification_status === 'verified' ? 'Verified' : 'Pending'}
-                    </span>
+                    <StatusBadge
+                      tone={account.verification_status === 'verified' ? 'success' : 'warning'}
+                      label={account.verification_status === 'verified' ? 'Verified' : 'Pending'}
+                    />
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </Link>

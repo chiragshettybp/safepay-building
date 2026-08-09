@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ArrowLeft, Check, Clock, Flag, AlertCircle, Upload, X, Send, Download, HourglassIcon } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Dispute {
   id: string;
@@ -64,7 +65,6 @@ export default function DisputeStatus() {
   const { disputeId } = useParams<{ disputeId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const [dispute, setDispute] = useState<Dispute | null>(null);
   const [updates, setUpdates] = useState<DisputeUpdate[]>([]);
@@ -205,9 +205,7 @@ export default function DisputeStatus() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+      <FullPageLoading />
     );
   }
 
@@ -352,7 +350,7 @@ export default function DisputeStatus() {
                         <img 
                           src={file.file_url} 
                           alt={file.file_name}
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center">

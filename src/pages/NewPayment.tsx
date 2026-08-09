@@ -4,8 +4,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  CircleAlert,
+  Lock,
+  MoreVertical,
+  Search,
+  SearchX,
+  Store,
+  X,
+} from 'lucide-react';
 
 interface MerchantResult {
   id: string;
@@ -19,7 +31,6 @@ interface MerchantResult {
 export default function NewPayment() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   
   const [merchantSearch, setMerchantSearch] = useState('');
   const [selectedMerchant, setSelectedMerchant] = useState<MerchantResult | null>(null);
@@ -76,7 +87,7 @@ export default function NewPayment() {
     } finally {
       setIsSearching(false);
     }
-  }, [toast]);
+  }, []);
 
   // Debounced search effect
   useEffect(() => {
@@ -156,14 +167,14 @@ export default function NewPayment() {
             onClick={() => navigate(-1)}
             className="back-btn"
           >
-            <span className="material-symbols-outlined text-[22px]">arrow_back</span>
+            <ArrowLeft className="h-[22px] w-[22px]" />
           </button>
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">S</div>
             <span className="font-bold text-sm sm:text-base text-foreground">Safepay</span>
           </div>
           <button className="p-2 rounded-full hover:bg-muted active:bg-muted/80 shrink-0">
-            <span className="material-symbols-outlined text-[22px]">more_vert</span>
+            <MoreVertical className="h-[22px] w-[22px]" />
           </button>
         </div>
       </header>
@@ -185,7 +196,7 @@ export default function NewPayment() {
             <label className="text-foreground text-xs sm:text-sm font-medium">Who are you paying?</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-muted-foreground">
-                <span className="material-symbols-outlined text-[20px] sm:text-[22px]">search</span>
+                <Search className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px]" />
               </div>
               <Input
                 type="text"
@@ -215,7 +226,7 @@ export default function NewPayment() {
             {/* No Results */}
             {merchantSearch.length >= 2 && !isSearching && filteredMerchants.length === 0 && !selectedMerchant && (
               <div className="mt-1 p-4 bg-card border border-border rounded-xl text-center">
-                <span className="material-symbols-outlined text-muted-foreground text-[32px] mb-2">search_off</span>
+                <SearchX className="text-muted-foreground h-[32px] w-[32px] mb-2" />
                 <p className="text-sm text-muted-foreground">No merchants found for "{merchantSearch}"</p>
                 <p className="text-xs text-muted-foreground mt-1">Try a different search term</p>
               </div>
@@ -238,14 +249,14 @@ export default function NewPayment() {
                       <img src={merchant.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-muted-foreground text-[20px]">store</span>
+                        <Store className="text-muted-foreground h-[20px] w-[20px]" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
                         <p className="text-sm font-semibold text-foreground truncate">{merchant.name}</p>
                         {merchant.verified && (
-                          <span className="material-symbols-outlined text-primary text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                          <BadgeCheck className="text-primary h-3.5 w-3.5" />
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -265,14 +276,14 @@ export default function NewPayment() {
                   <img src={selectedMerchant.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <span className="material-symbols-outlined text-muted-foreground text-[16px]">store</span>
+                    <Store className="text-muted-foreground h-4 w-4" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
                     <p className="text-sm font-medium text-foreground truncate">{selectedMerchant.name}</p>
                     {selectedMerchant.verified && (
-                      <span className="material-symbols-outlined text-primary text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                      <BadgeCheck className="text-primary h-3.5 w-3.5" />
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">ID: {selectedMerchant.public_merchant_id || `${selectedMerchant.id.slice(0, 8)}...`}</p>
@@ -285,7 +296,7 @@ export default function NewPayment() {
                   }}
                   className="p-1 rounded-full hover:bg-muted"
                 >
-                  <span className="material-symbols-outlined text-[16px] text-muted-foreground">close</span>
+                  <X className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
             )}
@@ -314,7 +325,7 @@ export default function NewPayment() {
               <p className="text-[10px] text-muted-foreground">Limit: ₹100 - ₹50,000</p>
               {amount && !isValidAmount && (
                 <p className="text-[10px] text-destructive font-medium flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[12px]">error</span>
+                  <CircleAlert className="h-3 w-3" />
                   {parsedAmount < 100 ? 'Min ₹100 required' : 'Max ₹50,000'}
                 </p>
               )}
@@ -342,7 +353,7 @@ export default function NewPayment() {
 
           {/* Security Badge */}
           <div className="flex items-center justify-center gap-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
-            <span className="material-symbols-outlined text-primary text-[18px]">lock</span>
+            <Lock className="text-primary h-[18px] w-[18px]" />
             <p className="text-xs text-primary/80 font-medium">Your payment is locked in SafePay until approved.</p>
           </div>
         </div>
@@ -356,7 +367,7 @@ export default function NewPayment() {
             <div className="flex items-center justify-between px-1 mb-2.5 sm:mb-3">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-muted-foreground text-[14px] sm:text-[16px]">store</span>
+                  <Store className="text-muted-foreground h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-[9px] sm:text-[10px] text-muted-foreground">Paying</span>
@@ -373,13 +384,10 @@ export default function NewPayment() {
             className="bottom-action-btn bg-primary text-primary-foreground"
           >
             Continue to Review
-            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">arrow_forward</span>
+            <ArrowRight className="h-[18px] w-[18px] sm:h-[20px] sm:w-[20px]" />
           </Button>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

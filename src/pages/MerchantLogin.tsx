@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { AlertCircle, BadgeCheck, Eye, EyeOff, Store, UserPlus } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function MerchantLogin() {
   const navigate = useNavigate();
@@ -47,18 +49,12 @@ export default function MerchantLogin() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Google Fonts */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="flex items-center h-14 px-4">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary text-xl">storefront</span>
+              <Store className="h-5 w-5 text-primary" />
             </div>
             <span className="font-semibold text-foreground">Merchant Portal</span>
           </Link>
@@ -71,7 +67,7 @@ export default function MerchantLogin() {
           {/* Logo & Title */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-primary text-3xl">storefront</span>
+              <Store className="h-7 w-7 text-primary" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">Merchant Login</h1>
             <p className="text-muted-foreground mt-2">
@@ -117,9 +113,7 @@ export default function MerchantLogin() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <span className="material-symbols-outlined text-xl">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
@@ -127,7 +121,7 @@ export default function MerchantLogin() {
             {/* Error Message */}
             {error && (
               <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <span className="material-symbols-outlined text-destructive text-lg mt-0.5">error</span>
+                <AlertCircle className="h-[18px] w-[18px] text-destructive mt-0.5" />
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
@@ -144,12 +138,6 @@ export default function MerchantLogin() {
                   Remember me
                 </Label>
               </div>
-              <Link
-                to="/merchant-forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
-                Forgot Password?
-              </Link>
             </div>
 
             {/* Login Button */}
@@ -160,7 +148,7 @@ export default function MerchantLogin() {
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <ButtonSpinner className="h-5 w-5" />
                   Signing in...
                 </span>
               ) : (
@@ -184,7 +172,7 @@ export default function MerchantLogin() {
           {/* Create Account Link */}
           <Link to="/merchant-signup">
             <Button variant="outline" className="w-full h-12 text-base">
-              <span className="material-symbols-outlined mr-2 text-lg">person_add</span>
+              <UserPlus className="h-[18px] w-[18px] mr-2" />
               Create Merchant Account
             </Button>
           </Link>
@@ -203,7 +191,7 @@ export default function MerchantLogin() {
       <div className="px-4 pb-6">
         <div className="max-w-md mx-auto bg-muted/30 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-primary">verified_user</span>
+            <BadgeCheck className="h-6 w-6 text-primary" />
             <div>
               <p className="text-sm font-medium text-foreground">Secure Merchant Portal</p>
               <p className="text-xs text-muted-foreground mt-1">

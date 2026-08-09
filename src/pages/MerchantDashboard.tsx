@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { Bell, CheckCircle2, Gavel, Inbox, Landmark, LogOut, ReceiptText, Search, Store, Truck } from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface DashboardStats {
   totalOrders: number;
@@ -220,18 +223,18 @@ export default function MerchantDashboard() {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      pending: { variant: 'secondary', label: 'Pending' },
-      awaiting_shipment: { variant: 'secondary', label: 'Awaiting Shipment' },
-      shipped: { variant: 'default', label: 'Shipped' },
-      delivered: { variant: 'default', label: 'Delivered' },
-      completed: { variant: 'default', label: 'Completed' },
-      disputed: { variant: 'destructive', label: 'Disputed' },
-      refunded: { variant: 'outline', label: 'Refunded' },
-      cancelled: { variant: 'outline', label: 'Cancelled' },
+    const statusConfig: Record<string, { tone: StatusTone; label: string }> = {
+      pending: { tone: 'neutral', label: 'Pending' },
+      awaiting_shipment: { tone: 'neutral', label: 'Awaiting Shipment' },
+      shipped: { tone: 'info', label: 'Shipped' },
+      delivered: { tone: 'info', label: 'Delivered' },
+      completed: { tone: 'info', label: 'Completed' },
+      disputed: { tone: 'destructive', label: 'Disputed' },
+      refunded: { tone: 'neutral', label: 'Refunded' },
+      cancelled: { tone: 'neutral', label: 'Cancelled' },
     };
-    const config = statusConfig[status] || { variant: 'secondary' as const, label: status };
-    return <Badge variant={config.variant} className="text-[10px] px-1.5 py-0.5">{config.label}</Badge>;
+    const config = statusConfig[status] || { tone: 'neutral' as const, label: status };
+    return <StatusBadge tone={config.tone} label={config.label} className="text-[10px] px-1.5 py-0.5" />;
   };
 
   const filteredOrders = orders.filter(order => {
@@ -265,26 +268,17 @@ export default function MerchantDashboard() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border safe-top">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-primary text-lg">storefront</span>
+              <Store className="h-[18px] w-[18px] text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{merchant.businessName}</p>
@@ -293,13 +287,13 @@ export default function MerchantDashboard() {
           </div>
           <div className="flex items-center gap-1">
             <Link to="/merchant-notifications" className="p-2.5 hover:bg-muted rounded-full relative touch-target">
-              <span className="material-symbols-outlined text-foreground text-xl">notifications</span>
+              <Bell className="h-5 w-5 text-foreground" />
               {alerts.length > 0 && (
                 <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full"></span>
               )}
             </Link>
             <button onClick={handleLogout} className="p-2.5 hover:bg-muted rounded-full touch-target">
-              <span className="material-symbols-outlined text-muted-foreground text-xl">logout</span>
+              <LogOut className="h-5 w-5 text-muted-foreground" />
             </button>
           </div>
         </div>
@@ -326,11 +320,11 @@ export default function MerchantDashboard() {
                     alert.type === 'dispute' ? 'bg-destructive/10' : 'bg-amber-500/10'
                   }`}
                 >
-                  <span className={`material-symbols-outlined text-lg ${
-                    alert.type === 'dispute' ? 'text-destructive' : 'text-amber-600'
-                  }`}>
-                    {alert.type === 'dispute' ? 'gavel' : 'local_shipping'}
-                  </span>
+                  {alert.type === 'dispute' ? (
+                    <Gavel className="h-[18px] w-[18px] text-destructive" />
+                  ) : (
+                    <Truck className="h-[18px] w-[18px] text-amber-600" />
+                  )}
                   <p className="text-xs text-foreground flex-1">{alert.message}</p>
                   <Link to={alert.type === 'dispute' ? '/merchant-disputes' : '/merchant-orders'}>
                     <Button size="sm" variant="ghost" className="h-7 text-xs px-2">
@@ -409,7 +403,7 @@ export default function MerchantDashboard() {
               )}
               <Link to="/merchant-payouts">
                 <Button size="sm" variant="secondary" className="mt-2.5 h-7 text-[11px] px-2.5">
-                  <span className="material-symbols-outlined text-sm mr-1">account_balance</span>
+                  <Landmark className="h-3.5 w-3.5 mr-1" />
                   Withdraw
                 </Button>
               </Link>
@@ -436,9 +430,7 @@ export default function MerchantDashboard() {
             
             {/* Search */}
             <div className="relative mb-3">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-                search
-              </span>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-[18px] w-[18px]" />
               <Input
                 type="text"
                 placeholder="Search orders..."
@@ -479,7 +471,7 @@ export default function MerchantDashboard() {
             ) : filteredOrders.length === 0 ? (
               <div className="bg-muted/30 rounded-xl p-6 text-center">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mx-auto mb-2">
-                  <span className="material-symbols-outlined text-muted-foreground text-lg">inbox</span>
+                  <Inbox className="h-[18px] w-[18px] text-muted-foreground" />
                 </div>
                 <h3 className="text-sm font-medium text-foreground mb-0.5">No orders found</h3>
                 <p className="text-xs text-muted-foreground">
@@ -519,10 +511,13 @@ export default function MerchantDashboard() {
                 {activities.slice(0, 5).map((activity) => (
                   <div key={activity.id} className="flex items-start gap-2.5 p-3 bg-muted/30 rounded-xl">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-primary text-sm">
-                        {activity.activity_type === 'tracking' ? 'local_shipping' : 
-                         activity.activity_type === 'delivery' ? 'check_circle' : 'receipt_long'}
-                      </span>
+                      {activity.activity_type === 'tracking' ? (
+                        <Truck className="h-3.5 w-3.5 text-primary" />
+                      ) : activity.activity_type === 'delivery' ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                      ) : (
+                        <ReceiptText className="h-3.5 w-3.5 text-primary" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-foreground">{activity.title}</p>
@@ -541,31 +536,7 @@ export default function MerchantDashboard() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px] font-medium">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px]">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px]">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px]">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }

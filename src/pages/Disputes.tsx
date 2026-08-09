@@ -3,6 +3,21 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ChevronRight,
+  CircleHelp,
+  Hourglass,
+  Lock,
+  Scale,
+  Search,
+  TrendingUp,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
 
 interface Dispute {
   id: string;
@@ -23,14 +38,14 @@ interface Dispute {
   };
 }
 
-const statusConfig: Record<string, { color: string; label: string; icon: string }> = {
-  open: { color: 'bg-amber-500/10 text-amber-600', label: 'Open', icon: 'pending' },
-  under_review: { color: 'bg-blue-500/10 text-blue-600', label: 'Under Review', icon: 'search' },
-  info_required: { color: 'bg-orange-500/10 text-orange-600', label: 'Info Required', icon: 'help' },
-  escalated: { color: 'bg-purple-500/10 text-purple-600', label: 'Escalated', icon: 'trending_up' },
-  resolved: { color: 'bg-emerald-500/10 text-emerald-600', label: 'Resolved', icon: 'check_circle' },
-  closed: { color: 'bg-muted text-muted-foreground', label: 'Closed', icon: 'lock' },
-  rejected: { color: 'bg-destructive/10 text-destructive', label: 'Rejected', icon: 'cancel' },
+const statusConfig: Record<string, { color: string; label: string; icon: LucideIcon; tone: 'success' | 'warning' | 'destructive' | 'info' | 'neutral' }> = {
+  open: { color: 'bg-amber-500/10 text-amber-600', label: 'Open', icon: Hourglass, tone: 'warning' },
+  under_review: { color: 'bg-blue-500/10 text-blue-600', label: 'Under Review', icon: Search, tone: 'info' },
+  info_required: { color: 'bg-orange-500/10 text-orange-600', label: 'Info Required', icon: CircleHelp, tone: 'warning' },
+  escalated: { color: 'bg-purple-500/10 text-purple-600', label: 'Escalated', icon: TrendingUp, tone: 'neutral' },
+  resolved: { color: 'bg-emerald-500/10 text-emerald-600', label: 'Resolved', icon: CheckCircle2, tone: 'success' },
+  closed: { color: 'bg-muted text-muted-foreground', label: 'Closed', icon: Lock, tone: 'neutral' },
+  rejected: { color: 'bg-destructive/10 text-destructive', label: 'Rejected', icon: XCircle, tone: 'destructive' },
 };
 
 const filterOptions = [
@@ -132,7 +147,7 @@ export default function Disputes() {
               onClick={() => navigate(-1)}
               className="back-btn"
             >
-              <span className="material-symbols-outlined text-foreground">arrow_back</span>
+              <ArrowLeft className="h-5 w-5 text-foreground" />
             </button>
             <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">My Disputes</h1>
           </div>
@@ -143,9 +158,7 @@ export default function Disputes() {
       <div className="px-4 py-3 border-b border-border bg-card">
         {/* Search */}
         <div className="relative mb-3">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg sm:text-xl">
-            search
-          </span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-[18px] w-[18px] sm:h-5 sm:w-5" />
           <input
             type="text"
             placeholder="Search disputes..."
@@ -177,12 +190,12 @@ export default function Disputes() {
       <main className="pb-20">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <LoadingSpinner className="h-8 w-8" />
           </div>
         ) : filteredDisputes.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon bg-muted">
-              <span className="material-symbols-outlined text-muted-foreground text-2xl sm:text-3xl">gavel</span>
+              <Scale className="text-muted-foreground h-6 w-6 sm:h-7 sm:w-7" />
             </div>
             <h2 className="text-base sm:text-lg font-semibold text-foreground mb-1">No disputes found</h2>
             <p className="text-muted-foreground text-xs sm:text-sm">
@@ -200,7 +213,7 @@ export default function Disputes() {
                   className="item-row"
                 >
                   <div className={`item-avatar ${statusInfo.color}`}>
-                    <span className="material-symbols-outlined text-lg sm:text-xl">{statusInfo.icon}</span>
+                    <statusInfo.icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -212,9 +225,7 @@ export default function Disputes() {
                           {dispute.orders?.merchant_name}
                         </p>
                       </div>
-                      <span className={`status-badge shrink-0 ${statusInfo.color}`}>
-                        {statusInfo.label}
-                      </span>
+                      <StatusBadge tone={statusInfo.tone} label={statusInfo.label} />
                     </div>
                     <p className="text-xs sm:text-sm text-foreground mt-1 line-clamp-1">
                       {dispute.reason}
@@ -235,7 +246,7 @@ export default function Disputes() {
                       )}
                     </div>
                   </div>
-                  <span className="material-symbols-outlined text-muted-foreground shrink-0">chevron_right</span>
+                  <ChevronRight className="text-muted-foreground shrink-0 h-5 w-5" />
                 </Link>
               );
             })}

@@ -7,6 +7,10 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { AlertTriangle, ArrowLeft, Eye, FileText, Gavel, ListFilter, Reply, Search } from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 import {
   Select,
   SelectContent,
@@ -48,14 +52,14 @@ type StatusFilter = 'all' | 'open' | 'under_review' | 'info_required' | 'escalat
 
 const FILTER_PILLS: StatusFilter[] = ['all', 'open', 'under_review', 'resolved', 'closed'];
 
-const STATUS_CONFIG: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string; accent: string }> = {
-  open: { variant: 'destructive', label: 'Pending', accent: 'border-l-destructive' },
-  under_review: { variant: 'default', label: 'Reviewing', accent: 'border-l-warning' },
-  info_required: { variant: 'destructive', label: 'Info Needed', accent: 'border-l-destructive' },
-  escalated: { variant: 'destructive', label: 'Escalated', accent: 'border-l-destructive' },
-  resolved: { variant: 'outline', label: 'Resolved', accent: 'border-l-success' },
-  closed: { variant: 'outline', label: 'Closed', accent: 'border-l-muted-foreground' },
-  rejected: { variant: 'outline', label: 'Rejected', accent: 'border-l-muted-foreground' },
+const STATUS_CONFIG: Record<string, { tone: StatusTone; label: string; accent: string }> = {
+  open: { tone: 'destructive', label: 'Pending', accent: 'border-l-destructive' },
+  under_review: { tone: 'info', label: 'Reviewing', accent: 'border-l-warning' },
+  info_required: { tone: 'destructive', label: 'Info Needed', accent: 'border-l-destructive' },
+  escalated: { tone: 'destructive', label: 'Escalated', accent: 'border-l-destructive' },
+  resolved: { tone: 'neutral', label: 'Resolved', accent: 'border-l-success' },
+  closed: { tone: 'neutral', label: 'Closed', accent: 'border-l-muted-foreground' },
+  rejected: { tone: 'neutral', label: 'Rejected', accent: 'border-l-muted-foreground' },
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -206,7 +210,7 @@ export default function MerchantDisputes() {
       return (
         <Link to={`/merchant-dispute-response/${dispute.id}`} className="flex-1">
           <Button size="sm" className="w-full h-9 text-xs gap-1">
-            <span className="material-symbols-outlined text-sm">reply</span>
+            <Reply className="h-3.5 w-3.5" />
             Respond
           </Button>
         </Link>
@@ -216,7 +220,7 @@ export default function MerchantDisputes() {
       return (
         <Link to={`/merchant-dispute-result/${dispute.id}`} className="flex-1">
           <Button size="sm" variant="outline" className="w-full h-9 text-xs gap-1">
-            <span className="material-symbols-outlined text-sm">description</span>
+            <FileText className="h-3.5 w-3.5" />
             Result
           </Button>
         </Link>
@@ -225,7 +229,7 @@ export default function MerchantDisputes() {
     return (
       <Link to={`/merchant-dispute-response/${dispute.id}`} className="flex-1">
         <Button size="sm" variant="outline" className="w-full h-9 text-xs gap-1">
-          <span className="material-symbols-outlined text-sm">visibility</span>
+            <Eye className="h-3.5 w-3.5" />
           View
         </Button>
       </Link>
@@ -233,26 +237,17 @@ export default function MerchantDisputes() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
             <button onClick={() => navigate('/merchant-dashboard')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-              <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-foreground">Disputes</h1>
             {urgentDisputes.length > 0 && (
@@ -262,7 +257,7 @@ export default function MerchantDisputes() {
           <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
             <SheetTrigger asChild>
               <button className="p-2 hover:bg-muted rounded-full touch-target lg:hidden">
-                <span className="material-symbols-outlined text-xl">filter_list</span>
+                <ListFilter className="h-5 w-5" />
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="h-auto rounded-t-2xl">
@@ -297,7 +292,7 @@ export default function MerchantDisputes() {
           {urgentDisputes.length > 0 && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 mb-4">
               <div className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined text-destructive text-lg">warning</span>
+                <AlertTriangle className="h-[18px] w-[18px] text-destructive" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-destructive">Action Required</p>
                   <p className="text-[11px] text-destructive/80">
@@ -310,9 +305,7 @@ export default function MerchantDisputes() {
 
           {/* Search */}
           <div className="relative mb-3">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-              search
-            </span>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-[18px] w-[18px]" />
             <Input
               type="text"
               placeholder="Search by dispute, order, or customer..."
@@ -363,7 +356,7 @@ export default function MerchantDisputes() {
           ) : filteredDisputes.length === 0 ? (
             <div className="bg-muted/30 rounded-2xl p-8 text-center border border-border/60">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                <span className="material-symbols-outlined text-muted-foreground text-2xl">gavel</span>
+                <Gavel className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="text-sm font-medium text-foreground mb-1">No disputes found</h3>
               <p className="text-xs text-muted-foreground">
@@ -386,7 +379,7 @@ export default function MerchantDisputes() {
                     <div className="flex items-start justify-between gap-2 mb-2.5">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <span className="material-symbols-outlined text-lg">gavel</span>
+                          <Gavel className="h-[18px] w-[18px]" />
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-foreground leading-tight font-mono">
@@ -399,11 +392,9 @@ export default function MerchantDisputes() {
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         {isUrgent && (
-                          <span className="material-symbols-outlined text-destructive text-base">priority_high</span>
+                          <AlertTriangle className="text-destructive h-4 w-4" />
                         )}
-                        <Badge variant={statusConfig.variant} className="text-[10px] px-2 py-1">
-                          {statusConfig.label}
-                        </Badge>
+                        <StatusBadge tone={statusConfig.tone} label={statusConfig.label} className="text-[10px] px-2 py-1" />
                       </div>
                     </div>
 
@@ -437,31 +428,7 @@ export default function MerchantDisputes() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px]">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px] font-medium">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px]">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }

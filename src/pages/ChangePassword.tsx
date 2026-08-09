@@ -1,7 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Circle,
+  Eye,
+  EyeOff,
+  Lock,
+  ShieldCheck,
+} from 'lucide-react';
 
 const SUPABASE_URL = 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
 const TOKEN_KEY = 'safepay_auth_token';
@@ -93,7 +102,7 @@ export default function ChangePassword() {
               onClick={() => navigate(-1)}
               className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-muted transition-colors"
             >
-              <span className="material-symbols-outlined text-foreground">arrow_back</span>
+              <ArrowLeft className="text-foreground h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-foreground">Change Password</h1>
           </div>
@@ -104,7 +113,7 @@ export default function ChangePassword() {
       <form onSubmit={handleSubmit} className="p-4 space-y-6">
         {/* Security Notice */}
         <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/20">
-          <span className="material-symbols-outlined text-primary">security</span>
+          <ShieldCheck className="text-primary h-5 w-5" />
           <div>
             <p className="text-sm font-medium text-foreground">Keep your account secure</p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -129,9 +138,7 @@ export default function ChangePassword() {
               onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <span className="material-symbols-outlined text-xl">
-                {showPasswords.current ? 'visibility_off' : 'visibility'}
-              </span>
+              {showPasswords.current ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -152,9 +159,7 @@ export default function ChangePassword() {
               onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <span className="material-symbols-outlined text-xl">
-                {showPasswords.new ? 'visibility_off' : 'visibility'}
-              </span>
+              {showPasswords.new ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
           
@@ -165,9 +170,11 @@ export default function ChangePassword() {
                 const isValid = !passwordErrors.includes(req);
                 return (
                   <div key={req} className="flex items-center gap-2">
-                    <span className={`material-symbols-outlined text-sm ${isValid ? 'text-emerald-500' : 'text-muted-foreground'}`}>
-                      {isValid ? 'check_circle' : 'radio_button_unchecked'}
-                    </span>
+                    {isValid ? (
+                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    ) : (
+                      <Circle className="h-3 w-3 text-muted-foreground" />
+                    )}
                     <span className={`text-xs ${isValid ? 'text-emerald-500' : 'text-muted-foreground'}`}>{req}</span>
                   </div>
                 );
@@ -196,9 +203,7 @@ export default function ChangePassword() {
               onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <span className="material-symbols-outlined text-xl">
-                {showPasswords.confirm ? 'visibility_off' : 'visibility'}
-              </span>
+              {showPasswords.confirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
           {formData.confirmPassword.length > 0 && !passwordsMatch && (
@@ -220,16 +225,13 @@ export default function ChangePassword() {
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined">lock</span>
+                <Lock className="h-5 w-5" />
                 Change Password
               </>
             )}
           </button>
         </div>
       </form>
-      
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

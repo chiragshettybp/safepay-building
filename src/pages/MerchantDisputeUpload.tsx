@@ -15,6 +15,9 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { ArrowLeft, CloudUpload, FileText, Gavel, Upload, X } from 'lucide-react';
+import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
+import { formatFileSize } from '@/lib/format';
 
 interface FilePreview {
   file: File;
@@ -82,12 +85,6 @@ export default function MerchantDisputeUpload() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -195,21 +192,16 @@ export default function MerchantDisputeUpload() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
           <div className="flex items-center h-14 px-4 gap-2">
             <button onClick={() => navigate('/merchant-disputes')} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <span className="material-symbols-outlined">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <Skeleton className="h-5 w-28" />
           </div>
@@ -224,13 +216,11 @@ export default function MerchantDisputeUpload() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate(`/merchant-dispute-response/${disputeId}`)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <span className="material-symbols-outlined text-xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-semibold text-foreground ml-2">Upload Evidence</h1>
         </div>
@@ -243,7 +233,7 @@ export default function MerchantDisputeUpload() {
           <div className="bg-muted/30 rounded-xl p-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-destructive/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-destructive text-lg">gavel</span>
+                <Gavel className="h-[18px] w-[18px] text-destructive" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground font-mono">{disputePublicId || `Dispute #${disputeId?.slice(0, 8)}`}</p>
@@ -263,7 +253,7 @@ export default function MerchantDisputeUpload() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <span className="material-symbols-outlined text-3xl text-muted-foreground mb-1.5">cloud_upload</span>
+              <CloudUpload className="h-7 w-7 text-muted-foreground mb-1.5" />
               <p className="text-sm font-medium text-foreground">Tap to upload</p>
               <p className="text-xs text-muted-foreground mt-0.5">Images, PDFs, Documents (max 10MB)</p>
             </label>
@@ -278,7 +268,7 @@ export default function MerchantDisputeUpload() {
                     <img src={file.preview} alt={file.name} className="w-10 h-10 object-cover rounded" />
                   ) : (
                     <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
-                      <span className="material-symbols-outlined text-muted-foreground text-lg">description</span>
+                      <FileText className="h-[18px] w-[18px] text-muted-foreground" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -289,7 +279,7 @@ export default function MerchantDisputeUpload() {
                     onClick={() => removeFile(index)}
                     className="p-1.5 hover:bg-destructive/10 rounded-full text-destructive"
                   >
-                    <span className="material-symbols-outlined text-lg">close</span>
+                    <X className="h-[18px] w-[18px]" />
                   </button>
                 </div>
               ))}
@@ -346,12 +336,12 @@ export default function MerchantDisputeUpload() {
           >
             {isUploading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent mr-2" />
+                <ButtonSpinner className="h-4 w-4 mr-2" />
                 Uploading...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-sm mr-1.5">upload</span>
+                <Upload className="h-3.5 w-3.5 mr-1.5" />
                 Upload
               </>
             )}

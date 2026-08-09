@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, ArrowRight, Camera, X, Check, Trash2, Plus, AlertCircle, FileText, Image, Film } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatFileSize } from '@/lib/format';
 
 interface Dispute {
   id: string;
@@ -24,12 +25,6 @@ interface UploadedFile {
   error?: string;
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-};
-
 const getFileIcon = (type: string) => {
   if (type.startsWith('image/')) return Image;
   if (type.startsWith('video/')) return Film;
@@ -40,7 +35,6 @@ export default function UploadProof() {
   const { disputeId } = useParams<{ disputeId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [dispute, setDispute] = useState<Dispute | null>(null);
@@ -163,7 +157,7 @@ export default function UploadProof() {
     newFiles.filter(f => f.status === 'pending').forEach(file => {
       uploadFile(file);
     });
-  }, [files.length, toast]);
+  }, [files.length]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -307,7 +301,7 @@ export default function UploadProof() {
                 <p className="text-foreground text-lg font-bold mb-1">Drag files here or click</p>
                 <p className="text-muted-foreground text-sm">Supports JPG, PNG, PDF (max 10MB each)</p>
               </div>
-              <button className="mt-2 h-12 px-8 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-full shadow-lg shadow-primary/20 flex items-center gap-2 transition-transform transform group-hover:scale-105">
+              <button className="mt-2 h-12 px-8 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-full shadow-lg shadow-primary/20 flex items-center gap-2 ">
                 <Plus className="w-5 h-5" />
                 <span>Select Files</span>
               </button>

@@ -3,9 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays } from 'date-fns';
-import { ArrowLeft, Package, Check, Truck, FileText, Lock, Clock, AlertCircle, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Package, Check, Truck, FileText, Lock, Clock, AlertCircle, MapPin, CheckCircle, AlertTriangle, Copy } from 'lucide-react';
+import { toast } from '@/lib/toast';
 import { publicIdOf } from '@/lib/public-ids';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Order {
   id: string;
@@ -47,7 +49,6 @@ export default function OrderTracking() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<OrderEvent[]>([]);
   const [tracking, setTracking] = useState<TrackingInfo | null>(null);
@@ -107,9 +108,7 @@ export default function OrderTracking() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+      <FullPageLoading />
     );
   }
 
@@ -148,11 +147,10 @@ export default function OrderTracking() {
     return 'Pending';
   };
 
-  const getStatusColor = () => {
-    if (order.status === 'completed') return 'bg-success text-success-foreground';
-    if (order.status === 'delivered') return 'bg-success text-success-foreground';
-    if (order.status === 'shipped') return 'bg-warning text-warning-foreground';
-    return 'bg-muted text-muted-foreground';
+  const getStatusTone = (): 'success' | 'warning' | 'neutral' => {
+    if (order.status === 'completed' || order.status === 'delivered') return 'success';
+    if (order.status === 'shipped') return 'warning';
+    return 'neutral';
   };
 
   return (
@@ -194,9 +192,7 @@ export default function OrderTracking() {
         {isShipped && (
           <div className="bg-background rounded-2xl border border-border p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <span className={`text-sm font-bold px-4 py-1.5 rounded-full ${getStatusColor()}`}>
-                {getStatusLabel()}
-              </span>
+              <StatusBadge tone={getStatusTone()} label={getStatusLabel()} />
               <button onClick={copyOrderNumber} className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-lg text-sm font-mono font-medium text-primary hover:bg-muted/80">
                 {publicIdOf(order, 'public_order_id', 'ORD', 'order_number')}
               </button>

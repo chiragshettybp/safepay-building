@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Check, Lock, ChevronDown } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { formatAmount } from '@/lib/format';
 
 interface Order {
   id: string;
@@ -35,7 +36,6 @@ export default function RaiseDispute() {
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -103,7 +103,7 @@ export default function RaiseDispute() {
       }
     };
     fetchOrderAndCheckDispute();
-  }, [orderId, user?.id, navigate, toast]);
+  }, [orderId, user?.id, navigate]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -254,7 +254,7 @@ export default function RaiseDispute() {
         <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-border/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium text-foreground shadow-sm border border-border flex-wrap justify-center">
           <span className="truncate max-w-[100px] sm:max-w-none">{order.merchant_name}</span>
           <span className="w-1 h-1 rounded-full bg-muted-foreground shrink-0"></span>
-          <span className="shrink-0">{order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}</span>
+          <span className="shrink-0">{formatAmount(order.amount, order.currency)}</span>
           <span className="w-1 h-1 rounded-full bg-muted-foreground shrink-0"></span>
           <span className="text-muted-foreground capitalize shrink-0">{order.status.replace('_', ' ')}</span>
         </div>
@@ -301,7 +301,7 @@ export default function RaiseDispute() {
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 mt-1">
                 <p className="text-primary text-2xl sm:text-3xl font-extrabold tracking-tight">
-                  {order.currency === 'USD' ? '$' : '₹'}{Number(order.amount).toLocaleString()}
+                  {formatAmount(order.amount, order.currency)}
                 </p>
                 {order.escrow_status === 'held' && (
                   <div className="flex items-center gap-0.5 sm:gap-1 text-primary bg-primary/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold">

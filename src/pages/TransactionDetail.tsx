@@ -3,15 +3,16 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { toast } from '@/lib/toast';
 import { format } from 'date-fns';
+import { ArrowLeft, CircleAlert, Copy, Download, List, RefreshCw } from 'lucide-react';
+import { formatAmount } from '@/lib/format';
 
 // Generate PDF receipt
 const generateReceiptPDF = (transaction: Transaction): void => {
-  const currencySymbol = transaction.currency === 'INR' ? '₹' : '$';
-  const formattedAmount = `${currencySymbol}${transaction.amount.toLocaleString('en-IN')}`;
+  const formattedAmount = formatAmount(transaction.amount, transaction.currency);
   const formattedDate = format(new Date(transaction.created_at), 'MMMM d, yyyy h:mm a');
   const publicTxnId = transaction.public_transaction_id || `${transaction.id.slice(0, 8)}...${transaction.id.slice(-4)}`;
   
@@ -149,7 +150,6 @@ export default function TransactionDetail() {
   const { transactionId } = useParams<{ transactionId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -182,18 +182,18 @@ export default function TransactionDetail() {
     };
 
     fetchTransaction();
-  }, [user?.id, transactionId, navigate, toast]);
+  }, [user?.id, transactionId, navigate]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
-        return <Badge className="bg-success/10 text-success border-success/20 text-sm px-3 py-1">Success</Badge>;
+        return <StatusBadge tone="success" label="Success" />;
       case 'failed':
-        return <Badge variant="destructive" className="text-sm px-3 py-1">Failed</Badge>;
+        return <StatusBadge tone="destructive" label="Failed" />;
       case 'pending':
-        return <Badge variant="secondary" className="text-sm px-3 py-1">Pending</Badge>;
+        return <StatusBadge tone="neutral" label="Pending" />;
       default:
-        return <Badge variant="outline" className="text-sm px-3 py-1">{status}</Badge>;
+        return <StatusBadge tone="neutral" label={status} />;
     }
   };
 
@@ -210,7 +210,7 @@ export default function TransactionDetail() {
       <div className="min-h-screen bg-background flex flex-col">
         <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-sm border-b border-border h-14 flex items-center px-4">
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted">
-            <span className="material-symbols-outlined text-[22px]">arrow_back</span>
+            <ArrowLeft className="h-[22px] w-[22px]" />
           </button>
           <Skeleton className="h-5 w-40 ml-4" />
         </header>
@@ -228,7 +228,7 @@ export default function TransactionDetail() {
   if (!transaction) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-        <span className="material-symbols-outlined text-muted-foreground text-[48px] mb-4">error</span>
+        <CircleAlert className="text-muted-foreground h-[48px] w-[48px] mb-4" />
         <p className="text-foreground font-medium">Transaction not found</p>
         <Link to="/transactions" className="text-primary text-sm mt-2">Go to Transactions</Link>
       </div>
@@ -243,7 +243,7 @@ export default function TransactionDetail() {
           onClick={() => navigate(-1)}
           className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted"
         >
-          <span className="material-symbols-outlined text-[22px]">arrow_back</span>
+          <ArrowLeft className="h-[22px] w-[22px]" />
         </button>
         <span className="font-semibold text-foreground">Transaction Details</span>
         <div className="w-10" />
@@ -262,7 +262,7 @@ export default function TransactionDetail() {
           <div className="text-center py-4">
             <span className="text-muted-foreground text-sm">Amount</span>
             <h2 className="text-3xl font-bold text-foreground mt-1">
-              {transaction.currency === 'INR' ? '₹' : '$'}{transaction.amount.toLocaleString('en-IN')}
+                {formatAmount(transaction.amount, transaction.currency)}
             </h2>
           </div>
           {transaction.failure_reason && (
@@ -288,7 +288,7 @@ export default function TransactionDetail() {
                 onClick={() => copyToClipboard(transaction.public_transaction_id || transaction.id, 'Transaction ID')}
                 className="p-2 hover:bg-muted rounded-lg shrink-0"
               >
-                <span className="material-symbols-outlined text-muted-foreground text-[18px]">content_copy</span>
+                <Copy className="text-muted-foreground h-[18px] w-[18px]" />
               </button>
             </div>
             
@@ -302,7 +302,7 @@ export default function TransactionDetail() {
                   onClick={() => copyToClipboard(transaction.razorpay_order_id!, 'Order ID')}
                   className="p-2 hover:bg-muted rounded-lg shrink-0"
                 >
-                  <span className="material-symbols-outlined text-muted-foreground text-[18px]">content_copy</span>
+                  <Copy className="text-muted-foreground h-[18px] w-[18px]" />
                 </button>
               </div>
             )}
@@ -317,7 +317,7 @@ export default function TransactionDetail() {
                   onClick={() => copyToClipboard(transaction.razorpay_payment_id!, 'Payment ID')}
                   className="p-2 hover:bg-muted rounded-lg shrink-0"
                 >
-                  <span className="material-symbols-outlined text-muted-foreground text-[18px]">content_copy</span>
+                  <Copy className="text-muted-foreground h-[18px] w-[18px]" />
                 </button>
               </div>
             )}
@@ -332,7 +332,7 @@ export default function TransactionDetail() {
                   onClick={() => copyToClipboard(transaction.razorpay_signature!, 'Signature')}
                   className="p-2 hover:bg-muted rounded-lg shrink-0"
                 >
-                  <span className="material-symbols-outlined text-muted-foreground text-[18px]">content_copy</span>
+                  <Copy className="text-muted-foreground h-[18px] w-[18px]" />
                 </button>
               </div>
             )}
@@ -373,7 +373,7 @@ export default function TransactionDetail() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Amount</span>
               <span className="text-foreground text-sm font-medium">
-                {transaction.currency === 'INR' ? '₹' : '$'}{transaction.amount.toLocaleString('en-IN')}
+              {formatAmount(transaction.amount, transaction.currency)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -404,21 +404,21 @@ export default function TransactionDetail() {
               onClick={() => generateReceiptPDF(transaction)}
               className="w-full h-12 rounded-xl"
             >
-              <span className="material-symbols-outlined mr-2 text-[18px]">download</span>
+              <Download className="h-[18px] w-[18px] mr-2" />
               Download Receipt
             </Button>
           )}
           <div className="flex gap-3">
             <Link to="/transactions" className="flex-1">
               <Button variant="outline" className="w-full h-12 rounded-xl">
-                <span className="material-symbols-outlined mr-2 text-[18px]">list</span>
+                <List className="h-[18px] w-[18px] mr-2" />
                 All Transactions
               </Button>
             </Link>
             {transaction.status === 'failed' && (
               <Link to="/payment/new" className="flex-1">
                 <Button className="w-full h-12 rounded-xl">
-                  <span className="material-symbols-outlined mr-2 text-[18px]">refresh</span>
+                  <RefreshCw className="h-[18px] w-[18px] mr-2" />
                   Retry Payment
                 </Button>
               </Link>
@@ -426,9 +426,6 @@ export default function TransactionDetail() {
           </div>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

@@ -7,6 +7,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { ArrowLeft, CheckCircle2, Info, Save } from 'lucide-react';
+import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Select,
   SelectContent,
@@ -260,7 +262,7 @@ export default function MerchantBankAccount() {
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="flex items-center h-14 px-4">
           <button onClick={() => navigate('/merchant-payouts')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-            <span className="material-symbols-outlined text-xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="ml-3">
             <h1 className="text-lg font-semibold">
@@ -275,7 +277,7 @@ export default function MerchantBankAccount() {
         {/* Info Banner */}
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
           <div className="flex gap-2">
-            <span className="material-symbols-outlined text-blue-600 text-lg">info</span>
+            <Info className="h-[18px] w-[18px] text-blue-600" />
             <div>
               <p className="text-xs font-medium text-blue-700">Verification Required</p>
               <p className="text-[10px] text-blue-600/80 mt-0.5">
@@ -340,7 +342,7 @@ export default function MerchantBankAccount() {
           )}
           {accountNumber && confirmAccountNumber && accountNumber === confirmAccountNumber && (
             <p className="text-[10px] text-emerald-600 flex items-center gap-1">
-              <span className="material-symbols-outlined text-xs">check_circle</span>
+              <CheckCircle2 className="h-3 w-3" />
               Account numbers match
             </p>
           )}
@@ -438,12 +440,12 @@ export default function MerchantBankAccount() {
           >
             {isSubmitting ? (
               <>
-                <span className="material-symbols-outlined text-lg animate-spin mr-2">refresh</span>
+                <ButtonSpinner className="h-[18px] w-[18px] mr-2" />
                 Saving...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-lg mr-2">save</span>
+                <Save className="h-[18px] w-[18px] mr-2" />
                 {existingAccount ? 'Update' : 'Save'} Account
               </>
             )}

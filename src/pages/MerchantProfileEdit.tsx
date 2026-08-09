@@ -4,8 +4,10 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/lib/toast';
+import { ArrowLeft, Info, MapPin, Phone, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface MerchantFormData {
   business_name: string;
@@ -27,7 +29,6 @@ const CATEGORIES = [
 export default function MerchantProfileEdit() {
   const { user, merchant, isLoading: authLoading } = useMerchantAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [formData, setFormData] = useState<MerchantFormData>({
     business_name: '',
@@ -140,11 +141,7 @@ export default function MerchantProfileEdit() {
   };
 
   if (authLoading || loadingProfile) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
@@ -156,7 +153,7 @@ export default function MerchantProfileEdit() {
             onClick={() => navigate('/merchant-profile')}
             className="back-btn"
           >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">arrow_back</span>
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <h1 className="text-sm sm:text-base font-semibold text-foreground">Edit Business Profile</h1>
           <div className="w-10"></div>
@@ -223,7 +220,7 @@ export default function MerchantProfileEdit() {
           {/* Divider */}
           <div className="pt-2 pb-1">
             <p className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-primary text-base">contact_phone</span>
+              <Phone className="h-4 w-4 text-primary" />
               Contact Details
             </p>
           </div>
@@ -266,7 +263,7 @@ export default function MerchantProfileEdit() {
           {/* Divider */}
           <div className="pt-2 pb-1">
             <p className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-primary text-base">location_on</span>
+              <MapPin className="h-4 w-4 text-primary" />
               Business Address
             </p>
           </div>
@@ -338,7 +335,7 @@ export default function MerchantProfileEdit() {
 
           {/* Info Note */}
           <div className="flex items-start gap-2.5 p-3 bg-primary/5 border border-primary/10 rounded-xl">
-            <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+            <Info className="h-4 w-4 text-primary mt-0.5" />
             <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
               Changes to your business name will be reflected on all customer-facing pages including the payment flow and order details.
             </p>
@@ -356,21 +353,18 @@ export default function MerchantProfileEdit() {
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                <ButtonSpinner className="h-4 w-4" />
                 Saving...
               </span>
             ) : (
               <>
-                <span className="material-symbols-outlined text-base">save</span>
+                <Save className="h-4 w-4" />
                 Save Changes
               </>
             )}
           </Button>
         </div>
       </div>
-
-      {/* Material Icons */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }

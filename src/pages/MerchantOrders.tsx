@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +20,20 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  ArrowLeft,
+  Eye,
+  Filter,
+  Inbox,
+  Pencil,
+  Scale,
+  Search,
+  Truck,
+  UploadCloud,
+} from 'lucide-react';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
 interface Order {
   id: string;
@@ -130,19 +143,19 @@ export default function MerchantOrders() {
   }, [merchant?.id, fetchOrders]);
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      pending: { variant: 'secondary', label: 'Pending' },
-      awaiting_shipment: { variant: 'secondary', label: 'Awaiting' },
-      in_transit: { variant: 'default', label: 'In Transit' },
-      shipped: { variant: 'default', label: 'Shipped' },
-      delivered: { variant: 'default', label: 'Delivered' },
-      completed: { variant: 'default', label: 'Completed' },
-      disputed: { variant: 'destructive', label: 'Disputed' },
-      refunded: { variant: 'outline', label: 'Refunded' },
-      cancelled: { variant: 'outline', label: 'Cancelled' },
+    const config: Record<string, { tone: StatusTone; label: string }> = {
+      pending: { tone: 'neutral', label: 'Pending' },
+      awaiting_shipment: { tone: 'neutral', label: 'Awaiting' },
+      in_transit: { tone: 'info', label: 'In Transit' },
+      shipped: { tone: 'info', label: 'Shipped' },
+      delivered: { tone: 'info', label: 'Delivered' },
+      completed: { tone: 'info', label: 'Completed' },
+      disputed: { tone: 'destructive', label: 'Disputed' },
+      refunded: { tone: 'neutral', label: 'Refunded' },
+      cancelled: { tone: 'neutral', label: 'Cancelled' },
     };
-    const c = config[status] || { variant: 'secondary' as const, label: status };
-    return <Badge variant={c.variant} className="text-[10px] px-1.5 py-0.5">{c.label}</Badge>;
+    const c = config[status] || { tone: 'neutral' as const, label: status };
+    return <StatusBadge tone={c.tone} label={c.label} className="text-[10px] px-1.5 py-0.5" />;
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -174,33 +187,24 @@ export default function MerchantOrders() {
   };
 
   if (authLoading || !isAuthenticated || !merchant) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      />
-
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
             <button onClick={() => navigate('/merchant-dashboard')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-              <span className="material-symbols-outlined text-xl">arrow_back</span>
+              <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-foreground">Orders</h1>
           </div>
           <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
             <SheetTrigger asChild>
               <button className="p-2 hover:bg-muted rounded-full touch-target lg:hidden">
-                <span className="material-symbols-outlined text-xl">filter_list</span>
+                <Filter className="h-5 w-5" />
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="h-auto rounded-t-2xl">
@@ -236,9 +240,7 @@ export default function MerchantOrders() {
         <div className="px-4 py-4">
           {/* Search */}
           <div className="relative mb-3">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">
-              search
-            </span>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-[18px] w-[18px]" />
             <Input
               type="text"
               placeholder="Search orders..."
@@ -279,7 +281,7 @@ export default function MerchantOrders() {
           ) : filteredOrders.length === 0 ? (
             <div className="bg-muted/30 rounded-xl p-8 text-center">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                <span className="material-symbols-outlined text-muted-foreground text-2xl">inbox</span>
+                <Inbox className="text-muted-foreground h-6 w-6" />
               </div>
               <h3 className="text-sm font-medium text-foreground mb-1">No orders found</h3>
               <p className="text-xs text-muted-foreground">
@@ -310,7 +312,7 @@ export default function MerchantOrders() {
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
                     <Link to={`/merchant-order/${order.id}`}>
                       <Button size="sm" variant="outline" className="h-8 text-xs whitespace-nowrap flex-shrink-0">
-                        <span className="material-symbols-outlined text-sm mr-1">visibility</span>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
                         View
                       </Button>
                     </Link>
@@ -318,7 +320,7 @@ export default function MerchantOrders() {
                     {!order.has_tracking && (order.status === 'pending' || order.status === 'awaiting_shipment') && (
                       <Link to={`/merchant-add-tracking/${order.id}`}>
                         <Button size="sm" className="h-8 text-xs whitespace-nowrap flex-shrink-0">
-                          <span className="material-symbols-outlined text-sm mr-1">local_shipping</span>
+                          <Truck className="h-3.5 w-3.5 mr-1" />
                           Add Tracking
                         </Button>
                       </Link>
@@ -327,7 +329,7 @@ export default function MerchantOrders() {
                     {order.has_tracking && order.status !== 'completed' && order.status !== 'refunded' && (
                       <Link to={`/merchant-edit-tracking/${order.id}`}>
                         <Button size="sm" variant="secondary" className="h-8 text-xs whitespace-nowrap flex-shrink-0">
-                          <span className="material-symbols-outlined text-sm mr-1">edit</span>
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
                           Edit
                         </Button>
                       </Link>
@@ -336,7 +338,7 @@ export default function MerchantOrders() {
                     {!order.has_proof && order.status !== 'pending' && order.status !== 'cancelled' && (
                       <Link to={`/merchant-delivery-proof/${order.id}`}>
                         <Button size="sm" variant="secondary" className="h-8 text-xs whitespace-nowrap flex-shrink-0">
-                          <span className="material-symbols-outlined text-sm mr-1">upload_file</span>
+                          <UploadCloud className="h-3.5 w-3.5 mr-1" />
                           Proof
                         </Button>
                       </Link>
@@ -345,7 +347,7 @@ export default function MerchantOrders() {
                     {order.status === 'disputed' && (
                       <Link to={`/merchant-dispute/${order.id}`}>
                         <Button size="sm" variant="destructive" className="h-8 text-xs whitespace-nowrap flex-shrink-0">
-                          <span className="material-symbols-outlined text-sm mr-1">gavel</span>
+                          <Scale className="h-3.5 w-3.5 mr-1" />
                           Respond
                         </Button>
                       </Link>
@@ -358,31 +360,7 @@ export default function MerchantOrders() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20 safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          <Link to="/merchant-dashboard" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">dashboard</span>
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link to="/merchant-orders" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-primary touch-target">
-            <span className="material-symbols-outlined text-xl">orders</span>
-            <span className="text-[10px] font-medium">Orders</span>
-          </Link>
-          <Link to="/merchant-disputes" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">gavel</span>
-            <span className="text-[10px]">Disputes</span>
-          </Link>
-          <Link to="/merchant-payouts" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
-            <span className="text-[10px]">Payouts</span>
-          </Link>
-          <Link to="/merchant-profile" className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 text-muted-foreground touch-target">
-            <span className="material-symbols-outlined text-xl">person</span>
-            <span className="text-[10px]">Profile</span>
-          </Link>
-        </div>
-      </nav>
+      <MerchantBottomNav />
     </div>
   );
 }
