@@ -1,10 +1,18 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
+import { impact } from "@/lib/feedback";
 import { cn } from "@/lib/utils";
 
-const Drawer = ({ shouldScaleBackground = true, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
-  <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
+const Drawer = ({ shouldScaleBackground = true, onOpenChange, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
+  <DrawerPrimitive.Root
+    shouldScaleBackground={shouldScaleBackground}
+    onOpenChange={(open) => {
+      if (open) impact("light");
+      onOpenChange?.(open);
+    }}
+    {...props}
+  />
 );
 Drawer.displayName = "Drawer";
 

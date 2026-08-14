@@ -79,7 +79,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center justify-between px-3 h-14 md:h-16 md:px-5">
         <button
           onClick={onMenuClick}
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors lg:hidden"
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground press-scale lg:hidden"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -95,7 +95,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         <Link
           to="/notifications"
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors relative"
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground press-scale relative"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />

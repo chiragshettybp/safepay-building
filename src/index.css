@@ -52,6 +52,24 @@
 
     --radius: 0.75rem;
 
+    /* ------------------------------------------------------------
+       Tactile & Kinetic tokens — single source for the app's "feel".
+       Everything kinetic derives from these values. Override one
+       variable to re-tune motion globally.
+       ------------------------------------------------------------ */
+    --phys-dur-press: 70ms;                 /* compression phase */
+    --phys-dur-release: 340ms;              /* recovery phase */
+    --phys-spring-stiffness: 300;           /* release spring stiffness */
+    --phys-spring-damping: 30;              /* release spring damping */
+    --phys-compress: 0.96;                  /* active scale factor */
+    --phys-overlay-blur: 20px;              /* overlay backdrop blur */
+    --phys-overlay-radius: 28px;            /* overlay corner radius */
+    --phys-switch-track: 51px;              /* iOS switch geometry */
+
+    /* iOS brand surfaces — oklch where supported, hsl fallback */
+    --ios-blue: hsl(221 83% 53%);
+    --ios-gray: hsl(210 11% 87%);
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -200,6 +218,14 @@
     }
   }
 
+  /* Higher-fidelity colour space where the engine supports it */
+  @supports (color: oklch(0 0 0)) {
+    :root {
+      --ios-blue: oklch(0.623 0.214 259.8); /* ≈ iOS #0A84FF */
+      --ios-gray: oklch(0.89 0 0);           /* soft neutral off-state */
+    }
+  }
+
   /* Hide scrollbar helpers */
   .no-scrollbar::-webkit-scrollbar,
   .scrollbar-hide::-webkit-scrollbar {
@@ -283,9 +309,76 @@
     max-width: 100vw;
     overflow-x: hidden;
   }
+
+  /* ------------------------------------------------------------
+     iOS physical switch track surfaces
+     ------------------------------------------------------------ */
+  .sw-track-on {
+    background-color: var(--ios-blue);
+  }
+  .sw-track-off {
+    background-color: var(--ios-gray);
+  }
+  .sw-thumb {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.08);
+  }
 }
 
 @layer utilities {
+  /* ------------------------------------------------------------
+     Press scale — the asymmetric press model as a pure utility.
+     Apply to ANY interactive element for instant kinetic feedback:
+       - Compression: fast (~70ms, `--phys-dur-press`), ease-out, to
+         scale(0.96) while the element is pressed.
+       - Recovery:    slow (~340ms, `--phys-dur-release`), the "glass
+         and rubber" settle. The full spring with ~2% overshoot lives
+         in usePressScale() for components that want true springs.
+     ------------------------------------------------------------ */
+  .press-scale {
+    -webkit-tap-highlight-color: transparent;
+    transform-origin: center;
+    will-change: transform;
+    transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+    transition-duration:
+      var(--phys-dur-release, 340ms), 150ms, 150ms, 150ms, 150ms, 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.6, 1), ease-out, ease-out, ease-out, ease-out, ease-out;
+  }
+  .press-scale:active {
+    transition-duration:
+      var(--phys-dur-press, 70ms), 150ms, 150ms, 150ms, 150ms, 150ms;
+    transform: scale(var(--phys-compress, 0.96));
+  }
+
+  /* Expanded invisible hit target (44x44pt) for compact controls.
+     The visual element stays small; the touch area grows. */
+  .hit-44 {
+    position: relative;
+  }
+  .hit-44::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: max(44px, 100%);
+    height: max(44px, 100%);
+  }
+
+  /* Overlay surfaces: scale-from-origin popovers/dropdowns */
+  .overlay-glass {
+    border-radius: var(--phys-overlay-radius, 28px);
+    background-color: var(--card);
+    background-color: color-mix(in srgb, hsl(var(--card)) 72%, transparent);
+    backdrop-filter: blur(var(--phys-overlay-blur, 20px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--phys-overlay-blur, 20px)) saturate(180%);
+  }
+
+  /* Squircle / continuous-corner tile */
+  .squircle {
+    border-radius: 10px;
+  }
+
   .shadow-subtle {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
   }

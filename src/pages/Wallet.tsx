@@ -4,8 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { Tile } from '@/components/ui/Tile';
 import { format } from 'date-fns';
 import {
   ArrowDownLeft, ArrowUpRight, Building, Check, ChevronRight, Clock,
@@ -260,9 +262,9 @@ export default function Wallet() {
         >
           <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-success/10">
-                <TrendingUp className="h-3.5 w-3.5 text-success" />
-              </div>
+              <Tile size="xs" tone="success">
+                <Icon icon={<TrendingUp />} size="xs" />
+              </Tile>
               <p className="truncate text-[11px] font-medium text-muted-foreground">Total Refunds</p>
             </div>
             <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
@@ -271,9 +273,9 @@ export default function Wallet() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                <ArrowUpRight className="h-3.5 w-3.5 text-destructive" />
-              </div>
+              <Tile size="xs" tone="destructive">
+                <Icon icon={<ArrowUpRight />} size="xs" />
+              </Tile>
               <p className="truncate text-[11px] font-medium text-muted-foreground">Withdrawn</p>
             </div>
             <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
@@ -282,9 +284,9 @@ export default function Wallet() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Lock className="h-3.5 w-3.5 text-primary" />
-              </div>
+              <Tile size="xs" tone="primary">
+                <Icon icon={<Lock />} size="xs" />
+              </Tile>
               <p className="truncate text-[11px] font-medium text-muted-foreground">In SafePay</p>
             </div>
             <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
@@ -293,9 +295,9 @@ export default function Wallet() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-warning/10">
-                <Clock className="h-3.5 w-3.5 text-warning" />
-              </div>
+              <Tile size="xs" tone="warning">
+                <Icon icon={<Clock />} size="xs" />
+              </Tile>
               <p className="truncate text-[11px] font-medium text-muted-foreground">Pending</p>
             </div>
             <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">

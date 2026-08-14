@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { formatWalletTransactionAmount, walletTransactionTone } from '@/lib/format';
 import { 
   ArrowLeft, Search, Filter, ArrowUpRight, ArrowDownLeft, 
@@ -185,30 +186,28 @@ export default function WalletTransactions() {
         {/* Filters */}
         {showFilters && (
           <div className="mt-3 p-3 bg-muted/50 rounded-xl space-y-3">
-            <div className="flex gap-2">
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="flex-1 h-10 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                {typeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="flex-1 h-10 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                {statusOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
+            <SegmentedControl
+              options={typeOptions.map(o => ({
+                value: o.value,
+                label: <span className="text-xs sm:text-sm">{o.label}</span>,
+              }))}
+              value={typeFilter}
+              onChange={setTypeFilter}
+              fullWidth
+            />
+            <SegmentedControl
+              options={statusOptions.map(o => ({
+                value: o.value,
+                label: <span className="text-xs sm:text-sm">{o.label}</span>,
+              }))}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              fullWidth
+            />
             {hasActiveFilters && (
               <button 
                 onClick={clearFilters}
-                className="flex items-center gap-1 text-sm text-destructive font-medium"
+                className="flex items-center gap-1 text-sm text-destructive font-medium press-scale"
               >
                 <X className="w-4 h-4" />
                 Clear filters
