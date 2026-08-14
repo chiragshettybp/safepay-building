@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { formatWalletTransactionAmount, walletTransactionTone } from '@/lib/format';
 import { 
   ArrowLeft, Search, Filter, ArrowUpRight, ArrowDownLeft, 
   Plus, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp,
@@ -127,7 +128,7 @@ export default function WalletTransactions() {
 
   const getTransactionIcon = (type: string) => {
     if (type === 'refund') return <ArrowDownLeft className="w-5 h-5 text-success" />;
-    if (type === 'withdrawal') return <ArrowUpRight className="w-5 h-5 text-destructive" />;
+    if (walletTransactionTone(type) === 'debit') return <ArrowUpRight className="w-5 h-5 text-destructive" />;
     if (type === 'credit') return <Plus className="w-5 h-5 text-success" />;
     return <Wallet className="w-5 h-5 text-primary" />;
   };
@@ -260,12 +261,11 @@ export default function WalletTransactions() {
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end gap-1">
                     <p className={`text-lg font-bold ${
-                      transaction.type === 'withdrawal' || transaction.type === 'debit' 
-                        ? 'text-destructive' 
-                        : 'text-success'
+                      walletTransactionTone(transaction.type) === 'debit' ? 'text-destructive'
+                      : walletTransactionTone(transaction.type) === 'credit' ? 'text-success'
+                      : 'text-foreground'
                     }`}>
-                      {transaction.type === 'withdrawal' || transaction.type === 'debit' ? '-' : '+'}
-                      ₹{Number(transaction.amount).toLocaleString('en-IN')}
+                      {formatWalletTransactionAmount(transaction)}
                     </p>
                     {expandedId === transaction.id ? (
                       <ChevronUp className="w-4 h-4 text-muted-foreground" />

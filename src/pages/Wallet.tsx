@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { format } from 'date-fns';
-import { 
-  Lock, TrendingUp, ArrowUpRight, ArrowDownLeft, Package, CheckCircle, 
-  AlertTriangle, Plus, Building, CreditCard, Clock, Shield, ChevronRight,
-  Wallet as WalletIcon, RefreshCw, History
+import {
+  ArrowDownLeft, ArrowUpRight, Building, Check, ChevronRight, Clock,
+  History, Lock, Plus, TrendingUp, Wallet as WalletIcon,
 } from 'lucide-react';
+import { formatWalletTransactionAmount, walletTransactionTone } from '@/lib/format';
 
 interface WalletData {
   id: string;
@@ -50,7 +50,6 @@ interface WalletStats {
 
 export default function Wallet() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<WalletTransaction[]>([]);
@@ -171,15 +170,9 @@ export default function Wallet() {
 
   const getTransactionIcon = (type: string, status: string) => {
     if (type === 'refund') return <ArrowDownLeft className="w-4 h-4 text-success" />;
-    if (type === 'withdrawal') return <ArrowUpRight className="w-4 h-4 text-destructive" />;
+    if (walletTransactionTone(type) === 'debit') return <ArrowUpRight className="w-4 h-4 text-destructive" />;
     if (type === 'credit') return <Plus className="w-4 h-4 text-success" />;
     return <WalletIcon className="w-4 h-4 text-primary" />;
-  };
-
-  const getStatusColor = (status: string) => {
-    if (status === 'success') return 'text-success';
-    if (status === 'failed') return 'text-destructive';
-    return 'text-warning';
   };
 
   const maskAccountNumber = (number: string) => {
@@ -189,8 +182,23 @@ export default function Wallet() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-full py-20">
-          <LoadingSpinner className="h-8 w-8" />
+        <div className="mx-auto w-full max-w-3xl px-4 py-5 sm:px-6 sm:py-6 pb-28">
+          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-4 w-56 mt-2 mb-6" />
+          <Skeleton className="h-44 sm:h-52 w-full rounded-2xl sm:rounded-3xl" />
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mt-4 sm:mt-5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 sm:h-24 w-full rounded-2xl" />
+            ))}
+          </div>
+          <Skeleton className="h-5 w-44 mt-6 mb-3" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-5 w-48 mt-6 mb-3" />
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+            ))}
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -198,200 +206,223 @@ export default function Wallet() {
 
   return (
     <DashboardLayout>
-      <div className="mobile-section pb-24">
-        <h1 className="text-responsive-xl font-bold text-foreground mb-0.5">Wallet</h1>
-        <p className="text-muted-foreground text-responsive-xs mb-4">Manage your balance and bank accounts</p>
+      <div className="mx-auto w-full max-w-3xl px-4 py-5 sm:px-6 sm:py-6 pb-28">
 
-        {/* Wallet Balance Card */}
-        <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl sm:rounded-2xl p-4 sm:p-5 text-primary-foreground mb-4">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <p className="text-primary-foreground/80 text-[10px] sm:text-xs mb-0.5 sm:mb-1">Available Balance</p>
-              <h2 className="text-2xl sm:text-3xl font-bold">
-                ₹{(wallet?.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </h2>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 rounded-full">
-              <Shield className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-              <span className="text-[9px] sm:text-[10px] font-medium">Verified</span>
-            </div>
+        {/* Title */}
+        <header className="mb-5 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">Wallet</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Manage your balance and bank accounts</p>
+        </header>
+
+        {/* Balance Card */}
+        <section
+          aria-label="Wallet balance"
+          className="relative mb-4 sm:mb-5 overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-blue-700 to-indigo-800 p-5 sm:p-7 text-primary-foreground shadow-subtle animate-fade-in-up"
+        >
+          <div aria-hidden className="pointer-events-none absolute -right-12 -top-14 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-16 -left-12 h-48 w-48 rounded-full bg-indigo-300/20 blur-3xl" />
+          <div className="relative flex items-start justify-between gap-3">
+            <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-primary-foreground/70">
+              Available Balance
+            </p>
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-medium text-white">
+              <Check className="h-3 w-3" />
+              Verified
+            </span>
           </div>
-          <p className="text-primary-foreground/60 text-[10px] sm:text-xs mb-3 sm:mb-4">
-            Last updated: {wallet?.last_updated ? format(new Date(wallet.last_updated), 'MMM d, h:mm a') : 'Just now'}
+          <h2 className="relative mt-1.5 text-3xl sm:text-4xl font-bold tracking-tight tabular-nums">
+            ₹{(wallet?.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </h2>
+          <p className="relative mt-3 text-[11px] text-primary-foreground/60">
+            Last updated {wallet?.last_updated ? format(new Date(wallet.last_updated), 'MMM d, h:mm a') : 'just now'}
           </p>
-          <div className="quick-actions">
+          <div className="relative mt-5 grid grid-cols-2 gap-2.5 sm:gap-3">
             <Link to="/wallet/withdraw" className="contents">
-              <Button variant="secondary" className="flex-1 h-10 sm:h-11 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white border-0 rounded-xl text-xs sm:text-sm font-medium">
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+              <Button variant="ghost" className="h-11 rounded-xl bg-white/15 text-white hover:bg-white/25 hover:text-white active:scale-[0.98] transition-all">
+                <ArrowUpRight className="h-4 w-4" />
                 Withdraw
               </Button>
             </Link>
             <Link to="/wallet/transactions" className="contents">
-              <Button variant="secondary" className="flex-1 h-10 sm:h-11 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white border-0 rounded-xl text-xs sm:text-sm font-medium">
-                <History className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+              <Button variant="ghost" className="h-11 rounded-xl bg-white/15 text-white hover:bg-white/25 hover:text-white active:scale-[0.98] transition-all">
+                <History className="h-4 w-4" />
                 History
               </Button>
             </Link>
           </div>
-        </div>
+        </section>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4">
-          <div className="stat-card">
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="metric-card-icon bg-success/10">
-                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
+        {/* Summary Cards */}
+        <section
+          aria-label="Wallet summary"
+          className="mb-5 sm:mb-6 grid grid-cols-2 gap-2.5 sm:gap-3 animate-fade-in-up"
+          style={{ animationDelay: '60ms', animationFillMode: 'backwards' }}
+        >
+          <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-success/10">
+                <TrendingUp className="h-3.5 w-3.5 text-success" />
               </div>
-              <div className="min-w-0">
-                <p className="metric-card-label">Total Refunds</p>
-                <p className="text-sm sm:text-base font-bold text-foreground truncate">
-                  ₹{stats.totalRefunds.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
+              <p className="truncate text-[11px] font-medium text-muted-foreground">Total Refunds</p>
             </div>
+            <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
+              ₹{stats.totalRefunds.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </p>
           </div>
-          <div className="stat-card">
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="metric-card-icon bg-destructive/10">
-                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />
+          <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+                <ArrowUpRight className="h-3.5 w-3.5 text-destructive" />
               </div>
-              <div className="min-w-0">
-                <p className="metric-card-label">Withdrawn</p>
-                <p className="text-sm sm:text-base font-bold text-foreground truncate">
-                  ₹{stats.totalWithdrawn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
+              <p className="truncate text-[11px] font-medium text-muted-foreground">Withdrawn</p>
             </div>
+            <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
+              ₹{stats.totalWithdrawn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </p>
           </div>
-          <div className="stat-card">
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="metric-card-icon bg-primary/10">
-                <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Lock className="h-3.5 w-3.5 text-primary" />
               </div>
-              <div className="min-w-0">
-                <p className="metric-card-label">In SafePay</p>
-                <p className="text-sm sm:text-base font-bold text-foreground truncate">
-                  ₹{stats.inEscrow.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
+              <p className="truncate text-[11px] font-medium text-muted-foreground">In SafePay</p>
             </div>
+            <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
+              ₹{stats.inEscrow.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </p>
           </div>
-          <div className="stat-card">
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="metric-card-icon bg-warning/10">
-                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-warning" />
+          <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-warning/10">
+                <Clock className="h-3.5 w-3.5 text-warning" />
               </div>
-              <div className="min-w-0">
-                <p className="metric-card-label">Pending</p>
-                <p className="text-sm sm:text-base font-bold text-foreground truncate">
-                  ₹{stats.pendingRefunds.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
+              <p className="truncate text-[11px] font-medium text-muted-foreground">Pending</p>
             </div>
+            <p className="mt-2.5 text-base sm:text-lg font-semibold tracking-tight text-foreground tabular-nums">
+              ₹{stats.pendingRefunds.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </p>
           </div>
-        </div>
+        </section>
 
         {/* Linked Bank Accounts */}
-        <div className="mb-4">
+        <section
+          aria-label="Linked bank accounts"
+          className="mb-5 sm:mb-6 animate-fade-in-up"
+          style={{ animationDelay: '120ms', animationFillMode: 'backwards' }}
+        >
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-foreground">Linked Bank Accounts</h3>
-            <Link to="/wallet/bank-account" className="text-primary text-xs font-medium flex items-center gap-1">
-              <Plus className="w-3 h-3" />
-              Add New
-            </Link>
+            <h3 className="text-sm font-semibold text-foreground">Linked Bank Accounts</h3>
+            <Link to="/wallet/bank-account" className="text-xs font-medium text-primary">Add New</Link>
           </div>
 
           {bankAccounts.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {bankAccounts.map((account) => (
                 <Link
                   key={account.id}
                   to={`/wallet/bank-account/${account.id}`}
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors"
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 sm:p-4 transition-all active:scale-[0.99]"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Building className="w-5 h-5 text-primary" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <Building className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-foreground font-medium text-sm truncate">{account.bank_name}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{account.bank_name}</p>
                       {account.is_default && (
-                        <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[10px] font-medium rounded">Default</span>
+                        <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">Default</span>
                       )}
                     </div>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-xs text-muted-foreground">
                       {account.account_type} • {maskAccountNumber(account.account_number)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <StatusBadge
                       tone={account.verification_status === 'verified' ? 'success' : 'warning'}
                       label={account.verification_status === 'verified' ? 'Verified' : 'Pending'}
                     />
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 bg-card border border-border rounded-xl">
-              <Building className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-foreground font-medium text-sm">No bank accounts linked</p>
-              <p className="text-muted-foreground text-xs mb-4">Add a bank account to receive refunds</p>
-              <Link to="/wallet/bank-account">
-                <Button size="sm" className="rounded-xl">
-                  <Plus className="w-4 h-4 mr-1.5" />
+            <div className="rounded-2xl border border-border bg-card px-6 py-8 sm:py-10 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Building className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">No bank accounts linked</p>
+              <p className="mt-1 text-xs text-muted-foreground">Add a bank account to receive refunds</p>
+              <Link to="/wallet/bank-account" className="mt-4 inline-flex">
+                <Button className="h-11 rounded-xl px-5">
+                  <Plus className="h-4 w-4" />
                   Add Bank Account
                 </Button>
               </Link>
             </div>
           )}
-        </div>
+        </section>
 
         {/* Recent Transactions */}
-        <div>
+        <section
+          aria-label="Recent transactions"
+          className="animate-fade-in-up"
+          style={{ animationDelay: '180ms', animationFillMode: 'backwards' }}
+        >
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-foreground">Recent Transactions</h3>
-            <Link to="/wallet/transactions" className="text-primary text-xs font-medium">View All</Link>
+            <h3 className="text-sm font-semibold text-foreground">Recent Transactions</h3>
+            <Link to="/wallet/transactions" className="text-xs font-medium text-primary">View All</Link>
           </div>
 
           {recentTransactions.length > 0 ? (
-            <div className="space-y-2">
-              {recentTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl"
-                >
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    {getTransactionIcon(transaction.type, transaction.status)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium text-sm truncate capitalize">
-                      {transaction.type.replace('_', ' ')}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {transaction.description || 'Wallet transaction'} • {format(new Date(transaction.created_at), 'MMM d')}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`font-semibold text-sm ${transaction.type === 'withdrawal' ? 'text-destructive' : 'text-success'}`}>
-                      {transaction.type === 'withdrawal' ? '-' : '+'}₹{Number(transaction.amount).toLocaleString('en-IN')}
-                    </p>
-                    <span className={`text-xs font-medium capitalize ${getStatusColor(transaction.status)}`}>
-                      {transaction.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+              <ul className="divide-y divide-border/70">
+                {recentTransactions.map((transaction) => {
+                  const tone = walletTransactionTone(transaction.type);
+                  const iconBg = tone === 'debit' ? 'bg-destructive/10' : tone === 'credit' ? 'bg-success/10' : 'bg-muted';
+                  const amountClass = tone === 'debit' ? 'text-destructive' : tone === 'credit' ? 'text-success' : 'text-foreground';
+                  return (
+                    <li key={transaction.id} className="flex items-center gap-3 px-4 py-3.5">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
+                        {getTransactionIcon(transaction.type, transaction.status)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground capitalize">
+                          {transaction.type.replace('_', ' ')}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {transaction.description || 'Wallet transaction'} • {format(new Date(transaction.created_at), 'MMM d')}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className={`text-sm font-semibold tabular-nums ${amountClass}`}>
+                          {formatWalletTransactionAmount(transaction)}
+                        </p>
+                        <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+                          <span className={`h-1.5 w-1.5 rounded-full ${
+                            transaction.status === 'success' ? 'bg-success'
+                            : transaction.status === 'failed' ? 'bg-destructive'
+                            : 'bg-warning'
+                          }`} />
+                          <span className="capitalize">{transaction.status}</span>
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           ) : (
-            <div className="text-center py-8 bg-card border border-border rounded-xl">
-              <History className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-foreground font-medium text-sm">No transactions yet</p>
-              <p className="text-muted-foreground text-xs">Your wallet activity will appear here</p>
+            <div className="rounded-2xl border border-border bg-card px-6 py-8 sm:py-10 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <History className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">No transactions yet</p>
+              <p className="mt-1 text-xs text-muted-foreground">Your wallet activity will appear here</p>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </DashboardLayout>
   );

@@ -75,11 +75,11 @@ export function Header({ onMenuClick }: HeaderProps) {
     'Dashboard';
 
   return (
-    <header className="flex-none bg-card border-b border-border z-30 sticky top-0">
+    <header className="flex-none sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border/60">
       <div className="flex items-center justify-between px-3 h-14 md:h-16 md:px-5">
         <button
           onClick={onMenuClick}
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors lg:hidden"
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors lg:hidden"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -95,15 +95,12 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         <Link
           to="/notifications"
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors relative"
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors relative"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-2 right-2.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-60" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
-            </span>
+            <span className="absolute top-2.5 right-3 h-2 w-2 rounded-full bg-destructive" aria-hidden="true" />
           )}
         </Link>
       </div>

@@ -169,24 +169,24 @@ export default function Transactions() {
     <DashboardLayout>
       <div className="w-full max-w-4xl mx-auto px-4 py-4 sm:py-6 pb-24">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-          <div>
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Transactions</h1>
-            <p className="text-muted-foreground text-xs sm:text-sm mt-0.5 sm:mt-1">View all your payment transactions</p>
+            <Link to="/payment/new" className="shrink-0">
+              <Button size="sm" className="h-9 sm:h-10 rounded-xl text-xs sm:text-sm">
+                <Plus className="h-4 w-4 sm:h-[18px] sm:w-[18px] mr-1.5" />
+                New Payment
+              </Button>
+            </Link>
           </div>
-          <Link to="/payment/new" className="self-start sm:self-auto">
-            <Button size="sm" className="h-9 sm:h-10 rounded-xl text-xs sm:text-sm">
-              <Plus className="h-4 w-4 sm:h-[18px] sm:w-[18px] mr-1.5" />
-              New Payment
-            </Button>
-          </Link>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-0.5 sm:mt-1">View all your payment transactions</p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-col gap-3 mb-4 sm:mb-6">
           {/* Search and Status */}
           <div className="flex gap-2">
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 <Search className="h-[18px] w-[18px] sm:h-[20px] sm:w-[20px]" />
               </span>
@@ -194,11 +194,11 @@ export default function Transactions() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 sm:pl-10 h-10 sm:h-11 text-sm rounded-xl"
+                className="pl-9 sm:pl-10 h-10 sm:h-11 text-sm rounded-xl min-w-0"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[100px] sm:w-[140px] h-10 sm:h-11 rounded-xl text-xs sm:text-sm">
+              <SelectTrigger className="w-[100px] sm:w-[140px] h-10 sm:h-11 rounded-xl text-xs sm:text-sm shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="bg-card">
@@ -211,7 +211,7 @@ export default function Transactions() {
           </div>
 
           {/* Date Range Filters - Horizontal scroll on mobile */}
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+          <div className="overflow-x-auto scrollbar-hide">
             <div className="flex items-center gap-2 min-w-max">
               <span className="text-xs sm:text-sm text-muted-foreground shrink-0">Date:</span>
               {[

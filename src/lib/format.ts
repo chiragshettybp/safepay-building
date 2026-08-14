@@ -30,6 +30,48 @@ export function formatAmount(
   return `${currencySymbol(currency)}${formatted}`;
 }
 
+export type WalletTransactionDirection = 'credit' | 'debit' | 'unknown';
+
+export type WalletTransactionLike = {
+  type?: string | null;
+  amount: number | string | null | undefined;
+  currency?: string | null;
+};
+
+export function walletTransactionDirection(type?: string | null): WalletTransactionDirection {
+  switch (type) {
+    case 'credit':
+    case 'refund':
+      return 'credit';
+    case 'debit':
+    case 'withdrawal':
+      return 'debit';
+    default:
+      return 'unknown';
+  }
+}
+
+export function walletTransactionTone(type?: string | null): 'credit' | 'debit' | 'neutral' {
+  switch (walletTransactionDirection(type)) {
+    case 'credit':
+      return 'credit';
+    case 'debit':
+      return 'debit';
+    default:
+      return 'neutral';
+  }
+}
+
+export function formatWalletTransactionAmount(transaction: WalletTransactionLike): string {
+  const value = Number(transaction.amount);
+  const amount = Number.isFinite(value) ? Math.abs(value) : 0;
+  const base = formatAmount(amount, transaction.currency);
+  const direction = walletTransactionDirection(transaction.type);
+  if (direction === 'credit') return `+${base}`;
+  if (direction === 'debit') return `-${base}`;
+  return base;
+}
+
 export type Country = { code: string; flag: string; name: string };
 
 export const COUNTRIES: Country[] = [

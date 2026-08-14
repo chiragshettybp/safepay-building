@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ArrowLeft, Search, ShoppingBag, Truck, Gavel, ChevronRight, CheckCircle, Flag } from 'lucide-react';
+import { ArrowLeft, Search, ShoppingBag, Truck, Gavel, ChevronRight } from 'lucide-react';
 import { publicIdOf } from '@/lib/public-ids';
 import { formatAmount } from '@/lib/format';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -106,9 +106,6 @@ export default function Orders() {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, statusFilter]);
 
-  const canConfirmReceipt = orders.some(o => o.status === 'delivered');
-  const canReportIssue = orders.some(o => ['pending', 'awaiting_shipment', 'shipped', 'delivered'].includes(o.status));
-
   return (
     <div className="mobile-page flex flex-col">
       {/* Header */}
@@ -127,7 +124,7 @@ export default function Orders() {
       </header>
 
       {/* Metrics - Horizontal Scroll */}
-      <div className="horizontal-scroll py-3 sm:py-4">
+      <div className="overflow-x-auto scrollbar-hide px-4 py-3 sm:py-4">
         <div className="horizontal-scroll-content">
           <div className="metric-card">
             <div className="flex items-center justify-between mb-2">
@@ -154,7 +151,7 @@ export default function Orders() {
       </div>
 
       {/* Filter Pills */}
-      <div className="horizontal-scroll border-b border-border pb-3">
+      <div className="overflow-x-auto scrollbar-hide px-4 border-b border-border pb-3">
         <div className="horizontal-scroll-content">
           {statusFilters.map((filter) => (
             <button
@@ -171,7 +168,7 @@ export default function Orders() {
       </div>
 
       {/* Orders List */}
-      <div className="flex-1 overflow-y-auto pb-28 sm:pb-32">
+      <div className="flex-1 overflow-y-auto pb-safe">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <LoadingSpinner className="h-8 w-8" />
@@ -226,38 +223,6 @@ export default function Orders() {
           </div>
         )}
       </div>
-
-      {/* Bottom Action Bar */}
-      {canConfirmReceipt || canReportIssue ? (
-        <div className="bottom-action">
-          <div className="quick-actions max-w-lg mx-auto">
-            {canConfirmReceipt && (
-              <button
-                onClick={() => {
-                  const order = orders.find(o => o.status === 'delivered');
-                  if (order) navigate(`/orders/${order.id}/confirm`);
-                }}
-                className="quick-action-btn bg-primary text-primary-foreground shadow-sm"
-              >
-                <CheckCircle className="w-4 h-4" />
-                <span className="truncate">Confirm Receipt</span>
-              </button>
-            )}
-            {canReportIssue && (
-              <button
-                onClick={() => {
-                  const order = orders.find(o => ['pending', 'awaiting_shipment', 'shipped', 'delivered'].includes(o.status));
-                  if (order) navigate(`/orders/${order.id}/report`);
-                }}
-                className="quick-action-btn bg-destructive/10 text-destructive"
-              >
-                <Flag className="w-4 h-4" />
-                <span className="truncate">Report Issue</span>
-              </button>
-            )}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
