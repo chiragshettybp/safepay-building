@@ -7,6 +7,8 @@ import { MerchantAuthProvider } from "@/contexts/MerchantAuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MerchantProtectedRoute } from "@/components/auth/MerchantProtectedRoute";
 import Index from "./pages/Index";
+import PublicCheckout from "./pages/PublicCheckout";
+import PublicCheckoutSuccess from "./pages/PublicCheckoutSuccess";
 import NotFound from "./pages/NotFound";
 import CustomerLogin from "./pages/CustomerLogin";
 import CustomerSignup from "./pages/CustomerSignup";
@@ -72,6 +74,9 @@ import MerchantDisputeResponse from "./pages/MerchantDisputeResponse";
 import MerchantDisputeUpload from "./pages/MerchantDisputeUpload";
 import MerchantDisputeResult from "./pages/MerchantDisputeResult";
 import MerchantPayouts from "./pages/MerchantPayouts";
+import MerchantCheckout from "./pages/MerchantCheckout";
+import MerchantCheckoutCreate from "./pages/MerchantCheckoutCreate";
+import MerchantCheckoutDetails from "./pages/MerchantCheckoutDetails";
 import MerchantBankAccount from "./pages/MerchantBankAccount";
 import MerchantWithdraw from "./pages/MerchantWithdraw";
 import MerchantWithdrawSuccess from "./pages/MerchantWithdrawSuccess";
@@ -96,6 +101,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+            <Route path="/checkout/:token" element={<PublicCheckout />} />
+            <Route path="/checkout/:token/success" element={<PublicCheckoutSuccess />} />
             <Route path="/customer-login" element={<CustomerLogin />} />
             <Route path="/customer-signup" element={<CustomerSignup />} />
             <Route path="/customer-verify" element={<CustomerVerify />} />
@@ -259,6 +266,15 @@ const App = () => (
             } />
             <Route path="/merchant-payouts" element={
               <MerchantProtectedRoute><MerchantPayouts /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-checkout" element={
+              <MerchantProtectedRoute><MerchantCheckout /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-checkout/create" element={
+              <MerchantProtectedRoute><MerchantCheckoutCreate /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-checkout/:linkId" element={
+              <MerchantProtectedRoute><MerchantCheckoutDetails /></MerchantProtectedRoute>
             } />
             <Route path="/merchant-bank-account" element={
               <MerchantProtectedRoute><MerchantBankAccount /></MerchantProtectedRoute>

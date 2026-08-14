@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { ArrowLeft, Package, Check, Truck, FileText, Lock, Clock, AlertCircle, MapPin, CheckCircle, AlertTriangle, Copy } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { publicIdOf } from '@/lib/public-ids';
@@ -123,11 +123,12 @@ export default function OrderTracking() {
   const isShipped = ['shipped', 'delivered', 'completed'].includes(order.status) || !!tracking;
   const isDelivered = ['delivered', 'completed'].includes(order.status);
   const isPending = ['pending', 'awaiting_shipment'].includes(order.status) && !tracking;
+  const canReportIssue = ['pending', 'awaiting_shipment', 'shipped', 'delivered'].includes(order.status);
 
-  const expectedDelivery = order.expected_delivery 
-    ? format(new Date(order.expected_delivery), 'd MMM yyyy')
-    : isShipped 
-      ? format(addDays(new Date(order.created_at), 5), 'd MMM yyyy')
+  const expectedDelivery = tracking?.estimated_delivery
+    ? format(new Date(tracking.estimated_delivery), 'd MMM yyyy')
+    : order.expected_delivery
+      ? format(new Date(order.expected_delivery), 'd MMM yyyy')
       : null;
 
   // Calculate progress
@@ -163,9 +164,11 @@ export default function OrderTracking() {
             <span className="text-sm font-medium">Back</span>
           </button>
           <h1 className="font-bold text-foreground">Tracking</h1>
-          <Link to={`/orders/${order.id}/report`} className="px-3 py-1.5 rounded-full border border-destructive text-destructive text-xs font-semibold hover:bg-destructive/5">
-            Support
-          </Link>
+          {canReportIssue && (
+            <Link to={`/orders/${order.id}/report`} className="px-3 py-1.5 rounded-full border border-destructive text-destructive text-xs font-semibold hover:bg-destructive/5">
+              Support
+            </Link>
+          )}
         </div>
       </header>
 

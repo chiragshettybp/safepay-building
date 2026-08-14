@@ -42,6 +42,16 @@ interface DeliveryProof {
   delivery_date: string;
 }
 
+interface OrderItem {
+  id: string;
+  item_name: string;
+  variant_label: string | null;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+  image_url: string | null;
+}
+
 interface TimelineEvent {
   id: string;
   title: string;
@@ -58,6 +68,7 @@ export default function MerchantOrderDetails() {
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [tracking, setTracking] = useState<Tracking | null>(null);
   const [deliveryProof, setDeliveryProof] = useState<DeliveryProof | null>(null);
+  const [items, setItems] = useState<OrderItem[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -127,6 +138,13 @@ export default function MerchantOrderDetails() {
           delivery_date: proofData.delivery_date,
         });
       }
+
+      const { data: itemsData } = await supabase
+        .from('order_items')
+        .select('*')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: true });
+      setItems(itemsData || []);
 
       // Build timeline
       const events: TimelineEvent[] = [
@@ -348,6 +366,27 @@ export default function MerchantOrderDetails() {
               )}
             </div>
           </div>
+
+          {/* Items snapshot (hosted checkout orders) */}
+          {items.length > 0 && (
+            <div className="bg-muted/30 rounded-xl p-3">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Items</h2>
+              <div className="space-y-2">
+                {items.map((item) => (
+                  <div key={item.id} className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{item.item_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.variant_label && `${item.variant_label} · `}
+                        {formatAmount(item.unit_price)} × {item.quantity}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold text-foreground shrink-0">{formatAmount(item.line_total)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Timeline */}
           <div className="bg-muted/30 rounded-xl p-3">

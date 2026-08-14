@@ -169,7 +169,7 @@ export default function ReportIssue() {
   };
 
   const handleSubmit = async () => {
-    if (!order || !user?.id || !form.title.trim() || !form.description.trim()) {
+    if (!order || !user?.id || isClosedForDisputes || !form.title.trim() || !form.description.trim()) {
       toast({ title: 'Missing Info', description: 'Please fill all required fields.', variant: 'destructive' });
       return;
     }
@@ -230,6 +230,34 @@ export default function ReportIssue() {
 
   const canSubmit = form.title.trim() && form.description.trim();
   const hasExistingDispute = order.status === 'disputed';
+  const isClosedForDisputes = ['completed', 'refunded', 'cancelled'].includes(order.status);
+
+  if (isClosedForDisputes) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex flex-col">
+        <header className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
+          <button onClick={() => navigate(`/orders/${order.id}`)} className="p-2 -ml-2 rounded-full hover:bg-muted">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center px-4 text-center space-y-3">
+          <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+            <CheckCircle className="w-8 h-8 text-success" />
+          </div>
+          <h1 className="text-lg font-bold text-foreground">Order Completed</h1>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            This order has already been confirmed and completed. Disputes can no longer be opened for this order.
+          </p>
+          <button
+            onClick={() => navigate(`/orders/${order.id}`)}
+            className="mt-4 px-6 h-11 bg-primary text-primary-foreground rounded-xl font-semibold"
+          >
+            View Order
+          </button>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col pb-24">

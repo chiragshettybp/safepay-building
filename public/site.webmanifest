@@ -1,0 +1,21 @@
+{
+  "name": "Safepay — Protected Payment App",
+  "short_name": "Safepay",
+  "description": "Pay strangers safely. Safepay locks your payment until delivery is confirmed. No delivery? Full refund.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2463EB",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

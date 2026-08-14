@@ -22,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const TOKEN_KEY = 'safepay_auth_token';
 const USER_KEY = 'safepay_user';
 
-const SUPABASE_URL = 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

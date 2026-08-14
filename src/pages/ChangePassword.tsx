@@ -12,7 +12,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-const SUPABASE_URL = 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
 const TOKEN_KEY = 'safepay_auth_token';
 
 export default function ChangePassword() {

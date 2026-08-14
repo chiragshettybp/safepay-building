@@ -11,11 +11,11 @@
     <meta name="keywords" content="escrow payment, secure online payment, buyer protection, fraud protection, safe payment, payment gateway India" />
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://safepay-app.lovable.app/" />
+    <link rel="canonical" href="/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://safepay-app.lovable.app/" />
+    <meta property="og:url" content="/" />
     <meta property="og:title" content="Safepay — Protected Payment App" />
     <meta property="og:description" content="Pay strangers safely. Safepay locks your payment until delivery is confirmed. No delivery? Full refund." />
     <meta property="og:image" content="/og-image.png" />
@@ -23,14 +23,16 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://safepay-app.lovable.app/" />
+    <meta name="twitter:url" content="/" />
     <meta name="twitter:title" content="Safepay — Protected Payment App" />
     <meta name="twitter:description" content="Pay strangers safely. Safepay locks your payment until delivery is confirmed. No delivery? Full refund." />
     <meta name="twitter:image" content="/og-image.png" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#2463EB" />
@@ -40,24 +42,52 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Structured data: Organization + WebSite -->
-    <script type="application/ld+json">
+    <script type="application/ld+json" data-ld="organization">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Safepay",
-        "url": "https://safepay-app.lovable.app/",
-        "logo": "https://safepay-app.lovable.app/favicon.png",
+        "url": "/",
+        "logo": "/brand/safepay-logo.png",
         "description": "Buyer-protected payments — funds are locked until delivery is confirmed.",
         "sameAs": []
       }
     </script>
-    <script type="application/ld+json">
+    <script type="application/ld+json" data-ld="website">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Safepay",
-        "url": "https://safepay-app.lovable.app/"
+        "url": "/"
       }
+    </script>
+
+    <!-- Hydrate absolute metadata URLs from the current origin so the same
+         bundle works on every production domain (Netlify production,
+         branch/preview deploys, and custom domains) without a rebuild. -->
+    <script>
+      (function () {
+        var origin = window.location.origin;
+        var canonical = document.querySelector('link[rel="canonical"]');
+        if (canonical) canonical.setAttribute('href', origin + '/');
+        var metas = document.querySelectorAll('meta[property="og:url"], meta[name="twitter:url"]');
+        metas.forEach(function (m) {
+          m.setAttribute('content', origin + '/');
+        });
+        var ogImages = document.querySelectorAll('meta[property="og:image"], meta[name="twitter:image"]');
+        ogImages.forEach(function (m) {
+          var v = m.getAttribute('content');
+          if (v && v.indexOf('://') === -1) m.setAttribute('content', origin + v);
+        });
+        document.querySelectorAll('script[data-ld]').forEach(function (s) {
+          try {
+            var d = JSON.parse(s.textContent);
+            if (d.url) d.url = origin + '/';
+            if (d.logo && d.logo.indexOf('://') === -1) d.logo = origin + d.logo;
+            s.textContent = JSON.stringify(d);
+          } catch (e) { /* leave structured data untouched */ }
+        });
+      })();
     </script>
   </head>
 

@@ -66,8 +66,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-5 h-16 border-b border-border">
-            <div className="w-24">
-              <SafepayLogo />
+            <div className="w-32">
+              <SafepayLogo size="md" />
             </div>
             <button
               onClick={onClose}

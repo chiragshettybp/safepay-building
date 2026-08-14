@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Gavel, Wallet, User } from 'lucide-react';
+import { Home, Package, Link2, Gavel, Wallet, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MerchantBottomNavProps {
@@ -9,6 +9,7 @@ interface MerchantBottomNavProps {
 const NAV_ITEMS = [
   { title: 'Home', icon: Home, path: '/merchant-dashboard' },
   { title: 'Orders', icon: Package, path: '/merchant-orders' },
+  { title: 'Checkout', icon: Link2, path: '/merchant-checkout' },
   { title: 'Disputes', icon: Gavel, path: '/merchant-disputes' },
   { title: 'Payouts', icon: Wallet, path: '/merchant-payouts' },
   { title: 'Profile', icon: User, path: '/merchant-profile' },

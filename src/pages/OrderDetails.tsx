@@ -34,6 +34,16 @@ interface OrderEvent {
   new_status: string | null;
 }
 
+interface OrderItem {
+  id: string;
+  item_name: string;
+  variant_label: string | null;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+  image_url: string | null;
+}
+
 const statusLabels: Record<string, string> = {
   pending: 'PENDING',
   awaiting_shipment: 'AWAITING SHIPMENT',
@@ -61,6 +71,7 @@ export default function OrderDetails() {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [events, setEvents] = useState<OrderEvent[]>([]);
+  const [items, setItems] = useState<OrderItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -68,9 +79,10 @@ export default function OrderDetails() {
       if (!id || !user?.id) return;
       try {
         // Fetch order and events in parallel
-        const [orderResult, eventsResult] = await Promise.all([
+        const [orderResult, eventsResult, itemsResult] = await Promise.all([
           supabase.from('orders').select('*').eq('id', id).eq('customer_id', user.id).maybeSingle(),
-          supabase.from('order_events').select('*').eq('order_id', id).order('created_at', { ascending: false })
+          supabase.from('order_events').select('*').eq('order_id', id).order('created_at', { ascending: false }),
+          supabase.from('order_items').select('*').eq('order_id', id).order('created_at', { ascending: true })
         ]);
 
         if (orderResult.error) throw orderResult.error;
@@ -78,6 +90,7 @@ export default function OrderDetails() {
         
         setOrder(orderResult.data);
         setEvents(eventsResult.data || []);
+        setItems(itemsResult.data || []);
       } catch (error) {
         console.error('Error fetching order:', error);
         navigate('/orders');
@@ -187,6 +200,36 @@ export default function OrderDetails() {
             </div>
           </div>
         </div>
+
+        {/* Items snapshot (hosted checkout orders) */}
+        {items.length > 0 && (
+          <div className="info-card">
+            <h3 className="font-bold text-sm sm:text-base text-foreground px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-2">Items</h3>
+            <div className="info-card-content">
+              {items.map((item) => (
+                <div key={item.id} className="info-card-row">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.item_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Package className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-xs sm:text-sm text-foreground truncate">{item.item_name}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">
+                      {item.variant_label && `${item.variant_label} · `}
+                      {formatAmount(item.unit_price, order.currency)} × {item.quantity}
+                    </p>
+                  </div>
+                  <span className="font-semibold text-xs sm:text-sm text-foreground shrink-0">
+                    {formatAmount(item.line_total, order.currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Timeline from real events */}
         <div className="info-card">

@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Environment files — real secrets live in .env.local (already ignored above).
+# Track only .env.example.
+.env
+
 # Local dev artifacts (never commit)
 .vite-dev.pid
 supabase/.temp/

@@ -76,9 +76,32 @@ serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const type: string = event.event;
-  console.log("Razorpay webhook:", type);
+  const gatewayEventId: string = event.id;
+  console.log("Razorpay webhook:", type, gatewayEventId);
 
   try {
+    // Idempotency: the unique gateway_event_id guarantees exactly-once processing.
+    // A duplicate delivery (retry or re-send) hits the unique violation and is
+    // treated as already-handled without mutating any state.
+    const { error: logInsertError } = await supabase.from("payment_webhook_logs").insert({
+      gateway: "razorpay",
+      gateway_event_id: gatewayEventId,
+      event_type: type,
+      payload: event,
+      status: "received",
+    });
+
+    if (logInsertError) {
+      if (logInsertError.code === "23505") {
+        return new Response(JSON.stringify({ received: true, duplicate: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw new Error(`webhook log insert failed: ${logInsertError.message}`);
+    }
+
+    let outcome: "processed" | "ignored" = "processed";
+
     if (type === "payment.captured" || type === "payment.authorized") {
       const p = event.payload.payment.entity;
       const { data: tx } = await supabase
@@ -131,9 +154,21 @@ serve(async (req) => {
           .update({ status: "refunded", escrow_status: "refunded" })
           .eq("id", tx.order_id);
       }
+    } else {
+      // Unknown/unsupported events are logged and ignored, never fatal.
+      outcome = "ignored";
     }
+
+    await supabase
+      .from("payment_webhook_logs")
+      .update({ status: outcome, processed_at: new Date().toISOString() })
+      .eq("gateway_event_id", gatewayEventId);
   } catch (err) {
     console.error("Webhook processing error:", err);
+    await supabase
+      .from("payment_webhook_logs")
+      .update({ status: "error", error: String(err), processed_at: new Date().toISOString() })
+      .eq("gateway_event_id", gatewayEventId);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

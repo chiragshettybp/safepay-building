@@ -46,7 +46,7 @@ const TOKEN_KEY = 'safepay_merchant_token';
 const USER_KEY = 'safepay_merchant_user';
 const MERCHANT_KEY = 'safepay_merchant_data';
 
-const SUPABASE_URL = 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
 
 export function MerchantAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<MerchantUser | null>(null);

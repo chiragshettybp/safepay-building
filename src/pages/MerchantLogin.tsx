@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function MerchantLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isAuthenticated } = useMerchantAuth();
   
   const [phone, setPhone] = useState('');
@@ -41,7 +42,8 @@ export default function MerchantLogin() {
         title: 'Welcome back!',
         description: 'You have successfully logged in.',
       });
-      navigate('/merchant-dashboard', { replace: true });
+      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      navigate(from && from !== '/merchant-login' ? from : '/merchant-dashboard', { replace: true });
     }
   };
 

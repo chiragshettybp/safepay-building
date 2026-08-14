@@ -106,6 +106,9 @@ export default function Orders() {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, statusFilter]);
 
+  const canConfirmReceipt = orders.some(o => o.status === 'delivered');
+  const canReportIssue = orders.some(o => ['pending', 'awaiting_shipment', 'shipped', 'delivered'].includes(o.status));
+
   return (
     <div className="mobile-page flex flex-col">
       {/* Header */}
@@ -225,30 +228,36 @@ export default function Orders() {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="bottom-action">
-        <div className="quick-actions max-w-lg mx-auto">
-          <button
-            onClick={() => {
-              const order = orders.find(o => o.status === 'delivered');
-              if (order) navigate(`/orders/${order.id}/confirm`);
-            }}
-            className="quick-action-btn bg-primary text-primary-foreground shadow-sm"
-          >
-            <CheckCircle className="w-4 h-4" />
-            <span className="truncate">Confirm Receipt</span>
-          </button>
-          <button
-            onClick={() => {
-              const order = orders.find(o => ['pending', 'shipped', 'delivered'].includes(o.status));
-              if (order) navigate(`/orders/${order.id}/report`);
-            }}
-            className="quick-action-btn bg-destructive/10 text-destructive"
-          >
-            <Flag className="w-4 h-4" />
-            <span className="truncate">Report Issue</span>
-          </button>
+      {canConfirmReceipt || canReportIssue ? (
+        <div className="bottom-action">
+          <div className="quick-actions max-w-lg mx-auto">
+            {canConfirmReceipt && (
+              <button
+                onClick={() => {
+                  const order = orders.find(o => o.status === 'delivered');
+                  if (order) navigate(`/orders/${order.id}/confirm`);
+                }}
+                className="quick-action-btn bg-primary text-primary-foreground shadow-sm"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span className="truncate">Confirm Receipt</span>
+              </button>
+            )}
+            {canReportIssue && (
+              <button
+                onClick={() => {
+                  const order = orders.find(o => ['pending', 'awaiting_shipment', 'shipped', 'delivered'].includes(o.status));
+                  if (order) navigate(`/orders/${order.id}/report`);
+                }}
+                className="quick-action-btn bg-destructive/10 text-destructive"
+              >
+                <Flag className="w-4 h-4" />
+                <span className="truncate">Report Issue</span>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

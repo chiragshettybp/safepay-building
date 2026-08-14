@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const RAZORPAY_SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
-const SUPABASE_URL = 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://jcxhagmfbezpgrxdxfvs.supabase.co';
 
 interface CreateOrderParams {
   amount: number;

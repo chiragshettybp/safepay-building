@@ -1,0 +1,29 @@
+# Netlify configuration for the Safepay SPA (Vite + React).
+
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite 5 supports Node 18+; pin the LTS line for deterministic builds.
+  NODE_VERSION = "20"
+
+# Client-side routing: every request that does not resolve to a real file in
+# dist/ is rewritten to index.html so the React Router handles the route
+# (deep links, refresh, back/forward all keep working). Real static files
+# (assets, favicon, robots.txt, sitemap.xml) are still served first because
+# Netlify matches existing files before redirects.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers applied to every response.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"

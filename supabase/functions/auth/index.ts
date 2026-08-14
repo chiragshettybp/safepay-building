@@ -198,7 +198,7 @@ serve(async (req) => {
         for (const variant of phoneVariants) {
           const { data } = await supabase
             .from('profiles')
-            .select('id')
+            .select('id, phone, full_name, email, account_source, account_claimed')
             .eq('phone', variant)
             .maybeSingle();
           
@@ -208,7 +208,10 @@ serve(async (req) => {
           }
         }
 
-        if (existingUser) {
+        // Unclaimed guest profiles (created via SafePay payment links) can be
+        // claimed here: the guest's orders then show up in the new account.
+        // Any other existing profile is a hard conflict.
+        if (existingUser && (existingUser.account_source !== 'payment_link' || existingUser.account_claimed)) {
           return new Response(
             JSON.stringify({ error: 'An account with this phone number already exists. Please log in.' }),
             { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -218,52 +221,85 @@ serve(async (req) => {
         // Hash password with salt
         const { hash: passwordHash } = await hashPassword(password);
 
-        // Create user profile
-        const { data: newUser, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            phone: normalizedPhone,
-            password_hash: passwordHash,
-            full_name: fullName?.trim() || null,
-            auth_method: 'phone_password',
-            account_source: 'signup',
-            account_claimed: true,
-            last_login_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
+        // Claim the guest profile or create a new user profile
+        let newUser;
+        if (existingUser) {
+          const { data: claimed, error: claimError } = await supabase
+            .from('profiles')
+            .update({
+              password_hash: passwordHash,
+              full_name: fullName?.trim() || existingUser.full_name || null,
+              auth_method: 'phone_password',
+              account_claimed: true,
+              last_login_at: new Date().toISOString(),
+            })
+            .eq('id', existingUser.id)
+            .select()
+            .single();
 
-        if (insertError) {
-          console.error('Profile insert error:', insertError);
-          
-          // Handle unique constraint violation
-          if (insertError.code === '23505') {
+          if (claimError) {
+            console.error('Guest profile claim error:', claimError);
             return new Response(
-              JSON.stringify({ error: 'An account with this phone number already exists.' }),
-              { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              JSON.stringify({ error: 'Failed to claim account. Please try again.' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
-          
-          return new Response(
-            JSON.stringify({ error: 'Failed to create account. Please try again.' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+
+          newUser = claimed;
+          console.log(`Claimed guest profile for user: ${newUser.id}`);
+        } else {
+          const { data: created, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              phone: normalizedPhone,
+              password_hash: passwordHash,
+              full_name: fullName?.trim() || null,
+              auth_method: 'phone_password',
+              account_source: 'signup',
+              account_claimed: true,
+              last_login_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Profile insert error:', insertError);
+            
+            // Handle unique constraint violation
+            if (insertError.code === '23505') {
+              return new Response(
+                JSON.stringify({ error: 'An account with this phone number already exists.' }),
+                { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            
+            return new Response(
+              JSON.stringify({ error: 'Failed to create account. Please try again.' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          newUser = created;
         }
 
-        // Auto-create wallet for the new user
+        // Auto-create wallet for the new user (idempotent — guests claimed via
+        // signup may not have one yet)
         const { error: walletError } = await supabase
           .from('wallets')
-          .insert({
-            customer_id: newUser.id,
-            balance: 0,
-            currency: 'INR',
-          });
+          .upsert(
+            {
+              customer_id: newUser.id,
+              balance: 0,
+              currency: 'INR',
+            },
+            { onConflict: 'customer_id', ignoreDuplicates: true }
+          );
 
         if (walletError) {
           console.error('Wallet creation error:', walletError);
           // Don't fail signup if wallet creation fails - it can be created later
         } else {
-          console.log(`Wallet created for user: ${newUser.id}`);
+          console.log(`Wallet ensured for user: ${newUser.id}`);
         }
 
         // Create session token

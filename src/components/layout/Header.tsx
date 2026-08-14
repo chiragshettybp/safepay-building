@@ -85,8 +85,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="w-20 lg:hidden">
-          <SafepayLogo />
+        <div className="w-24 sm:w-28 lg:hidden">
+          <SafepayLogo size="sm" />
         </div>
 
         <div className="hidden lg:flex items-center gap-2 min-w-0">

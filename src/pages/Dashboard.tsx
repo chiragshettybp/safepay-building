@@ -18,8 +18,8 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="w-[100px]">
-            <SafepayLogo />
+          <div className="w-32">
+            <SafepayLogo size="md" />
           </div>
           <div className="flex items-center gap-4">
             <span className="text-muted-foreground text-sm">

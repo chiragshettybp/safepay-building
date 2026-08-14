@@ -14,8 +14,8 @@ const Index = () => {
       {/* Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50">
         <nav className="max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-          <div className="w-20 sm:w-28">
-            <SafepayLogo />
+          <div className="w-28 sm:w-32">
+            <SafepayLogo size="md" priority />
           </div>
           
           {/* Desktop Nav */}
@@ -23,6 +23,7 @@ const Index = () => {
             <a href="#problem" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Why Safepay</a>
             <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
+            <Link to="/merchant-login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Merchants</Link>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3">
@@ -90,6 +91,13 @@ const Index = () => {
               className="block py-2 text-sm text-foreground font-medium"
             >
               Log In
+            </Link>
+            <Link 
+              to="/merchant-login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              For Merchants
             </Link>
           </div>
         )}
@@ -481,8 +489,8 @@ const Index = () => {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12">
             <div className="col-span-2 sm:col-span-2 md:col-span-1 mb-4 md:mb-0">
-              <div className="w-20 sm:w-24 mb-3 sm:mb-4">
-                <SafepayLogo />
+              <div className="w-28 sm:w-32 mb-3 sm:mb-4">
+                <SafepayLogo size="md" />
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 SafePay-protected payments for the modern internet.
@@ -495,6 +503,7 @@ const Index = () => {
                 <li><a href="#how-it-works" className="hover:text-foreground transition-colors py-1 block">How It Works</a></li>
                 <li><a href="#features" className="hover:text-foreground transition-colors py-1 block">Features</a></li>
                 <li><Link to="/help" className="hover:text-foreground transition-colors py-1 block">Help &amp; Support</Link></li>
+                <li><Link to="/merchant-login" className="hover:text-foreground transition-colors py-1 block">For Merchants</Link></li>
               </ul>
             </div>
             
