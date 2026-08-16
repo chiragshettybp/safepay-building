@@ -3,23 +3,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, Banknote, Link2, Plus, ReceiptText, ShoppingBag, TrendingUp } from 'lucide-react';
+import { Banknote, Link2, Plus, ReceiptText, ShoppingBag, TrendingUp } from 'lucide-react';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 import { formatAmount } from '@/lib/format';
 import {
-  callCheckout,
-  type CheckoutAnalytics,
-  type CheckoutLinkSummary,
-} from '@/lib/checkout';
+  callPaymentLink,
+  type PaymentLinksAnalytics,
+  type PaymentLinkRow,
+} from '@/lib/paymentLinks';
 
-export default function MerchantCheckout() {
+export default function PaymentLinks() {
   const navigate = useNavigate();
   const { merchant, isAuthenticated, isLoading: authLoading } = useMerchantAuth();
-  const [links, setLinks] = useState<CheckoutLinkSummary[]>([]);
-  const [analytics, setAnalytics] = useState<CheckoutAnalytics | null>(null);
+  const [links, setLinks] = useState<PaymentLinkRow[]>([]);
+  const [analytics, setAnalytics] = useState<PaymentLinksAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -39,13 +40,13 @@ export default function MerchantCheckout() {
     try {
       setIsLoading(true);
       const [linksData, analyticsData] = await Promise.all([
-        callCheckout<CheckoutLinkSummary[]>('list-links', { merchantId: merchant.id }),
-        callCheckout<CheckoutAnalytics>('analytics', { merchantId: merchant.id }),
+        callPaymentLink<PaymentLinkRow[]>('list-links', { merchantId: merchant.id }),
+        callPaymentLink<PaymentLinksAnalytics>('analytics', { merchantId: merchant.id }),
       ]);
       setLinks(linksData);
       setAnalytics(analyticsData);
     } catch (error) {
-      toast.error('Failed to load checkout data');
+      toast.error('Failed to load payment links data');
     } finally {
       setIsLoading(false);
     }
@@ -88,27 +89,24 @@ export default function MerchantCheckout() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/merchant-dashboard')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target" aria-label="Back">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h1 className="text-lg font-semibold text-foreground">Checkout</h1>
-          </div>
-          <Link to="/merchant-checkout/create">
-            <Button size="sm" className="h-9">
-              <Plus className="h-4 w-4 mr-1" />
-              New
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Payment Links"
+          actions={
+            <Link to="/payment-links/create">
+              <Button size="sm" className="h-9">
+                <Plus className="h-4 w-4 mr-1" />
+                New
+              </Button>
+            </Link>
+          }
+        />
+      </div>
 
       <main className="flex-1 overflow-y-auto pb-20">
         <div className="px-4 py-4">
           <p className="text-sm text-muted-foreground mb-4">
-            Create a reusable link and share it anywhere. Every customer who opens it gets their own checkout and order — we hold the money in escrow until you ship.
+            Create a reusable link and share it anywhere. Every customer who opens it gets their own payment session and order — we hold the money in escrow until you ship.
           </p>
 
           {/* Metrics */}
@@ -134,7 +132,7 @@ export default function MerchantCheckout() {
             )}
           </div>
 
-          {/* Sessions */}
+          {/* Payment links */}
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold text-foreground">Payment Links</h2>
           </div>
@@ -158,7 +156,7 @@ export default function MerchantCheckout() {
               <p className="text-xs text-muted-foreground mb-4">
                 Create a reusable link to start accepting payments for your products.
               </p>
-              <Link to="/merchant-checkout/create">
+              <Link to="/payment-links/create">
                 <Button size="sm">
                   <Plus className="h-4 w-4 mr-1" />
                   Create payment link
@@ -170,7 +168,7 @@ export default function MerchantCheckout() {
               {links.map((link) => (
                 <Link
                   key={link.id}
-                  to={`/merchant-checkout/${link.id}`}
+                  to={`/payment-links/${link.id}`}
                   className="block bg-muted/30 rounded-xl p-3 active:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -179,14 +177,14 @@ export default function MerchantCheckout() {
                       <p className="text-xs text-muted-foreground font-mono">{link.public_link_id}</p>
                     </div>
                     <StatusBadge
-                      tone={link.status === 'active' ? 'success' : link.status === 'inactive' ? 'neutral' : link.status === 'expired' ? 'warning' : 'danger'}
+                      tone={link.status === 'active' ? 'success' : link.status === 'inactive' ? 'neutral' : link.status === 'expired' ? 'warning' : 'destructive'}
                       label={link.status}
                       className="text-[10px] px-1.5 py-0.5"
                     />
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {link.orders_count} order{link.orders_count === 1 ? '' : 's'} · {link.sessions_count} checkout{link.sessions_count === 1 ? '' : 's'}
+                      {link.orders_count} order{link.orders_count === 1 ? '' : 's'} · {link.sessions_count} session{link.sessions_count === 1 ? '' : 's'}
                     </span>
                     <span className="font-semibold text-foreground">{formatAmount(link.revenue)}</span>
                   </div>

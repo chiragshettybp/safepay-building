@@ -201,7 +201,7 @@ export default function OrderDetails() {
           </div>
         </div>
 
-        {/* Items snapshot (hosted checkout orders) */}
+        {/* Items snapshot (payment link orders) */}
         {items.length > 0 && (
           <div className="info-card">
             <h3 className="font-bold text-sm sm:text-base text-foreground px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-2">Items</h3>

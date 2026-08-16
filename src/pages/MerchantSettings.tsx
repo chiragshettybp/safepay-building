@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast';
-import { ArrowLeft, Bell, BellRing, ChevronRight, Headphones, LogOut, LucideIcon, Mail, Megaphone, MessageSquare, Store, Truck } from 'lucide-react';
+import { Bell, BellRing, ChevronRight, Headphones, LogOut, LucideIcon, Mail, Megaphone, MessageSquare, Store, Truck } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { Switch } from '@/components/ui/switch';
 import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
@@ -102,17 +103,12 @@ export default function MerchantSettings() {
 
   return (
     <div className="mobile-page">
-      <header className="sticky-header bg-card">
-        <div className="sticky-header-content px-4 sm:px-6">
-          <button onClick={() => navigate('/merchant-dashboard')} className="back-btn">
-            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-semibold text-foreground">Settings</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">{merchant?.businessName || 'Account'}</p>
-          </div>
-        </div>
-      </header>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <MerchantPageHeader
+          title="Settings"
+          subtitle={merchant?.businessName || 'Account'}
+        />
+      </div>
 
       <main className="max-w-2xl mx-auto mobile-section pb-24 space-y-6">
         {/* Notifications */}

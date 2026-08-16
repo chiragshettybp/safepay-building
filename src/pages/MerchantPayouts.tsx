@@ -6,8 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import {
-  ArrowLeft,
   Banknote,
   CheckCircle2,
   Clock,
@@ -246,12 +246,12 @@ export default function MerchantPayouts() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-          <div className="flex items-center justify-between h-14 px-4">
-            <Skeleton className="h-6 w-24" />
-            <Skeleton className="h-8 w-8 rounded-full" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-24" />}
+            actions={<Skeleton className="h-9 w-9 rounded-full" />}
+          />
+        </div>
         <main className="p-4 pb-24 space-y-4">
           <Skeleton className="h-32 w-full rounded-xl" />
           <Skeleton className="h-24 w-full rounded-xl" />
@@ -263,23 +263,17 @@ export default function MerchantPayouts() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/merchant-dashboard')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h1 className="text-lg font-semibold">Payouts</h1>
-              <p className="text-[10px] text-muted-foreground">Manage earnings & withdrawals</p>
-            </div>
-          </div>
-          <Link to="/merchant-payout-history" className="p-2 rounded-lg hover:bg-muted">
-            <History className="h-5 w-5" />
-          </Link>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Payouts"
+          subtitle="Manage earnings & withdrawals"
+          actions={
+            <Link to="/merchant-payout-history" className="p-2 rounded-lg hover:bg-muted" aria-label="Payout history">
+              <History className="h-5 w-5" />
+            </Link>
+          }
+        />
+      </div>
 
       <main className="p-4 space-y-4">
         {/* Balance Cards */}
@@ -449,7 +443,7 @@ export default function MerchantPayouts() {
       </main>
 
       {/* Bottom Action */}
-      <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border safe-bottom">
+      <div className="sticky bottom-0 p-4 bg-background border-t border-border safe-bottom">
         <Link to="/merchant-withdraw">
           <Button
             className="w-full h-12 text-sm font-semibold rounded-xl"

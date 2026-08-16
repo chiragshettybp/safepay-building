@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import Confetti from '@/components/ui/confetti';
 import { Bell, CheckCircle2, Clock, History, Home, Landmark, X } from 'lucide-react';
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 
 interface Payout {
   id: string;
@@ -146,11 +147,9 @@ export default function MerchantWithdrawSuccess() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-          <div className="flex items-center h-14 px-4">
-            <Skeleton className="h-6 w-32" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader title={<Skeleton className="h-6 w-32" />} />
+        </div>
         <main className="p-4 space-y-4">
           <Skeleton className="h-48 w-full rounded-xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -167,15 +166,16 @@ export default function MerchantWithdrawSuccess() {
     <div className="min-h-screen bg-background pb-24">
       {showConfetti && <Confetti />}
 
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="flex items-center justify-between h-14 px-4">
-          <h1 className="text-lg font-semibold">Withdrawal Submitted</h1>
-          <button onClick={() => navigate('/merchant-payouts')} className="p-2 rounded-lg hover:bg-muted">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Withdrawal Submitted"
+          actions={
+            <button onClick={() => navigate('/merchant-payouts')} className="p-2 rounded-lg hover:bg-muted" aria-label="Close">
+              <X className="h-5 w-5" />
+            </button>
+          }
+        />
+      </div>
 
       <main className="p-4 space-y-4">
         {/* Success Animation */}

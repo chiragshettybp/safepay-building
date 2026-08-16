@@ -15,7 +15,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, CloudUpload, FileText, Gavel, Upload, X } from 'lucide-react';
+import { CloudUpload, FileText, Gavel, Upload, X } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 import { formatFileSize } from '@/lib/format';
 
@@ -198,14 +199,12 @@ export default function MerchantDisputeUpload() {
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-          <div className="flex items-center h-14 px-4 gap-2">
-            <button onClick={() => navigate('/merchant-disputes')} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <Skeleton className="h-5 w-28" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-28" />}
+            back={{ fallback: `/merchant-dispute-response/${disputeId}`, label: 'Back to Dispute Chat' }}
+          />
+        </div>
         <div className="p-4 space-y-4">
           <Skeleton className="h-24 w-full rounded-xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -216,15 +215,12 @@ export default function MerchantDisputeUpload() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate(`/merchant-dispute-response/${disputeId}`)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground ml-2">Upload Evidence</h1>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Upload Evidence"
+          back={{ fallback: `/merchant-dispute-response/${disputeId}`, label: 'Back to Dispute Chat' }}
+        />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">

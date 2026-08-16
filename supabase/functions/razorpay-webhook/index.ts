@@ -114,6 +114,25 @@ serve(async (req) => {
         .select()
         .maybeSingle();
 
+      if (tx?.session_id) {
+        // Browser-close robustness: finalize the checkout server-side. This is
+        // idempotent and covers both integration checkouts and payment links.
+        // The shared engine completes the session, creates the order and lets
+        // the DB trigger enqueue integration webhook events.
+        const { data: session } = await supabase
+          .from("checkout_sessions")
+          .select("id, status, integration_id")
+          .eq("id", tx.session_id)
+          .maybeSingle();
+        if (session && session.status !== "completed") {
+          await supabase.rpc("finalize_checkout_payment", {
+            p_transaction_id: tx.id,
+            p_gateway_payment_id: p.id,
+            p_gateway_signature: null,
+          });
+        }
+      }
+
       if (tx?.order_id) {
         await supabase
           .from("orders")

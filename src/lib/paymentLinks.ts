@@ -1,26 +1,26 @@
 import { Smartphone, CreditCard, Landmark, Wallet, type LucideIcon } from 'lucide-react';
 
-export type CheckoutMethodId = 'upi' | 'card' | 'netbanking' | 'wallet';
+export type PaymentMethodId = 'upi' | 'card' | 'netbanking' | 'wallet';
 
-export interface CheckoutMethodMeta {
-  id: CheckoutMethodId;
+export interface PaymentMethodMeta {
+  id: PaymentMethodId;
   label: string;
   description: string;
   icon: LucideIcon;
 }
 
-export const CHECKOUT_METHODS: CheckoutMethodMeta[] = [
+export const PAYMENT_METHODS: PaymentMethodMeta[] = [
   { id: 'upi', label: 'UPI', description: 'GPay, PhonePe, Paytm & more', icon: Smartphone },
   { id: 'card', label: 'Credit / Debit Card', description: 'Visa, Mastercard, RuPay', icon: CreditCard },
   { id: 'netbanking', label: 'Net Banking', description: 'All major Indian banks', icon: Landmark },
   { id: 'wallet', label: 'Wallets', description: 'Amazon Pay, Mobikwik & more', icon: Wallet },
 ];
 
-export function checkoutMethodLabel(id: string): string {
-  return CHECKOUT_METHODS.find((m) => m.id === id)?.label ?? id;
+export function paymentMethodLabel(id: string): string {
+  return PAYMENT_METHODS.find((m) => m.id === id)?.label ?? id;
 }
 
-export interface CheckoutItemPayload {
+export interface PaymentLinkItemPayload {
   item_name: string;
   variant_label?: string;
   unit_price: number;
@@ -28,7 +28,7 @@ export interface CheckoutItemPayload {
   image_url?: string;
 }
 
-export interface CheckoutItem {
+export interface PaymentLinkItem {
   id: string;
   session_id: string;
   item_name: string;
@@ -40,7 +40,7 @@ export interface CheckoutItem {
   created_at: string;
 }
 
-export interface CheckoutEvent {
+export interface PaymentLinkEvent {
   id: string;
   session_id: string;
   event_type: string;
@@ -49,7 +49,7 @@ export interface CheckoutEvent {
   created_at: string;
 }
 
-export interface CheckoutSessionSummary {
+export interface PaymentLinkSessionSummary {
   id: string;
   public_checkout_id: string;
   token: string;
@@ -65,7 +65,7 @@ export interface CheckoutSessionSummary {
   checkout_items: { count: number } | null;
 }
 
-export interface CheckoutSessionDetail {
+export interface PaymentLinkSessionDetail {
   id: string;
   public_checkout_id: string;
   token: string;
@@ -93,7 +93,7 @@ export interface CheckoutSessionDetail {
   order_id: string | null;
 }
 
-export interface CheckoutAnalytics {
+export interface PaymentLinksAnalytics {
   sessions_created: number;
   sessions_completed: number;
   sessions_expired: number;
@@ -106,7 +106,7 @@ export interface CheckoutAnalytics {
   average_order_value: number;
 }
 
-export interface CreateSessionResponse {
+export interface CreateLinkSessionResponse {
   id: string;
   token: string;
   public_checkout_id: string;
@@ -130,7 +130,7 @@ export interface CreateLinkResponse {
   created_at: string;
 }
 
-export interface CheckoutLinkSummary {
+export interface PaymentLinkRow {
   id: string;
   public_link_id: string;
   token: string;
@@ -148,7 +148,7 @@ export interface CheckoutLinkSummary {
   last_activity_at: string | null;
 }
 
-export interface CheckoutLinkItemTemplate {
+export interface PaymentLinkItemTemplate {
   id: string;
   item_name: string;
   variant_label: string | null;
@@ -159,7 +159,7 @@ export interface CheckoutLinkItemTemplate {
   line_total: number;
 }
 
-export interface CheckoutLinkSession {
+export interface PaymentLinkSession {
   id: string;
   public_checkout_id: string;
   status: string;
@@ -175,7 +175,7 @@ export interface CheckoutLinkSession {
   order_number: string | null;
 }
 
-export interface CheckoutLinkDetail {
+export interface PaymentLinkDetail {
   id: string;
   public_link_id: string;
   token: string;
@@ -190,12 +190,13 @@ export interface CheckoutLinkDetail {
   session_expiry_hours: number;
   created_at: string;
   updated_at: string;
-  items: CheckoutLinkItemTemplate[];
-  sessions: CheckoutLinkSession[];
+  items: PaymentLinkItemTemplate[];
+  sessions: PaymentLinkSession[];
 }
 
-export interface OpenLinkResponse extends PublicCheckoutData {
+export interface OpenLinkResponse extends PublicPaymentLinkData {
   resumed: boolean;
+  error?: string;
   link: {
     id: string;
     public_link_id: string;
@@ -226,7 +227,7 @@ export interface VerifyPaymentResponse {
   };
 }
 
-export interface PublicCheckoutItem {
+export interface PublicPaymentLinkItem {
   id: string;
   item_name: string;
   variant_label: string | null;
@@ -239,7 +240,7 @@ export interface PublicCheckoutItem {
   line_total: number;
 }
 
-export interface PublicCheckoutConfig {
+export interface PublicPaymentLinkConfig {
   merchant_id: string;
   guest_checkout_enabled: boolean;
   email_required: boolean;
@@ -254,7 +255,7 @@ export interface PublicCheckoutConfig {
   cancel_url: string | null;
 }
 
-export interface PublicCheckoutData {
+export interface PublicPaymentLinkData {
   not_found: boolean;
   session: {
     id: string;
@@ -282,7 +283,7 @@ export interface PublicCheckoutData {
     order_id: string | null;
     payment_transaction_id: string | null;
   };
-  items: PublicCheckoutItem[];
+  items: PublicPaymentLinkItem[];
   merchant: {
     id: string;
     public_merchant_id: string;
@@ -292,7 +293,7 @@ export interface PublicCheckoutData {
     verification_status: string;
     is_active: boolean;
   };
-  config: PublicCheckoutConfig;
+  config: PublicPaymentLinkConfig;
   order: {
     id: string;
     public_order_id: string;
@@ -306,7 +307,7 @@ export interface PublicCheckoutData {
   } | null;
 }
 
-export class CheckoutApiError extends Error {
+export class PaymentLinkApiError extends Error {
   code: string;
   detail?: string;
   status: number;
@@ -319,16 +320,16 @@ export class CheckoutApiError extends Error {
   }
 }
 
-const CHECKOUT_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL ?? 'https://jcxhagmfbezpgrxdxfvs.supabase.co'}/functions/v1/checkout-payment`;
+const PAYMENT_LINKS_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL ?? 'https://jcxhagmfbezpgrxdxfvs.supabase.co'}/functions/v1/payment-links`;
 
 const MERCHANT_TOKEN_KEY = 'safepay_merchant_token';
 
-export async function callCheckout<T>(action: string, data: Record<string, unknown> = {}): Promise<T> {
+export async function callPaymentLink<T>(action: string, data: Record<string, unknown> = {}): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const merchantToken = localStorage.getItem(MERCHANT_TOKEN_KEY);
   if (merchantToken) headers.Authorization = `Bearer ${merchantToken}`;
 
-  const res = await fetch(CHECKOUT_FUNCTION_URL, {
+  const res = await fetch(PAYMENT_LINKS_FUNCTION_URL, {
     method: 'POST',
     headers,
     body: JSON.stringify({ action, ...data }),
@@ -343,19 +344,19 @@ export async function callCheckout<T>(action: string, data: Record<string, unkno
 
   if (!res.ok || !payload || (payload as { error?: string }).error) {
     const err = (payload ?? {}) as { error?: string; detail?: string };
-    throw new CheckoutApiError(err.error || 'REQUEST_FAILED', err.detail, res.status);
+    throw new PaymentLinkApiError(err.error || 'REQUEST_FAILED', err.detail, res.status);
   }
 
   return payload as T;
 }
 
-export function buildCheckoutLink(token: string): string {
-  return `${window.location.origin}/checkout/${token}`;
+export function buildPaymentLink(token: string): string {
+  return `${window.location.origin}/payment-link/${token}`;
 }
 
-const SESSION_TOKEN_KEY_PREFIX = 'safepay_checkout_session:';
+const SESSION_TOKEN_KEY_PREFIX = 'safepay_payment_link_session:';
 
-export function getCheckoutSessionToken(linkToken: string): string | null {
+export function getPaymentLinkSessionToken(linkToken: string): string | null {
   try {
     return sessionStorage.getItem(`${SESSION_TOKEN_KEY_PREFIX}${linkToken}`);
   } catch {
@@ -363,7 +364,7 @@ export function getCheckoutSessionToken(linkToken: string): string | null {
   }
 }
 
-export function setCheckoutSessionToken(linkToken: string, sessionToken: string): void {
+export function setPaymentLinkSessionToken(linkToken: string, sessionToken: string): void {
   try {
     sessionStorage.setItem(`${SESSION_TOKEN_KEY_PREFIX}${linkToken}`, sessionToken);
   } catch {
@@ -372,7 +373,7 @@ export function setCheckoutSessionToken(linkToken: string, sessionToken: string)
   }
 }
 
-export function clearCheckoutSessionToken(linkToken: string): void {
+export function clearPaymentLinkSessionToken(linkToken: string): void {
   try {
     sessionStorage.removeItem(`${SESSION_TOKEN_KEY_PREFIX}${linkToken}`);
   } catch {
@@ -380,7 +381,7 @@ export function clearCheckoutSessionToken(linkToken: string): void {
   }
 }
 
-export function checkoutStatusMeta(status: string): { label: string; tone: 'success' | 'warning' | 'destructive' | 'info' | 'neutral' } {
+export function paymentLinkStatusMeta(status: string): { label: string; tone: 'success' | 'warning' | 'destructive' | 'info' | 'neutral' } {
   switch (status) {
     case 'active':
       return { label: 'Active', tone: 'info' };

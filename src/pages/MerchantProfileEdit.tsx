@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/lib/toast';
-import { ArrowLeft, Info, MapPin, Phone, Save } from 'lucide-react';
+import { Info, MapPin, Phone, Save } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
@@ -146,19 +147,12 @@ export default function MerchantProfileEdit() {
 
   return (
     <div className="mobile-page">
-      {/* Header */}
-      <header className="sticky-header bg-card">
-        <div className="sticky-header-content px-4 sm:px-6">
-          <button
-            onClick={() => navigate('/merchant-profile')}
-            className="back-btn"
-          >
-            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-          <h1 className="text-sm sm:text-base font-semibold text-foreground">Edit Business Profile</h1>
-          <div className="w-10"></div>
-        </div>
-      </header>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <MerchantPageHeader
+          title="Edit Business Profile"
+          back={{ fallback: '/merchant-profile', label: 'Back to Profile' }}
+        />
+      </div>
 
       {/* Form Content */}
       <main className="max-w-2xl mx-auto mobile-section pb-28 sm:pb-24">

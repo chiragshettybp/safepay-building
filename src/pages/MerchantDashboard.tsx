@@ -1,542 +1,706 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { Bell, CheckCircle2, Gavel, Inbox, Landmark, LogOut, ReceiptText, Search, Store, Truck } from 'lucide-react';
-import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import {
+  AlertCircle,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Gavel,
+  Inbox,
+  Landmark,
+  Link2,
+  Lock,
+  Package,
+  PartyPopper,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  Store,
+  Truck,
+  Users,
+  Wallet,
+} from 'lucide-react';
+import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
+import { useMerchantProfile } from '@/components/merchant/MerchantProfileContext';
+import { useMerchantDashboard, type MerchantOrderRow, type MerchantTransactionRow } from '@/hooks/useMerchantDashboard';
+import { supabase } from '@/integrations/supabase/client';
+import { formatAmount } from '@/lib/format';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
-import { FullPageLoading } from '@/components/shared/LoadingSpinner';
+import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { cn } from '@/lib/utils';
 
-interface DashboardStats {
-  totalOrders: number;
-  pendingOrders: number;
-  shippedOrders: number;
-  completedOrders: number;
-  disputedOrders: number;
-  totalRevenue: number;
-  pendingBalance: number;
-  availableBalance: number;
+const ORDER_STATUS: Record<string, { tone: StatusTone; label: string }> = {
+  pending: { tone: 'neutral', label: 'Pending' },
+  awaiting_shipment: { tone: 'neutral', label: 'Awaiting Shipment' },
+  shipped: { tone: 'info', label: 'Shipped' },
+  in_progress: { tone: 'info', label: 'In Transit' },
+  delivered: { tone: 'success', label: 'Delivered' },
+  completed: { tone: 'success', label: 'Completed' },
+  disputed: { tone: 'destructive', label: 'Disputed' },
+  refunded: { tone: 'warning', label: 'Refunded' },
+  cancelled: { tone: 'neutral', label: 'Cancelled' },
+};
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
 }
 
-interface Order {
-  id: string;
-  public_order_id: string;
-  order_number: string;
-  product_name: string;
-  amount: number;
-  status: string;
-  escrow_status: string;
-  created_at: string;
-  expected_delivery: string | null;
-  customer_id: string;
+function SectionHeader({ title, action }: { title: string; action?: { label: string; to: string } }) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-2">
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      {action && (
+        <Link to={action.to} className="flex items-center gap-0.5 text-xs font-medium text-primary hover:underline">
+          {action.label}
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      )}
+    </div>
+  );
 }
 
-interface Activity {
-  id: string;
-  activity_type: string;
-  title: string;
-  description: string | null;
-  created_at: string;
+function SkeletonBlocks({ count = 3, className = 'h-20' }: { count?: number; className?: string }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: count }).map((_, i) => (
+        <Skeleton key={i} className={cn('w-full rounded-2xl', className)} />
+      ))}
+    </div>
+  );
 }
 
-type FilterType = 'all' | 'pending' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'refunded';
+function DashboardError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <Card className="flex flex-col items-center justify-center gap-3 border-destructive/30 bg-destructive/5 p-8 text-center">
+      <AlertCircle className="h-8 w-8 text-destructive" />
+      <p className="text-sm font-medium text-foreground">{message}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        <RefreshCw className="h-4 w-4 mr-2" /> Try Again
+      </Button>
+    </Card>
+  );
+}
+
+function MoneyBlock({ label, value, hint, icon: Icon, highlight }: { label: string; value: string; hint?: string; icon: React.ComponentType<{ className?: string }>; highlight?: boolean }) {
+  return (
+    <div className={cn('rounded-2xl border p-4', highlight ? 'border-primary/30 bg-primary/[0.06]' : 'border-border bg-card')}>
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Icon className="h-4 w-4" />
+        <p className="text-xs font-medium">{label}</p>
+      </div>
+      <p className={cn('mt-2 text-2xl font-bold tracking-tight', highlight ? 'text-foreground' : 'text-foreground')}>{value}</p>
+      {hint && <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">{hint}</p>}
+    </div>
+  );
+}
+
+function StatCard({ label, value, context, icon: Icon, to, tone }: { label: string; value: number; context: string; icon: React.ComponentType<{ className?: string }>; to: string; tone?: 'destructive' | 'warning' | 'info' }) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        'group flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-all active:scale-[0.98] hover:border-primary/30',
+      )}
+    >
+      <div
+        className={cn(
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+          tone === 'destructive' ? 'bg-destructive/10 text-destructive' : tone === 'warning' ? 'bg-warning/10 text-warning' : tone === 'info' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-lg font-bold leading-tight text-foreground">{value}</p>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-0.5 truncate text-[11px] text-muted-foreground/80">{context}</p>
+      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5" />
+    </Link>
+  );
+}
+
+function OrderRow({ order, currency }: { order: MerchantOrderRow; currency: string }) {
+  const config = ORDER_STATUS[order.status] ?? { tone: 'neutral' as StatusTone, label: order.status };
+  return (
+    <Link
+      to={`/merchant-order/${order.id}`}
+      className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/30 active:bg-muted/40"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+        <Package className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-foreground font-mono">{order.public_order_id ?? `#${order.order_number}`}</p>
+        <p className="truncate text-xs text-muted-foreground">{order.product_name}</p>
+      </div>
+      <div className="hidden sm:block">
+        <StatusBadge tone={config.tone} label={config.label} dot className="text-[10px] px-1.5 py-0.5" />
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-sm font-bold text-foreground">{formatAmount(order.amount, currency)}</p>
+        <p className="text-[10px] text-muted-foreground">
+          {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+function TransactionRow({ tx }: { tx: MerchantTransactionRow }) {
+  const credit = tx.amount > 0;
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+      <div
+        className={cn(
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+          credit ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground',
+        )}
+      >
+        {credit ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground">{tx.label}</p>
+        <p className="truncate text-[11px] text-muted-foreground">
+          {tx.reference} · {new Date(tx.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
+        </p>
+      </div>
+      <p className={cn('shrink-0 text-sm font-bold', credit ? 'text-success' : 'text-foreground')}>
+        {formatAmount(tx.amount, tx.currency)}
+      </p>
+    </div>
+  );
+}
+
+function RevenueChart({ days, onChange, series }: { days: 7 | 30 | 90; onChange: (d: 7 | 30 | 90) => void; series: { date: string; amount: number }[] }) {
+  const total = series.reduce((s, p) => s + p.amount, 0);
+  return (
+    <Card className="p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Revenue</h2>
+          <p className="text-lg font-bold text-foreground">{formatAmount(total)}</p>
+        </div>
+        <div className="flex rounded-lg border border-border p-0.5">
+          {([7, 30, 90] as const).map((d) => (
+            <button
+              key={d}
+              onClick={() => onChange(d)}
+              className={cn(
+                'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                days === d ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {d}D
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="h-40 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={series} margin={{ top: 4, right: 4, bottom: 0, left: -22 }}>
+            <defs>
+              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.22} />
+                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+              tickFormatter={(v: string) => new Date(v + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+              tickLine={false}
+              axisLine={false}
+              minTickGap={28}
+            />
+            <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${Math.round(v / 1000)}k`} width={44} />
+            <Tooltip
+              cursor={{ stroke: 'var(--border)' }}
+              contentStyle={{ background: 'var(--popover)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 12 }}
+              labelFormatter={(v) => new Date(String(v) + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+              formatter={(v) => [formatAmount(Number(v)), 'Revenue']}
+            />
+            <Area type="monotone" dataKey="amount" stroke="var(--primary)" strokeWidth={2} fill="url(#revenueFill)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </Card>
+  );
+}
+
+function subscribeDashboardRealtime(merchantId: string, refresh: () => void) {
+  const orders = supabase
+    .channel('merchant-dash-orders')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `merchant_id=eq.${merchantId}` }, refresh)
+    .subscribe();
+  const activity = supabase
+    .channel('merchant-dash-activity')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'merchant_activity', filter: `merchant_id=eq.${merchantId}` }, refresh)
+    .subscribe();
+  return { orders, activity };
+}
 
 export default function MerchantDashboard() {
+  const { user } = useMerchantAuth();
+  const profile = useMerchantProfile();
   const navigate = useNavigate();
-  const { user, merchant, logout, isAuthenticated, isLoading: authLoading } = useMerchantAuth();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalOrders: 0,
-    pendingOrders: 0,
-    shippedOrders: 0,
-    completedOrders: 0,
-    disputedOrders: 0,
-    totalRevenue: 0,
-    pendingBalance: 0,
-    availableBalance: 0,
-  });
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [alerts, setAlerts] = useState<{ type: string; message: string; count: number }[]>([]);
+  const { loading, error, wallet, orders, disputes, transactions, activities, stats, pipeline, revenue, refresh } = useMerchantDashboard(profile?.id ?? '');
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate('/merchant-login', { replace: true });
-    }
-  }, [authLoading, isAuthenticated, navigate]);
+  const [revenueDays, setRevenueDays] = useState<7 | 30 | 90>(30);
+  const currency = wallet?.currency ?? 'INR';
 
-  useEffect(() => {
-    if (merchant && merchant.verificationStatus !== 'approved') {
-      navigate('/merchant-verify', { replace: true });
-    }
-  }, [merchant, navigate]);
+  const firstName = (profile?.business_name ?? user?.fullName ?? 'Merchant').split(' ')[0];
 
-  const fetchDashboardData = useCallback(async () => {
-    if (!merchant?.id) return;
+  const attentionCount = useMemo(() => {
+    const disputesAttention = disputes.filter((d) => d.merchant_not_responded || d.status === 'open' || d.status === 'info_required').length;
+    return stats.toShip + disputesAttention + (wallet && wallet.balance > 0 ? 1 : 0);
+  }, [disputes, stats.toShip, wallet]);
 
-    try {
-      const { data: wallet } = await supabase
-        .from('merchant_wallets')
-        .select('balance, pending_balance, total_earned')
-        .eq('merchant_id', merchant.id)
-        .single();
-
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select('id, public_order_id, order_number, product_name, amount, status, escrow_status, created_at, expected_delivery, customer_id, merchant_id')
-        .eq('merchant_id', merchant.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (ordersError) {
-        console.error('Orders fetch error:', ordersError);
-      }
-
-      const merchantOrders: Order[] = (ordersData || []).map((o: any) => ({
-        id: o.id,
-        public_order_id: o.public_order_id,
-        order_number: o.order_number,
-        product_name: o.product_name,
-        amount: o.amount,
-        status: o.status,
-        escrow_status: o.escrow_status,
-        created_at: o.created_at,
-        expected_delivery: o.expected_delivery,
-        customer_id: o.customer_id,
-      }));
-
-      const pendingOrders = merchantOrders.filter(o => o.status === 'pending' || o.status === 'awaiting_shipment').length;
-      const shippedOrders = merchantOrders.filter(o => o.status === 'shipped').length;
-      const completedOrders = merchantOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length;
-      const disputedOrders = merchantOrders.filter(o => o.status === 'disputed').length;
-
-      setStats({
-        totalOrders: merchantOrders.length,
-        pendingOrders,
-        shippedOrders,
-        completedOrders,
-        disputedOrders,
-        totalRevenue: Number(wallet?.total_earned) || 0,
-        pendingBalance: Number(wallet?.pending_balance) || 0,
-        availableBalance: Number(wallet?.balance) || 0,
+  const actionCards = useMemo(() => {
+    const cards: { key: string; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; to: string; tone: 'destructive' | 'warning' | 'info' }[] = [];
+    const disputesAttention = disputes.filter((d) => d.merchant_not_responded || d.status === 'open' || d.status === 'info_required');
+    if (disputesAttention.length > 0) {
+      const n = disputesAttention.length;
+      cards.push({
+        key: 'dispute',
+        icon: Gavel,
+        title: `${n} dispute${n > 1 ? 's' : ''} need${n === 1 ? 's' : ''} your response`,
+        desc: 'Respond before the review deadline to protect your funds.',
+        to: '/merchant-disputes',
+        tone: 'destructive',
       });
-
-      setOrders(merchantOrders);
-
-      const newAlerts: { type: string; message: string; count: number }[] = [];
-      
-      if (pendingOrders > 0) {
-        newAlerts.push({
-          type: 'shipment',
-          message: `${pendingOrders} order${pendingOrders > 1 ? 's' : ''} need${pendingOrders === 1 ? 's' : ''} shipment`,
-          count: pendingOrders,
-        });
-      }
-      
-      if (disputedOrders > 0) {
-        newAlerts.push({
-          type: 'dispute',
-          message: `${disputedOrders} dispute${disputedOrders > 1 ? 's' : ''} need${disputedOrders === 1 ? 's' : ''} response`,
-          count: disputedOrders,
-        });
-      }
-
-      setAlerts(newAlerts);
-
-      const { data: activityData } = await supabase
-        .from('merchant_activity')
-        .select('*')
-        .eq('merchant_id', merchant.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      setActivities(activityData || []);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      toast.error('Failed to load dashboard data');
-    } finally {
-      setIsLoading(false);
     }
-  }, [merchant?.id]);
+    if (stats.toShip > 0) {
+      cards.push({
+        key: 'ship',
+        icon: Truck,
+        title: `${stats.toShip} order${stats.toShip > 1 ? 's' : ''} need${stats.toShip === 1 ? 's' : ''} shipping`,
+        desc: 'Add tracking details to keep deliveries on schedule.',
+        to: '/merchant-orders',
+        tone: 'warning',
+      });
+    }
+    if (wallet && wallet.balance > 0) {
+      cards.push({
+        key: 'withdraw',
+        icon: Landmark,
+        title: `${formatAmount(wallet.balance, currency)} available to withdraw`,
+        desc: 'Move available funds to your bank account.',
+        to: '/merchant-withdraw',
+        tone: 'info',
+      });
+    }
+    return cards;
+  }, [disputes, stats.toShip, wallet, currency]);
+
+  const delayedShipments = useMemo(() => {
+    const now = Date.now();
+    return orders.filter((o) => {
+      if (!o.expected_delivery) return false;
+      if (o.status === 'delivered' || o.status === 'completed' || o.status === 'cancelled' || o.status === 'refunded') return false;
+      return new Date(o.expected_delivery).getTime() < now;
+    }).length;
+  }, [orders]);
+
+  const recentOrders = orders.slice(0, 5);
+  const recentTransactions = transactions.slice(0, 6);
+  const topActivity = activities.slice(0, 4);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  useEffect(() => {
-    if (!merchant?.id) return;
-
-    const ordersChannel = supabase
-      .channel('merchant-orders-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-          filter: `merchant_id=eq.${merchant.id}`,
-        },
-        (payload) => {
-          console.log('Order change:', payload);
-          fetchDashboardData();
-          if (payload.eventType === 'INSERT') {
-            toast.success('New order received!');
-          } else if (payload.eventType === 'UPDATE') {
-            toast.info('Order status updated');
-          }
-        }
-      )
-      .subscribe();
-
-    const activityChannel = supabase
-      .channel('merchant-activity-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'merchant_activity',
-          filter: `merchant_id=eq.${merchant.id}`,
-        },
-        (payload) => {
-          console.log('Activity change:', payload);
-          setActivities(prev => [payload.new as Activity, ...prev.slice(0, 9)]);
-        }
-      )
-      .subscribe();
-
+    if (!profile?.id) return;
+    const channel = subscribeDashboardRealtime(profile.id, refresh);
     return () => {
-      supabase.removeChannel(ordersChannel);
-      supabase.removeChannel(activityChannel);
+      supabase.removeChannel(channel.orders);
+      supabase.removeChannel(channel.activity);
     };
-  }, [merchant?.id, fetchDashboardData]);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/merchant-login', { replace: true });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { tone: StatusTone; label: string }> = {
-      pending: { tone: 'neutral', label: 'Pending' },
-      awaiting_shipment: { tone: 'neutral', label: 'Awaiting Shipment' },
-      shipped: { tone: 'info', label: 'Shipped' },
-      delivered: { tone: 'info', label: 'Delivered' },
-      completed: { tone: 'info', label: 'Completed' },
-      disputed: { tone: 'destructive', label: 'Disputed' },
-      refunded: { tone: 'neutral', label: 'Refunded' },
-      cancelled: { tone: 'neutral', label: 'Cancelled' },
-    };
-    const config = statusConfig[status] || { tone: 'neutral' as const, label: status };
-    return <StatusBadge tone={config.tone} label={config.label} className="text-[10px] px-1.5 py-0.5" />;
-  };
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      order.public_order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.product_name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (activeFilter === 'all') return matchesSearch;
-    if (activeFilter === 'pending') return matchesSearch && (order.status === 'pending' || order.status === 'awaiting_shipment');
-    return matchesSearch && order.status === activeFilter;
-  });
-
-  const handleFilterClick = (filter: FilterType) => {
-    setActiveFilter(filter);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-    });
-  };
-
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  if (authLoading || !isAuthenticated || !merchant) {
-    return <FullPageLoading />;
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, refresh]);
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border safe-top">
-        <div className="flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Store className="h-[18px] w-[18px] text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{merchant.businessName}</p>
-              <p className="text-[11px] text-muted-foreground">{user?.phone}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Link to="/merchant-notifications" className="p-2.5 hover:bg-muted rounded-full relative touch-target">
-              <Bell className="h-5 w-5 text-foreground" />
-              {alerts.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full"></span>
-              )}
-            </Link>
-            <button onClick={handleLogout} className="p-2.5 hover:bg-muted rounded-full touch-target">
-              <LogOut className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        <div className="px-4 py-4 space-y-4">
-          {/* Welcome */}
-          <div>
-            <h1 className="text-xl font-bold text-foreground">
-              Welcome, {user?.fullName?.split(' ')[0] || 'Merchant'}!
-            </h1>
-            <p className="text-sm text-muted-foreground">Here's your business overview</p>
-          </div>
-
-          {/* Alerts */}
-          {alerts.length > 0 && (
-            <div className="space-y-2">
-              {alerts.map((alert, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-2.5 p-3 rounded-xl ${
-                    alert.type === 'dispute' ? 'bg-destructive/10' : 'bg-amber-500/10'
-                  }`}
-                >
-                  {alert.type === 'dispute' ? (
-                    <Gavel className="h-[18px] w-[18px] text-destructive" />
-                  ) : (
-                    <Truck className="h-[18px] w-[18px] text-amber-600" />
-                  )}
-                  <p className="text-xs text-foreground flex-1">{alert.message}</p>
-                  <Link to={alert.type === 'dispute' ? '/merchant-disputes' : '/merchant-orders'}>
-                    <Button size="sm" variant="ghost" className="h-7 text-xs px-2">
-                      View
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
+    <>
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-5 pb-16 sm:px-6 sm:py-7">
+      {/* Greeting */}
+      <div>
+        <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+          {greeting()}, {firstName} 👋
+        </h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {attentionCount > 0 ? (
+            <>{attentionCount} item{attentionCount > 1 ? 's' : ''} need your attention today.</>
+          ) : (
+            <>Your business is running smoothly.</>
           )}
+        </p>
+      </div>
 
-          {/* KPI Cards - 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleFilterClick('all')}
-              className={`bg-muted/50 rounded-xl p-3 text-left transition-all active:scale-[0.98] ${
-                activeFilter === 'all' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''
-              }`}
-            >
-              {isLoading ? (
-                <Skeleton className="h-7 w-12 mb-0.5" />
-              ) : (
-                <p className="text-2xl font-bold text-foreground">{stats.totalOrders}</p>
-              )}
-              <p className="text-[11px] text-muted-foreground">Total Orders</p>
-            </button>
-            <button
-              onClick={() => handleFilterClick('pending')}
-              className={`bg-amber-500/10 rounded-xl p-3 text-left transition-all active:scale-[0.98] ${
-                activeFilter === 'pending' ? 'ring-2 ring-amber-500 ring-offset-1 ring-offset-background' : ''
-              }`}
-            >
-              {isLoading ? (
-                <Skeleton className="h-7 w-12 mb-0.5" />
-              ) : (
-                <p className="text-2xl font-bold text-amber-600">{stats.pendingOrders}</p>
-              )}
-              <p className="text-[11px] text-muted-foreground">Pending</p>
-            </button>
-            <button
-              onClick={() => handleFilterClick('shipped')}
-              className={`bg-primary/10 rounded-xl p-3 text-left transition-all active:scale-[0.98] ${
-                activeFilter === 'shipped' ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''
-              }`}
-            >
-              {isLoading ? (
-                <Skeleton className="h-7 w-12 mb-0.5" />
-              ) : (
-                <p className="text-2xl font-bold text-primary">{stats.shippedOrders}</p>
-              )}
-              <p className="text-[11px] text-muted-foreground">In Transit</p>
-            </button>
-            <button
-              onClick={() => handleFilterClick('disputed')}
-              className={`bg-destructive/10 rounded-xl p-3 text-left transition-all active:scale-[0.98] ${
-                activeFilter === 'disputed' ? 'ring-2 ring-destructive ring-offset-1 ring-offset-background' : ''
-              }`}
-            >
-              {isLoading ? (
-                <Skeleton className="h-7 w-12 mb-0.5" />
-              ) : (
-                <p className="text-2xl font-bold text-destructive">{stats.disputedOrders}</p>
-              )}
-              <p className="text-[11px] text-muted-foreground">Disputes</p>
-            </button>
-          </div>
+      {error && (
+        <DashboardError message={error} onRetry={refresh} />
+      )}
 
-          {/* Balance Cards */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-primary rounded-xl p-3.5 text-primary-foreground">
-              <p className="text-[11px] opacity-80 mb-0.5">Available</p>
-              {isLoading ? (
-                <Skeleton className="h-7 w-20 bg-primary-foreground/20" />
-              ) : (
-                <p className="text-xl font-bold">{formatAmount(stats.availableBalance)}</p>
-              )}
-              <Link to="/merchant-payouts">
-                <Button size="sm" variant="secondary" className="mt-2.5 h-7 text-[11px] px-2.5">
-                  <Landmark className="h-3.5 w-3.5 mr-1" />
-                  Withdraw
-                </Button>
-              </Link>
-            </div>
-            <div className="bg-muted/50 rounded-xl p-3.5">
-              <p className="text-[11px] text-muted-foreground mb-0.5">In SafePay</p>
-              {isLoading ? (
-                <Skeleton className="h-7 w-20" />
-              ) : (
-                <p className="text-xl font-bold text-foreground">{formatAmount(stats.pendingBalance)}</p>
-              )}
-              <p className="text-[10px] text-muted-foreground mt-2.5">Released after delivery</p>
-            </div>
-          </div>
-
-          {/* Orders Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-foreground">Orders</h2>
-              <Link to="/merchant-orders" className="text-xs text-primary font-medium">
-                View All
-              </Link>
-            </div>
-            
-            {/* Search */}
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-[18px] w-[18px]" />
-              <Input
-                type="text"
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10 text-sm"
-              />
-            </div>
-
-            {/* Filter Pills */}
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-3 -mx-4 px-4 scrollbar-hide">
-              {(['all', 'pending', 'shipped', 'completed', 'disputed'] as FilterType[]).map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => handleFilterClick(filter)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all active:scale-95 ${
-                    activeFilter === filter
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
+      {/* Action Required */}
+      <section aria-label="Action required">
+        <SectionHeader title="Action Required" />
+        {loading ? (
+          <SkeletonBlocks count={2} className="h-20" />
+        ) : actionCards.length > 0 ? (
+          <div className="space-y-2">
+            {actionCards.map((card) => (
+              <Link
+                key={card.key}
+                to={card.to}
+                className={cn(
+                  'flex items-center gap-3 rounded-2xl border p-3.5 transition-all active:scale-[0.99]',
+                  card.tone === 'destructive'
+                    ? 'border-destructive/30 bg-destructive/[0.06]'
+                    : card.tone === 'warning'
+                      ? 'border-warning/40 bg-warning/[0.07]'
+                      : 'border-primary/30 bg-primary/[0.06]',
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                    card.tone === 'destructive' ? 'bg-destructive/10 text-destructive' : card.tone === 'warning' ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary',
+                  )}
                 >
-                  {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {/* Orders List */}
-            {isLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-muted/30 rounded-xl p-3">
-                    <Skeleton className="h-4 w-24 mb-1.5" />
-                    <Skeleton className="h-3 w-36 mb-1.5" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                ))}
-              </div>
-            ) : filteredOrders.length === 0 ? (
-              <div className="bg-muted/30 rounded-xl p-6 text-center">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mx-auto mb-2">
-                  <Inbox className="h-[18px] w-[18px] text-muted-foreground" />
+                  <card.icon className="h-5 w-5" />
                 </div>
-                <h3 className="text-sm font-medium text-foreground mb-0.5">No orders found</h3>
-                <p className="text-xs text-muted-foreground">
-                  {searchQuery || activeFilter !== 'all' ? 'Try different filters' : 'Orders will appear here'}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">{card.title}</p>
+                  <p className="text-xs text-muted-foreground">{card.desc}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Card className="flex items-center gap-3 border-border bg-card p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
+              <PartyPopper className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">You're all caught up</p>
+              <p className="text-xs text-muted-foreground">No merchant action is required right now.</p>
+            </div>
+          </Card>
+        )}
+      </section>
+
+      {/* Your Money */}
+      <section aria-label="Your money">
+        <SectionHeader title="Your Money" />
+        {loading ? (
+          <SkeletonBlocks count={2} className="h-24" />
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-primary/30 bg-primary/[0.06] p-4 sm:col-span-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Wallet className="h-4 w-4" />
+                <p className="text-xs font-medium">Available to Withdraw</p>
               </div>
+              <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
+                <p className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                  {formatAmount(wallet?.balance ?? 0, currency)}
+                </p>
+                {wallet && wallet.balance > 0 ? (
+                  <Button size="sm" className="h-9" onClick={() => navigate('/merchant-withdraw')}>
+                    <Landmark className="h-4 w-4 mr-1.5" /> Withdraw
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="h-9" disabled>
+                    Nothing to withdraw
+                  </Button>
+                )}
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Money you can move to your bank right now.</p>
+            </div>
+            <MoneyBlock
+              label="Protected in SafePay"
+              value={formatAmount(stats.heldFunds, currency)}
+              hint="Held until buyers confirm delivery."
+              icon={ShieldCheck}
+            />
+            <MoneyBlock
+              label="Pending Release"
+              value={formatAmount(wallet?.pending_balance ?? 0, currency)}
+              hint="Awaiting release to your balance."
+              icon={Lock}
+            />
+            <MoneyBlock
+              label="Total Earned"
+              value={formatAmount(wallet?.total_earned ?? 0, currency)}
+              hint="Lifetime completed earnings."
+              icon={BarChart3}
+            />
+            <MoneyBlock
+              label="Total Withdrawn"
+              value={formatAmount(wallet?.total_withdrawn ?? 0, currency)}
+              hint="Cumulative payouts to your bank."
+              icon={Landmark}
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Order stats */}
+      <section aria-label="Order summary">
+        <SectionHeader title="Orders" action={{ label: 'View all', to: '/merchant-orders' }} />
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard icon={Package} label="Total Orders" value={stats.totalOrders} context={stats.completed > 0 ? `${stats.completed} completed` : 'No orders yet'} to="/merchant-orders" />
+            <StatCard icon={Clock} label="Pending" value={stats.pending} context="Awaiting action" to="/merchant-orders" tone="warning" />
+            <StatCard icon={Truck} label="In Transit" value={stats.inTransit} context="Currently shipping" to="/merchant-orders?status=in_transit" tone="info" />
+            <StatCard icon={Gavel} label="Disputes" value={stats.disputed} context="Requires attention" to="/merchant-disputes" tone={stats.disputed > 0 ? 'destructive' : undefined} />
+          </div>
+        )}
+      </section>
+
+      {/* Pipeline */}
+      {!loading && stats.totalOrders > 0 && (
+        <section aria-label="Order pipeline" className="rounded-2xl border border-border bg-card p-4">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Order Pipeline</h2>
+          <div className="grid grid-cols-4 gap-2">
+            {pipeline.map((stage, i) => (
+              <div key={stage.key} className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate text-[11px] font-medium text-muted-foreground">{stage.label}</p>
+                  <p className="ml-auto text-sm font-bold text-foreground">{stage.count}</p>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all duration-500',
+                      i === pipeline.length - 1 ? 'bg-success' : 'bg-primary',
+                    )}
+                    style={{ width: `${stats.totalOrders > 0 ? (stage.count / stats.totalOrders) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Recent orders */}
+      <section aria-label="Recent orders">
+        <SectionHeader title="Recent Orders" action={{ label: 'View all', to: '/merchant-orders' }} />
+        {loading ? (
+          <SkeletonBlocks count={4} className="h-16" />
+        ) : recentOrders.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            title="No orders yet"
+            description="When a buyer completes a SafePay transaction, it will appear here."
+            action={
+              <Button onClick={() => navigate('/payment-links/create')}>
+                <Plus className="h-4 w-4 mr-1.5" /> Create Payment Link
+              </Button>
+            }
+          />
+        ) : (
+          <div className="space-y-2">
+            {recentOrders.map((o) => (
+              <OrderRow key={o.id} order={o} currency={currency} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Revenue + Shipments */}
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          {loading ? (
+            <Skeleton className="h-64 w-full rounded-2xl" />
+          ) : (
+            <RevenueChart days={revenueDays} onChange={setRevenueDays} series={revenue.slice(-revenueDays)} />
+          )}
+        </div>
+        <div className="lg:col-span-2">
+          <Card className="flex h-full flex-col p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">Shipping</h2>
+              <Link to="/merchant-shipments" className="text-xs font-medium text-primary hover:underline">View</Link>
+            </div>
+            {loading ? (
+              <SkeletonBlocks count={4} className="h-9" />
             ) : (
-              <div className="space-y-2">
-                {filteredOrders.slice(0, 5).map((order) => (
+              <div className="flex flex-1 flex-col justify-center gap-2.5">
+                {[
+                  { label: 'To Ship', value: stats.toShip, icon: Truck },
+                  { label: 'Shipped', value: stats.inTransit, icon: Package },
+                  { label: 'Delivered', value: stats.delivered, icon: CheckCircle2 },
+                  { label: 'Delayed', value: delayedShipments, icon: AlertCircle },
+                ].map((row) => (
                   <Link
-                    key={order.id}
-                    to={`/merchant-order/${order.id}`}
-                    className="block bg-muted/30 rounded-xl p-3 active:bg-muted/50 transition-colors"
+                    key={row.label}
+                    to="/merchant-shipments"
+                    className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/30"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground font-mono">{order.public_order_id || `#${order.order_number}`}</p>
-                        <p className="text-xs text-muted-foreground truncate">{order.product_name}</p>
-                      </div>
-                      {getStatusBadge(order.status)}
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{formatDate(order.created_at)}</span>
-                      <span className="font-semibold text-foreground">{formatAmount(order.amount)}</span>
-                    </div>
+                    <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      <row.icon className={cn('h-4 w-4', row.label === 'Delayed' && delayedShipments > 0 ? 'text-destructive' : 'text-primary')} />
+                      {row.label}
+                    </span>
+                    <span className="text-sm font-bold text-foreground">{row.value}</span>
                   </Link>
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Activity Section */}
-          {activities.length > 0 && (
-            <div>
-              <h2 className="text-base font-semibold text-foreground mb-3">Recent Activity</h2>
-              <div className="space-y-2">
-                {activities.slice(0, 5).map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-2.5 p-3 bg-muted/30 rounded-xl">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      {activity.activity_type === 'tracking' ? (
-                        <Truck className="h-3.5 w-3.5 text-primary" />
-                      ) : activity.activity_type === 'delivery' ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                      ) : (
-                        <ReceiptText className="h-3.5 w-3.5 text-primary" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-foreground">{activity.title}</p>
-                      {activity.description && (
-                        <p className="text-[11px] text-muted-foreground truncate">{activity.description}</p>
-                      )}
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {formatDate(activity.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </Card>
         </div>
-      </main>
+      </div>
 
-      <MerchantBottomNav />
+      {/* Recent transactions */}
+      <section aria-label="Recent transactions">
+        <SectionHeader title="Recent Transactions" action={{ label: 'View all', to: '/merchant-transactions' }} />
+        {loading ? (
+          <SkeletonBlocks count={3} className="h-16" />
+        ) : recentTransactions.length === 0 ? (
+          <EmptyState
+            icon={Wallet}
+            title="No transactions yet"
+            description="Payments, refunds and payouts will appear here as they happen."
+          />
+        ) : (
+          <div className="space-y-2">
+            {recentTransactions.map((tx) => (
+              <TransactionRow key={`${tx.type}-${tx.id}`} tx={tx} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Disputes */}
+      <section aria-label="Disputes overview">
+        <SectionHeader title="Disputes" action={{ label: 'View all', to: '/merchant-disputes' }} />
+        {loading ? (
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        ) : disputes.length === 0 ? (
+          <Card className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">No active disputes</p>
+              <p className="text-xs text-muted-foreground">Your transactions are currently clear.</p>
+            </div>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {disputes.slice(0, 3).map((d) => {
+              const order = orders.find((o) => o.id === d.order_id);
+              const needsResponse = d.merchant_not_responded || d.status === 'open' || d.status === 'info_required';
+              return (
+                <Link
+                  key={d.id}
+                  to={needsResponse ? `/merchant-dispute-response/${d.id}` : `/merchant-dispute-result/${d.id}`}
+                  className="flex items-center gap-3 rounded-2xl border border-destructive/25 bg-destructive/[0.04] p-3.5 transition-all active:scale-[0.99]"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                    <Gavel className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">{order?.product_name ?? 'Disputed order'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatAmount(order?.amount ?? 0, currency)} · {d.reason}
+                    </p>
+                  </div>
+                  {needsResponse ? (
+                    <Button size="sm" variant="destructive" className="h-8">
+                      Respond
+                    </Button>
+                  ) : (
+                    <StatusBadge tone="neutral" label={d.status} className="text-[10px] px-1.5 py-0.5" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Quick actions */}
+      {!loading && (
+        <section aria-label="Quick actions">
+          <SectionHeader title="Quick Actions" />
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              { label: 'Payment Link', icon: Link2, to: '/payment-links/create' },
+              { label: 'View Orders', icon: Package, to: '/merchant-orders' },
+              { label: 'Withdraw', icon: Landmark, to: '/merchant-withdraw' },
+              { label: 'Transactions', icon: Wallet, to: '/merchant-transactions' },
+              { label: 'Customers', icon: Users, to: '/merchant-customers' },
+              { label: 'Analytics', icon: BarChart3, to: '/merchant-analytics' },
+            ].map((a) => (
+              <Link
+                key={a.label}
+                to={a.to}
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-card p-3 text-center transition-all hover:border-primary/30 active:scale-[0.98]"
+              >
+                <a.icon className="h-5 w-5 text-primary" />
+                <span className="text-[11px] font-medium text-foreground">{a.label}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Recent activity */}
+      {!loading && topActivity.length > 0 && (
+        <section aria-label="Recent activity">
+          <SectionHeader title="Recent Activity" />
+          <div className="space-y-2">
+            {topActivity.map((a) => (
+              <div key={a.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  {a.activity_type === 'tracking' ? (
+                    <Truck className="h-4 w-4 text-primary" />
+                  ) : a.activity_type === 'delivery' ? (
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Store className="h-4 w-4 text-primary" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{a.title}</p>
+                  {a.description && <p className="truncate text-xs text-muted-foreground">{a.description}</p>}
+                </div>
+                <p className="shrink-0 text-[11px] text-muted-foreground">
+                  {new Date(a.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
+    <MerchantBottomNav />
+    </>
   );
 }

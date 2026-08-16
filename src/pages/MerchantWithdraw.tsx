@@ -8,7 +8,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { AlertCircle, ArrowLeft, Clock, Landmark, Wallet } from 'lucide-react';
+import { AlertCircle, Clock, Landmark, Wallet } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { PAYMENT_CONSTANTS, calculatePayoutFee, calculateNetPayout } from '@/lib/constants';
 import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
@@ -199,11 +200,12 @@ export default function MerchantWithdraw() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-          <div className="flex items-center h-14 px-4">
-            <Skeleton className="h-6 w-32" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-32" />}
+            back={{ fallback: '/merchant-payouts', label: 'Back to Payouts' }}
+          />
+        </div>
         <main className="p-4 space-y-4">
           <Skeleton className="h-32 w-full rounded-xl" />
           <Skeleton className="h-24 w-full rounded-xl" />
@@ -215,18 +217,13 @@ export default function MerchantWithdraw() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate('/merchant-payouts')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="ml-3">
-            <h1 className="text-lg font-semibold">Withdraw Funds</h1>
-            <p className="text-[10px] text-muted-foreground">Transfer to bank account</p>
-          </div>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Withdraw Funds"
+          subtitle="Transfer to bank account"
+          back={{ fallback: '/merchant-payouts', label: 'Back to Payouts' }}
+        />
+      </div>
 
       <main className="p-4 space-y-4">
         {/* Available Balance Card */}

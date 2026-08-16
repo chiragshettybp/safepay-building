@@ -8,7 +8,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, CheckCircle2, CloudUpload, FileText, UploadCloud, Video, X } from 'lucide-react';
+import { CheckCircle2, CloudUpload, FileText, UploadCloud, Video, X } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { FullPageLoading, LoadingSpinner, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 
 interface UploadedFile {
@@ -237,14 +238,12 @@ export default function MerchantDeliveryProof() {
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-          <div className="flex items-center h-14 px-4">
-            <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <Skeleton className="h-5 w-36 ml-2" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-36" />}
+            back={{ fallback: '/merchant-orders', label: 'Back to Orders' }}
+          />
+        </div>
         <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
           <Skeleton className="h-16 w-full rounded-xl" />
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -255,15 +254,12 @@ export default function MerchantDeliveryProof() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground ml-2">Upload Proof</h1>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Upload Proof"
+          back={{ fallback: '/merchant-orders', label: 'Back to Orders' }}
+        />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">

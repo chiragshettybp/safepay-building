@@ -1,13 +1,13 @@
-// checkout-payment — SafePay hosted checkout payment engine.
+// payment-links — SafePay payment links engine.
 //
 // Actions:
 //   Merchant (service-role server-side ops):
-//     create-link      — create a reusable checkout link (template + settings)
+//     create-link      — create a reusable payment link (template + settings)
 //     update-link      — edit a link template (items / amounts / flags)
 //     set-link-status  — enable / disable a link
 //     list-links       — merchant's links with aggregate order/revenue metrics
 //     get-link         — link + items + session/order ledger
-//     analytics        — merchant checkout metrics
+//     analytics        — merchant payment link metrics
 //
 //   Public (token is the capability, no auth):
 //     open-link        — validate a link, resume the caller's active session or
@@ -18,7 +18,7 @@
 //     cancel-payment   — mark attempt cancelled; session stays active for retry
 //     get-status       — authoritative session/order state for refresh/back/reopen
 //
-// A checkout link is reusable: every customer interaction gets its own
+// A payment link is reusable: every customer interaction gets its own
 // checkout session (checkout_sessions.checkout_link_id), payment transaction
 // and order. Sessions, transactions and orders are single-use (their own unique
 // keys / idempotency guards); only the link is shared between customers.
@@ -653,7 +653,7 @@ serve(async (req) => {
       default: return json({ error: "INVALID_ACTION" }, 400);
     }
   } catch (err) {
-    console.error("checkout-payment error:", err);
+    console.error("payment-links error:", err);
     return json({ error: "INTERNAL_ERROR", detail: String(err) }, 500);
   }
 });

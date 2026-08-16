@@ -1,12 +1,46 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, CheckCircle2, Gavel, Lock, LucideIcon, Pencil, Plane, Plus, Reply, ShoppingCart, Truck, UploadCloud, Wallet } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChevronRight,
+  Gavel,
+  Lock,
+  LucideIcon,
+  Package,
+  Pencil,
+  Plane,
+  Plus,
+  Reply,
+  RotateCcw,
+  ShoppingCart,
+  Truck,
+  UploadCloud,
+  Wallet,
+} from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
 import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 
@@ -50,6 +84,29 @@ interface OrderItem {
   quantity: number;
   line_total: number;
   image_url: string | null;
+  product_id: string | null;
+  products: { id: string; name: string; image_url: string | null } | null;
+}
+
+interface TxLink {
+  id: string;
+  public_payment_id: string | null;
+  amount: number;
+  currency: string | null;
+  status: string;
+}
+
+interface RefundLink {
+  id: string;
+  public_refund_id: string | null;
+  amount: number;
+  status: string;
+}
+
+interface DisputeLink {
+  id: string;
+  public_dispute_id: string | null;
+  status: string;
 }
 
 interface TimelineEvent {
@@ -69,8 +126,15 @@ export default function MerchantOrderDetails() {
   const [tracking, setTracking] = useState<Tracking | null>(null);
   const [deliveryProof, setDeliveryProof] = useState<DeliveryProof | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
+  const [tx, setTx] = useState<TxLink | null>(null);
+  const [refund, setRefund] = useState<RefundLink | null>(null);
+  const [dispute, setDispute] = useState<DisputeLink | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundAmount, setRefundAmount] = useState<number>(0);
+  const [refundReason, setRefundReason] = useState('merchant_initiated');
+  const [refunding, setRefunding] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -139,12 +203,27 @@ export default function MerchantOrderDetails() {
         });
       }
 
+      const [txData, refundData, disputeData] = await Promise.all([
+        supabase
+          .from('payment_transactions')
+          .select('id, public_payment_id, amount, currency, status')
+          .eq('order_id', orderId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from('refunds').select('id, public_refund_id, amount, status').eq('order_id', orderId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('disputes').select('id, public_dispute_id, status').eq('order_id', orderId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      setTx((txData.data as TxLink | null) ?? null);
+      setRefund((refundData.data as RefundLink | null) ?? null);
+      setDispute((disputeData.data as DisputeLink | null) ?? null);
+
       const { data: itemsData } = await supabase
         .from('order_items')
-        .select('*')
+        .select('*, products(id, name, image_url)')
         .eq('order_id', orderId)
         .order('created_at', { ascending: true });
-      setItems(itemsData || []);
+      setItems((itemsData || []) as OrderItem[]);
 
       // Build timeline
       const events: TimelineEvent[] = [
@@ -288,14 +367,12 @@ export default function MerchantOrderDetails() {
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-          <div className="flex items-center h-14 px-4">
-            <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <Skeleton className="h-5 w-24 ml-2" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-28" />}
+            back={{ fallback: '/merchant-orders', label: 'Back to Orders' }}
+          />
+        </div>
         <div className="px-4 py-4 space-y-3">
           <Skeleton className="h-20 w-full rounded-xl" />
           <Skeleton className="h-36 w-full rounded-xl" />
@@ -316,20 +393,52 @@ export default function MerchantOrderDetails() {
     );
   }
 
+  const ACTIVE_DISPUTE_STATUSES = ['open', 'under_review', 'info_required', 'escalated'];
+  const hasActiveDispute = !!dispute && ACTIVE_DISPUTE_STATUSES.includes(dispute.status);
+  const alreadyRefunded = !!refund && refund.status !== 'failed';
+  const canRefund = !['refunded', 'cancelled'].includes(order.status) && !alreadyRefunded;
+
+  const openRefundModal = () => {
+    setRefundAmount(order.amount);
+    setRefundReason('merchant_initiated');
+    setRefundOpen(true);
+  };
+
+  const handleRefund = async () => {
+    if (!order || refunding) return;
+    if (!refundAmount || refundAmount <= 0 || refundAmount > order.amount) {
+      toast.error('Enter a valid refund amount');
+      return;
+    }
+    setRefunding(true);
+    try {
+      const { error } = await supabase.rpc('merchant_initiate_refund', {
+        p_order_id: order.id,
+        p_amount: refundAmount,
+        p_reason: refundReason,
+        p_dispute_id: hasActiveDispute ? dispute?.id : null,
+      });
+      if (error) throw error;
+      toast.success(hasActiveDispute ? 'Refund issued. Dispute resolved.' : 'Refund issued to customer.');
+      setRefundOpen(false);
+      await fetchOrderDetails();
+    } catch (err: any) {
+      console.error('Refund error:', err);
+      toast.error(err?.message ?? 'Refund failed. Please try again.');
+    } finally {
+      setRefunding(false);
+    }
+  };
+
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h1 className="text-base font-semibold text-foreground font-mono">{order.public_order_id || `#${order.order_number}`}</h1>
-          </div>
-          {getStatusBadge(order.status)}
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title={<span className="font-mono">{order.public_order_id || `#${order.order_number}`}</span>}
+          back={{ fallback: '/merchant-orders', label: 'Back to Orders' }}
+          actions={getStatusBadge(order.status)}
+        />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-20">
@@ -367,7 +476,21 @@ export default function MerchantOrderDetails() {
             </div>
           </div>
 
-          {/* Items snapshot (hosted checkout orders) */}
+          {/* Refund (no active dispute) */}
+          {canRefund && !hasActiveDispute && (
+            <div className="bg-muted/30 rounded-xl p-3">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Refund</h2>
+              <p className="text-xs text-muted-foreground mb-3">
+                Issued refunds are final and reverse any payout already made for this order.
+              </p>
+              <Button onClick={openRefundModal} className="w-full h-9 text-xs gap-1">
+                <RotateCcw className="h-3.5 w-3.5" />
+                Refund Customer
+              </Button>
+            </div>
+          )}
+
+          {/* Items snapshot (payment link orders) */}
           {items.length > 0 && (
             <div className="bg-muted/30 rounded-xl p-3">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Items</h2>
@@ -377,8 +500,8 @@ export default function MerchantOrderDetails() {
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{item.item_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {item.variant_label && `${item.variant_label} · `}
-                        {formatAmount(item.unit_price)} × {item.quantity}
+                        {item.variant_label && `${item.variant_label} Â· `}
+                        {formatAmount(item.unit_price)} Ã— {item.quantity}
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-foreground shrink-0">{formatAmount(item.line_total)}</span>
@@ -503,6 +626,79 @@ export default function MerchantOrderDetails() {
             )}
           </div>
 
+          {/* Linked records */}
+          {(tx || refund || dispute || items.some((i) => i.products)) && (
+            <div className="bg-muted/30 rounded-xl p-3">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Linked Records</h2>
+              <div className="space-y-2">
+                {tx && (
+                  <Link to={`/merchant-transactions/${tx.id}`} className="flex items-center gap-3 rounded-xl bg-background border border-border p-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Wallet className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground">Payment</p>
+                      <p className="text-[10px] text-muted-foreground font-mono">
+                        {tx.public_payment_id ?? tx.id.slice(0, 8)} Â· {tx.status}
+                      </p>
+                    </div>
+                    <ChevronRight />
+                  </Link>
+                )}
+                {refund && (
+                  <Link to={`/merchant-refunds/${refund.id}`} className="flex items-center gap-3 rounded-xl bg-background border border-border p-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground">Refund</p>
+                      <p className="text-[10px] text-muted-foreground font-mono">
+                        {refund.public_refund_id ?? 'Refund'} Â· {formatAmount(refund.amount)} Â· {refund.status}
+                      </p>
+                    </div>
+                    <ChevronRight />
+                  </Link>
+                )}
+                {dispute && (
+                  <Link to={`/merchant-dispute-response/${dispute.id}`} className="flex items-center gap-3 rounded-xl bg-background border border-border p-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Gavel className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground">Dispute</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">
+                        {dispute.public_dispute_id ?? 'Dispute'} Â· {dispute.status.replace(/_/g, ' ')}
+                      </p>
+                    </div>
+                    <ChevronRight />
+                  </Link>
+                )}
+                <Link to={`/merchant-shipments/${order.id}`} className="flex items-center gap-3 rounded-xl bg-background border border-border p-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-foreground">Shipment</p>
+                    <p className="text-[10px] text-muted-foreground">{tracking ? `Track ${tracking.tracking_number}` : 'Add tracking details'}</p>
+                  </div>
+                  <ChevronRight />
+                </Link>
+                {items.some((i) => i.products) && (
+                  <Link to={`/merchant-products/${items.find((i) => i.products)!.products!.id}`} className="flex items-center gap-3 rounded-xl bg-background border border-border p-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground">Product</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{items.find((i) => i.products)?.products?.name}</p>
+                    </div>
+                    <ChevronRight />
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Dispute Alert */}
           {order.status === 'disputed' && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3">
@@ -511,16 +707,83 @@ export default function MerchantOrderDetails() {
                 <p className="text-sm font-medium text-destructive">Dispute Active</p>
               </div>
               <p className="text-xs text-destructive/80 mb-2">Customer has raised a dispute on this order.</p>
-              <Link to={`/merchant-dispute-response/${order.id}`}>
-                <Button size="sm" variant="destructive" className="h-8 text-xs w-full">
-                  <Reply className="h-3.5 w-3.5 mr-1" />
-                  Respond to Dispute
-                </Button>
-              </Link>
+              <div className="space-y-2">
+                {dispute && (
+                  <Link to={`/merchant-dispute-response/${dispute.id}`}>
+                    <Button size="sm" variant="destructive" className="h-8 text-xs w-full">
+                      <Reply className="h-3.5 w-3.5 mr-1" />
+                      Respond to Dispute
+                    </Button>
+                  </Link>
+                )}
+                {canRefund && hasActiveDispute && (
+                  <Button size="sm" variant="outline" onClick={openRefundModal} className="h-8 text-xs w-full border-destructive/30 text-destructive hover:text-destructive">
+                    <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                    Refund & Close Dispute
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
       </main>
+
+      <AlertDialog open={refundOpen} onOpenChange={setRefundOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{hasActiveDispute ? 'Refund & Close Dispute' : 'Refund Customer'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {hasActiveDispute
+                ? 'This will refund the customer and resolve the dispute.'
+                : 'This will refund the customer for this order.'}{' '}
+              You can issue a full or partial refund.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-1">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                Amount (max {formatAmount(order.amount)})
+              </label>
+              <Input
+                type="number"
+                min={1}
+                max={order.amount}
+                value={refundAmount || ''}
+                onChange={(e) => setRefundAmount(Number(e.target.value))}
+                placeholder={`Full amount: ${formatAmount(order.amount)}`}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Reason</label>
+              <Select value={refundReason} onValueChange={setRefundReason}>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="merchant_initiated">Merchant initiated</SelectItem>
+                  <SelectItem value="defective_item">Defective item</SelectItem>
+                  <SelectItem value="wrong_item">Wrong item</SelectItem>
+                  <SelectItem value="not_received">Not received</SelectItem>
+                  <SelectItem value="out_of_stock">Out of stock</SelectItem>
+                  <SelectItem value="customer_request">Customer request</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={refunding}>Cancel</AlertDialogCancel>
+            <Button
+              onClick={handleRefund}
+              disabled={refunding}
+              className={hasActiveDispute ? 'bg-destructive hover:bg-destructive/90' : ''}
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              {refunding ? 'Processing…' : `Refund ${formatAmount(refundAmount || 0)}`}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <MerchantBottomNav />
     </div>

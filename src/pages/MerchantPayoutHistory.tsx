@@ -7,8 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import {
-  ArrowLeft,
   CheckCircle2,
   ChevronRight,
   CircleHelp,
@@ -229,11 +229,12 @@ export default function MerchantPayoutHistory() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-          <div className="flex items-center h-14 px-4">
-            <Skeleton className="h-6 w-32" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-32" />}
+            back={{ fallback: '/merchant-payouts', label: 'Back to Payouts' }}
+          />
+        </div>
         <main className="p-4 space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-20 w-full rounded-xl" />
@@ -246,26 +247,22 @@ export default function MerchantPayoutHistory() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/merchant-payouts')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h1 className="text-lg font-semibold">Payout History</h1>
-              <p className="text-[10px] text-muted-foreground">{payouts.length} transactions</p>
-            </div>
-          </div>
-          <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <SheetTrigger asChild>
-              <button className="relative p-2 rounded-lg hover:bg-muted">
-                <ListFilter className="h-5 w-5" />
-                {statusFilter !== 'all' && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-                )}
-              </button>
-            </SheetTrigger>
+      <header className="bg-background border-b border-border">
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title="Payout History"
+            subtitle={`${payouts.length} transactions`}
+            back={{ fallback: '/merchant-payouts', label: 'Back to Payouts' }}
+            actions={
+              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <SheetTrigger asChild>
+                  <button className="relative p-2 rounded-lg hover:bg-muted" aria-label="Filter payouts">
+                    <ListFilter className="h-5 w-5" />
+                    {statusFilter !== 'all' && (
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+                    )}
+                  </button>
+                </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-2xl">
               <SheetHeader className="pb-4">
                 <SheetTitle>Filter Payouts</SheetTitle>
@@ -296,8 +293,10 @@ export default function MerchantPayoutHistory() {
                 </div>
               </div>
             </SheetContent>
-          </Sheet>
-        </div>
+            </Sheet>
+          }
+        />
+      </div>
 
         {/* Search */}
         <div className="px-4 pb-3">

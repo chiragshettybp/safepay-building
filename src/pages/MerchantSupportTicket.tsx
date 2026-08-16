@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from '@/lib/toast';
 import { formatFileSize } from '@/lib/format';
-import { ArrowLeft, ExternalLink, FileText, MessagesSquare, Paperclip, Send, X } from 'lucide-react';
+import { ExternalLink, FileText, MessagesSquare, Paperclip, Send, X } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
@@ -250,20 +251,16 @@ export default function MerchantSupportTicket() {
 
   return (
     <div className="mobile-page">
-      <header className="sticky-header bg-card">
-        <div className="sticky-header-content px-4 sm:px-6">
-          <button onClick={() => navigate('/merchant-support')} className="back-btn">
-            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-semibold text-foreground truncate">Support Ticket</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-              {ticket.public_ticket_id || `#${ticket.id.slice(0, 8).toUpperCase()}`} • {ticket.category.replace(/_/g, ' ')}
-            </p>
-          </div>
-          <StatusBadge tone={getStatusTone(ticket.status)} label={ticket.status.replace('_', ' ')} className="text-[10px] sm:text-xs px-2 py-1 capitalize shrink-0" />
-        </div>
-      </header>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <MerchantPageHeader
+          title="Support Ticket"
+          subtitle={`${ticket.public_ticket_id || `#${ticket.id.slice(0, 8).toUpperCase()}`} • ${ticket.category.replace(/_/g, ' ')}`}
+          back={{ fallback: '/merchant-support', label: 'Back to Support' }}
+          actions={
+            <StatusBadge tone={getStatusTone(ticket.status)} label={ticket.status.replace('_', ' ')} className="text-[10px] sm:text-xs px-2 py-1 capitalize shrink-0" />
+          }
+        />
+      </div>
 
       <main className="flex-1 overflow-y-auto pb-28">
         <div className="px-4 py-4 bg-card border-b border-border">

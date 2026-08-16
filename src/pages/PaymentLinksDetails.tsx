@@ -14,32 +14,33 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { ArrowLeft, Ban, Check, Copy, ExternalLink, Loader2, Power } from 'lucide-react';
+import { Ban, Check, Copy, ExternalLink, Loader2, Power } from 'lucide-react';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { PublicIdBadge } from '@/components/ui/public-id-badge';
 import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 import { formatAmount } from '@/lib/format';
 import {
-  callCheckout,
-  buildCheckoutLink,
-  checkoutStatusMeta,
-  type CheckoutLinkDetail,
-} from '@/lib/checkout';
+  callPaymentLink,
+  buildPaymentLink,
+  paymentLinkStatusMeta,
+  type PaymentLinkDetail,
+} from '@/lib/paymentLinks';
 
-const LINK_TONE: Record<string, 'success' | 'neutral' | 'warning' | 'danger'> = {
+const LINK_TONE: Record<string, 'success' | 'neutral' | 'warning' | 'destructive'> = {
   active: 'success',
   inactive: 'neutral',
   expired: 'warning',
-  cancelled: 'danger',
+  cancelled: 'destructive',
 };
 
-export default function MerchantCheckoutDetails() {
+export default function PaymentLinksDetails() {
   const navigate = useNavigate();
   const { linkId } = useParams<{ linkId: string }>();
   const { merchant, isAuthenticated, isLoading: authLoading } = useMerchantAuth();
-  const [link, setLink] = useState<CheckoutLinkDetail | null>(null);
+  const [link, setLink] = useState<PaymentLinkDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -60,14 +61,14 @@ export default function MerchantCheckoutDetails() {
     if (!merchant?.id || !linkId) return;
     try {
       setIsLoading(true);
-      const result = await callCheckout<CheckoutLinkDetail>('get-link', {
+      const result = await callPaymentLink<PaymentLinkDetail>('get-link', {
         merchantId: merchant.id,
         linkId,
       });
       setLink(result);
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Failed to load payment link');
-      navigate('/merchant-checkout', { replace: true });
+      navigate('/payment-links', { replace: true });
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +81,12 @@ export default function MerchantCheckoutDetails() {
   const copyLink = async () => {
     if (!link) return;
     try {
-      await navigator.clipboard.writeText(buildCheckoutLink(link.token));
+      await navigator.clipboard.writeText(buildPaymentLink(link.token));
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-      toast({ title: 'Copied', description: 'Payment link copied to clipboard' });
+      toast('Copied', { description: 'Payment link copied to clipboard' });
     } catch {
-      toast({ title: 'Copy failed', description: 'Could not access the clipboard', variant: 'destructive' });
+      toast.error('Copy failed', { description: 'Could not access the clipboard' });
     }
   };
 
@@ -93,7 +94,7 @@ export default function MerchantCheckoutDetails() {
     if (!merchant?.id || !link) return;
     try {
       setIsToggling(true);
-      await callCheckout('set-link-status', { merchantId: merchant.id, linkId: link.id, status });
+      await callPaymentLink('set-link-status', { merchantId: merchant.id, linkId: link.id, status });
       toast.success(status === 'active' ? 'Payment link enabled' : 'Payment link disabled');
       fetchLink();
     } catch (error: unknown) {
@@ -109,14 +110,12 @@ export default function MerchantCheckoutDetails() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate('/merchant-checkout')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target" aria-label="Back">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Payment link</h1>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Payment link"
+          back={{ fallback: '/payment-links', label: 'Back to Payment Links' }}
+        />
+      </div>
 
       <main className="flex-1 overflow-y-auto pb-24">
         <div className="px-4 py-4">
@@ -206,7 +205,7 @@ export default function MerchantCheckoutDetails() {
               {/* Orders / sessions ledger */}
               <div className="bg-muted/30 rounded-xl p-4 mb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-foreground">Orders &amp; checkouts</h2>
+                  <h2 className="text-sm font-semibold text-foreground">Orders &amp; sessions</h2>
                   <span className="text-xs text-muted-foreground">
                     {link.sessions.filter((s) => s.status === 'completed').length} paid
                   </span>
@@ -216,7 +215,7 @@ export default function MerchantCheckoutDetails() {
                 ) : (
                   <div className="space-y-3">
                     {link.sessions.map((session) => {
-                      const meta = checkoutStatusMeta(session.status);
+                      const meta = paymentLinkStatusMeta(session.status);
                       return (
                         <div key={session.id} className="flex items-start justify-between gap-2">
                           <div className="min-w-0">

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isToday, isYesterday } from 'date-fns';
 import { toast } from '@/lib/toast';
-import { AlertCircle, AlertTriangle, ArrowLeft, BellOff, CheckCircle2, Gavel, Info, ShoppingBag, Wallet } from 'lucide-react';
+import { AlertCircle, AlertTriangle, BellOff, CheckCircle2, Gavel, Info, ShoppingBag, Wallet } from 'lucide-react';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 
 interface Notification {
   id: string;
@@ -19,7 +20,6 @@ interface Notification {
 
 export default function MerchantNotifications() {
   const { user, merchant } = useMerchantAuth();
-  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -170,31 +170,22 @@ export default function MerchantNotifications() {
 
   return (
     <div className="mobile-page">
-      {/* Header */}
-      <header className="sticky-header bg-card">
-        <div className="sticky-header-content px-4 sm:px-6">
-          <button
-            onClick={() => navigate('/merchant-dashboard')}
-            className="back-btn"
-          >
-            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-semibold text-foreground">Notifications</h1>
-            {unreadCount > 0 && (
-              <p className="text-[10px] sm:text-xs text-muted-foreground">{unreadCount} unread</p>
-            )}
-          </div>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllAsRead}
-              className="text-xs sm:text-sm text-primary font-medium hover:underline shrink-0"
-            >
-              Mark all read
-            </button>
-          )}
-        </div>
-      </header>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <MerchantPageHeader
+          title="Notifications"
+          subtitle={unreadCount > 0 ? `${unreadCount} unread` : undefined}
+          actions={
+            unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-xs sm:text-sm text-primary font-medium hover:underline shrink-0"
+              >
+                Mark all read
+              </button>
+            )
+          }
+        />
+      </div>
 
       {/* Content */}
       <main className="pb-20">

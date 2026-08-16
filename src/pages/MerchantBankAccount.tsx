@@ -7,7 +7,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { ArrowLeft, CheckCircle2, Info, Save } from 'lucide-react';
+import { CheckCircle2, Info, Save } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { ButtonSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Select,
@@ -239,11 +240,12 @@ export default function MerchantBankAccount() {
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-          <div className="flex items-center h-14 px-4">
-            <Skeleton className="h-6 w-32" />
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title={<Skeleton className="h-6 w-32" />}
+            back={{ fallback: '/merchant-payouts', label: 'Back to Payouts' }}
+          />
+        </div>
         <main className="p-4 space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-2">
@@ -258,20 +260,13 @@ export default function MerchantBankAccount() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate('/merchant-payouts')} className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="ml-3">
-            <h1 className="text-lg font-semibold">
-              {existingAccount ? 'Update' : 'Add'} Bank Account
-            </h1>
-            <p className="text-[10px] text-muted-foreground">For receiving payouts</p>
-          </div>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title={`${existingAccount ? 'Update' : 'Add'} Bank Account`}
+          subtitle="For receiving payouts"
+          back={{ fallback: '/merchant-payouts', label: 'Back to Payouts' }}
+        />
+      </div>
 
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
         {/* Info Banner */}

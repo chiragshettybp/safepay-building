@@ -13,11 +13,12 @@ import {
 } from '@/components/ui/select';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { toast } from 'sonner';
-import { AlertCircle, ArrowLeft, Check, Copy, Link2, Loader2, Plus, Trash2 } from 'lucide-react';
+import { AlertCircle, Check, Copy, Link2, Loader2, Plus, Trash2 } from 'lucide-react';
 import { MerchantBottomNav } from '@/components/shared/MerchantBottomNav';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { FullPageLoading } from '@/components/shared/LoadingSpinner';
 import { formatAmount } from '@/lib/format';
-import { callCheckout, buildCheckoutLink, type CreateLinkResponse, type CheckoutItemPayload } from '@/lib/checkout';
+import { callPaymentLink, buildPaymentLink, type CreateLinkResponse, type PaymentLinkItemPayload } from '@/lib/paymentLinks';
 
 interface ItemRow {
   key: string;
@@ -34,7 +35,7 @@ function toNumber(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export default function MerchantCheckoutCreate() {
+export default function PaymentLinksCreate() {
   const navigate = useNavigate();
   const { merchant, isAuthenticated, isLoading: authLoading } = useMerchantAuth();
 
@@ -72,19 +73,19 @@ export default function MerchantCheckoutCreate() {
   const copyLink = async () => {
     if (!created) return;
     try {
-      await navigator.clipboard.writeText(buildCheckoutLink(created.token));
+      await navigator.clipboard.writeText(buildPaymentLink(created.token));
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-      toast({ title: 'Copied', description: 'Payment link copied to clipboard' });
+      toast('Copied', { description: 'Payment link copied to clipboard' });
     } catch {
-      toast({ title: 'Copy failed', description: 'Could not access the clipboard', variant: 'destructive' });
+      toast.error('Copy failed', { description: 'Could not access the clipboard' });
     }
   };
 
   const handleSubmit = async () => {
     if (!merchant?.id) return;
 
-    const items: CheckoutItemPayload[] = rows
+    const items: PaymentLinkItemPayload[] = rows
       .filter((r) => r.item_name.trim() && r.unit_price)
       .map((r) => ({
         item_name: r.item_name.trim(),
@@ -105,7 +106,7 @@ export default function MerchantCheckoutCreate() {
     try {
       setIsSubmitting(true);
       const hours = Math.floor(toNumber(expiryHours));
-      const result = await callCheckout<CreateLinkResponse>('create-link', {
+      const result = await callPaymentLink<CreateLinkResponse>('create-link', {
         merchantId: merchant.id,
         title: title.trim() || null,
         items,
@@ -131,17 +132,15 @@ export default function MerchantCheckoutCreate() {
   }
 
   if (created) {
-    const link = buildCheckoutLink(created.token);
+    const link = buildPaymentLink(created.token);
     return (
       <div className="min-h-[100dvh] bg-background flex flex-col">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-          <div className="flex items-center h-14 px-4">
-            <button onClick={() => navigate('/merchant-checkout')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target" aria-label="Back">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h1 className="text-lg font-semibold text-foreground">Payment link created</h1>
-          </div>
-        </header>
+        <div className="px-4 py-5 sm:px-6">
+          <MerchantPageHeader
+            title="Payment link created"
+            back={{ fallback: '/payment-links', label: 'Back to Payment Links' }}
+          />
+        </div>
 
         <main className="flex-1 overflow-y-auto pb-24">
           <div className="px-4 py-6">
@@ -150,7 +149,7 @@ export default function MerchantCheckoutCreate() {
             </div>
             <h2 className="text-lg font-semibold text-foreground text-center mb-1">{created.public_link_id}</h2>
             <p className="text-sm text-muted-foreground text-center mb-6">
-              This link is reusable — every customer who opens it gets their own checkout and order. Share it anywhere, any number of times.
+              This link is reusable — every customer who opens it gets their own payment session and order. Share it anywhere, any number of times.
               {created.expires_at && (
                 <span className="block mt-1">
                   It expires on{' '}
@@ -179,7 +178,7 @@ export default function MerchantCheckoutCreate() {
               {copied ? <Check className="h-4 w-4 mr-2 text-success" /> : <Copy className="h-4 w-4 mr-2" />}
               Copy payment link
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => navigate('/merchant-checkout')}>
+            <Button variant="outline" className="w-full" onClick={() => navigate('/payment-links')}>
               View all payment links
             </Button>
           </div>
@@ -192,21 +191,19 @@ export default function MerchantCheckoutCreate() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate('/merchant-checkout')} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target" aria-label="Back">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground">Create payment link</h1>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Create payment link"
+          back={{ fallback: '/payment-links', label: 'Back to Payment Links' }}
+        />
+      </div>
 
       <main className="flex-1 overflow-y-auto pb-24">
         <div className="px-4 py-4">
           <div className="flex items-center gap-2 bg-primary/5 border border-primary/15 rounded-xl px-3 py-2.5 mb-4">
             <Link2 className="h-4 w-4 text-primary shrink-0" />
             <p className="text-xs text-foreground">
-              Reusable link — each customer who opens it gets their own checkout and order. Money is held in escrow until you ship.
+              Reusable link — each customer who opens it gets their own payment session and order. Money is held in escrow until you ship.
             </p>
           </div>
 

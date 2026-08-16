@@ -4,8 +4,8 @@ import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import {
-  ArrowLeft,
   BadgeCheck,
   Banknote,
   ChevronRight,
@@ -131,23 +131,18 @@ export default function MerchantProfile() {
 
   return (
     <div className="mobile-page">
-      {/* Header */}
-      <header className="sticky-header bg-card">
-        <div className="sticky-header-content px-4 sm:px-6">
-          <button
-            onClick={() => navigate('/merchant-dashboard')}
-            className="back-btn"
-          >
-            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-          <h1 className="text-sm sm:text-base font-semibold text-foreground">Business Profile</h1>
-          <Link to="/merchant-profile/edit">
-            <Button variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3">
-              Edit
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <MerchantPageHeader
+          title="Business Profile"
+          actions={
+            <Link to="/merchant-profile/edit">
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3">
+                Edit
+              </Button>
+            </Link>
+          }
+        />
+      </div>
 
       {/* Content */}
       <main className="max-w-2xl mx-auto mobile-section pb-28 sm:pb-24">

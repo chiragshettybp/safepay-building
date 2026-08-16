@@ -1,7 +1,7 @@
 import { formatAmount } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-export interface CheckoutSummaryLine {
+export interface PaymentLinkSummaryLine {
   id: string;
   item_name: string;
   variant_label?: string | null;
@@ -10,8 +10,8 @@ export interface CheckoutSummaryLine {
   line_total: number;
 }
 
-export interface CheckoutSummaryData {
-  items: CheckoutSummaryLine[];
+export interface PaymentLinkSummaryData {
+  items: PaymentLinkSummaryLine[];
   subtotal: number;
   shipping_amount: number;
   discount_amount: number;
@@ -22,12 +22,12 @@ export interface CheckoutSummaryData {
   currency?: string | null;
 }
 
-export function CheckoutSummary({
+export function PaymentLinkSummary({
   data,
   compact,
   className,
 }: {
-  data: CheckoutSummaryData;
+  data: PaymentLinkSummaryData;
   compact?: boolean;
   className?: string;
 }) {

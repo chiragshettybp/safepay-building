@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ArrowLeft, Check, Clock, Flag, AlertCircle, Upload, X, Send, Download, HourglassIcon } from 'lucide-react';
+import { ArrowLeft, Check, Clock, Flag, AlertCircle, Upload, X, Download, HourglassIcon } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { FullPageLoading } from '@/components/shared/LoadingSpinner';
+import DisputeChat from '@/components/shared/DisputeChat';
 
 interface Dispute {
   id: string;
@@ -42,15 +43,6 @@ interface DisputeFile {
   created_at: string;
 }
 
-interface DisputeComment {
-  id: string;
-  dispute_id: string;
-  user_id: string;
-  message: string;
-  is_admin: boolean;
-  created_at: string;
-}
-
 const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   open: { color: 'bg-destructive', icon: <AlertCircle className="w-5 h-5" />, label: 'Submitted' },
   submitted: { color: 'bg-destructive', icon: <AlertCircle className="w-5 h-5" />, label: 'Submitted' },
@@ -69,10 +61,7 @@ export default function DisputeStatus() {
   const [dispute, setDispute] = useState<Dispute | null>(null);
   const [updates, setUpdates] = useState<DisputeUpdate[]>([]);
   const [files, setFiles] = useState<DisputeFile[]>([]);
-  const [comments, setComments] = useState<DisputeComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newMessage, setNewMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
 
   const fetchData = async () => {
     if (!disputeId || !user?.id) return;
@@ -109,14 +98,6 @@ export default function DisputeStatus() {
         .order('created_at', { ascending: false });
       setFiles(filesData || []);
 
-      // Fetch comments
-      const { data: commentsData } = await supabase
-        .from('dispute_comments')
-        .select('*')
-        .eq('dispute_id', disputeId)
-        .order('created_at', { ascending: true });
-      setComments(commentsData || []);
-
     } catch (error) {
       console.error('Error fetching data:', error);
       navigate('/orders');
@@ -133,33 +114,12 @@ export default function DisputeStatus() {
       .channel('dispute-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'disputes', filter: `id=eq.${disputeId}` }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'dispute_updates', filter: `dispute_id=eq.${disputeId}` }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'dispute_comments', filter: `dispute_id=eq.${disputeId}` }, () => fetchData())
       .subscribe();
 
     return () => {
       supabase.removeChannel(disputeChannel);
     };
   }, [disputeId, user?.id]);
-
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !dispute || !user?.id) return;
-    
-    setIsSending(true);
-    try {
-      await supabase.from('dispute_comments').insert({
-        dispute_id: dispute.id,
-        user_id: user.id,
-        message: newMessage.trim(),
-        is_admin: false,
-      });
-      setNewMessage('');
-      toast({ title: 'Message sent' });
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' });
-    } finally {
-      setIsSending(false);
-    }
-  };
 
   const withdrawDispute = async () => {
     if (!dispute) return;
@@ -388,58 +348,21 @@ export default function DisputeStatus() {
 
           {/* Messages Thread */}
           <section className="rounded-xl bg-surface p-6 border border-border shadow-sm mb-6">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-4">
               <h3 className="text-base font-bold text-foreground">Messages</h3>
               <div className="size-2 rounded-full bg-success animate-pulse"></div>
             </div>
-            
-            <div className="flex flex-col gap-6">
-              {comments.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">No messages yet. Start the conversation!</p>
-              )}
-              
-              {comments.map((comment) => (
-                <div key={comment.id} className={`flex gap-3 ${comment.is_admin ? '' : 'flex-row-reverse'} items-end`}>
-                  <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${comment.is_admin ? 'bg-primary/20 text-primary' : 'bg-primary text-white'} shadow-sm`}>
-                    {comment.is_admin ? (
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-                      </svg>
-                    ) : (
-                      <span className="text-xs font-bold">ME</span>
-                    )}
-                  </div>
-                  <div className={`flex flex-col gap-1 max-w-[85%] ${comment.is_admin ? '' : 'items-end'}`}>
-                    <div className={`rounded-2xl ${comment.is_admin ? 'rounded-bl-sm bg-background border border-border' : 'rounded-br-sm bg-primary/10 border border-primary/20'} p-4 shadow-sm`}>
-                      <p className="text-sm text-foreground leading-relaxed">{comment.message}</p>
-                    </div>
-                    <span className={`text-[11px] text-muted-foreground ${comment.is_admin ? 'pl-1' : 'pr-1'}`}>
-                      {comment.is_admin ? 'Admin' : 'Read'} • {format(new Date(comment.created_at), 'h:mm a')}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* Input Field */}
-            <div className="mt-6 flex items-center gap-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Type a reply..."
-                  className="h-12 w-full rounded-full border border-border bg-background px-5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
-                />
-              </div>
-              <button 
-                onClick={sendMessage}
-                disabled={!newMessage.trim() || isSending}
-                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-md shadow-primary/30 active:scale-95 transition-all hover:bg-primary/90 disabled:opacity-50"
-              >
-                <Send className="w-5 h-5 ml-0.5" />
-              </button>
+            <div className="rounded-2xl border border-border bg-background overflow-hidden h-[480px]">
+              <DisputeChat
+                disputeId={dispute.id}
+                orderId={dispute.order_id}
+                senderType="customer"
+                senderId={user?.id || ''}
+                senderName={user?.fullName || 'You'}
+                canSend={dispute.status !== 'closed' && dispute.status !== 'withdrawn'}
+                className="h-full"
+              />
             </div>
           </section>
         </main>

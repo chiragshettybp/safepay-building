@@ -7,8 +7,8 @@ import { MerchantAuthProvider } from "@/contexts/MerchantAuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MerchantProtectedRoute } from "@/components/auth/MerchantProtectedRoute";
 import Index from "./pages/Index";
-import PublicCheckout from "./pages/PublicCheckout";
-import PublicCheckoutSuccess from "./pages/PublicCheckoutSuccess";
+import PublicPaymentLink from "./pages/PublicPaymentLink";
+import PublicPaymentLinkSuccess from "./pages/PublicPaymentLinkSuccess";
 import NotFound from "./pages/NotFound";
 import CustomerLogin from "./pages/CustomerLogin";
 import CustomerSignup from "./pages/CustomerSignup";
@@ -65,6 +65,15 @@ import MerchantSignup from "./pages/MerchantSignup";
 import MerchantVerify from "./pages/MerchantVerify";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import MerchantOrders from "./pages/MerchantOrders";
+import MerchantTransactions from "./pages/MerchantTransactions";
+import MerchantTransactionDetail from "./pages/MerchantTransactionDetail";
+import MerchantShipments from "./pages/MerchantShipments";
+import MerchantShipmentDetail from "./pages/MerchantShipmentDetail";
+import MerchantCustomers from "./pages/MerchantCustomers";
+import MerchantProducts from "./pages/MerchantProducts";
+import MerchantProductDetail from "./pages/MerchantProductDetail";
+import MerchantAnalytics from "./pages/MerchantAnalytics";
+import { MerchantLayout } from "./components/merchant/MerchantLayout";
 import MerchantOrderDetails from "./pages/MerchantOrderDetails";
 import MerchantAddTracking from "./pages/MerchantAddTracking";
 import MerchantEditTracking from "./pages/MerchantEditTracking";
@@ -74,9 +83,9 @@ import MerchantDisputeResponse from "./pages/MerchantDisputeResponse";
 import MerchantDisputeUpload from "./pages/MerchantDisputeUpload";
 import MerchantDisputeResult from "./pages/MerchantDisputeResult";
 import MerchantPayouts from "./pages/MerchantPayouts";
-import MerchantCheckout from "./pages/MerchantCheckout";
-import MerchantCheckoutCreate from "./pages/MerchantCheckoutCreate";
-import MerchantCheckoutDetails from "./pages/MerchantCheckoutDetails";
+import PaymentLinks from "./pages/PaymentLinks";
+import PaymentLinksCreate from "./pages/PaymentLinksCreate";
+import PaymentLinksDetails from "./pages/PaymentLinksDetails";
 import MerchantBankAccount from "./pages/MerchantBankAccount";
 import MerchantWithdraw from "./pages/MerchantWithdraw";
 import MerchantWithdrawSuccess from "./pages/MerchantWithdrawSuccess";
@@ -89,6 +98,17 @@ import MerchantSupportTicket from "./pages/MerchantSupportTicket";
 import MerchantRefunds from "./pages/MerchantRefunds";
 import MerchantRefundDetail from "./pages/MerchantRefundDetail";
 import MerchantSettings from "./pages/MerchantSettings";
+import IntegrationDashboard from "./pages/IntegrationDashboard";
+import IntegrationApiKeys from "./pages/IntegrationApiKeys";
+import IntegrationWebhooks from "./pages/IntegrationWebhooks";
+import IntegrationSessions from "./pages/IntegrationSessions";
+import IntegrationSessionDetails from "./pages/IntegrationSessionDetails";
+import IntegrationLogs from "./pages/IntegrationLogs";
+import IntegrationTest from "./pages/IntegrationTest";
+import IntegrationDevelopers from "./pages/IntegrationDevelopers";
+import IntegrationCheckout from "./pages/IntegrationCheckout";
+import IntegrationCheckoutSuccess from "./pages/IntegrationCheckoutSuccess";
+import AdminIntegrations from "./pages/AdminIntegrations";
 
 const queryClient = new QueryClient();
 
@@ -101,8 +121,10 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-            <Route path="/checkout/:token" element={<PublicCheckout />} />
-            <Route path="/checkout/:token/success" element={<PublicCheckoutSuccess />} />
+            <Route path="/payment-link/:token" element={<PublicPaymentLink />} />
+            <Route path="/payment-link/:token/success" element={<PublicPaymentLinkSuccess />} />
+            <Route path="/integration-checkout/:token" element={<IntegrationCheckout />} />
+            <Route path="/integration-checkout/:token/success" element={<IntegrationCheckoutSuccess />} />
             <Route path="/customer-login" element={<CustomerLogin />} />
             <Route path="/customer-signup" element={<CustomerSignup />} />
             <Route path="/customer-verify" element={<CustomerVerify />} />
@@ -234,6 +256,7 @@ const App = () => (
             <Route path="/merchant-login" element={<MerchantLogin />} />
             <Route path="/merchant-signup" element={<MerchantSignup />} />
             <Route path="/merchant-verify" element={<MerchantVerify />} />
+            <Route element={<MerchantLayout />}>
             <Route path="/merchant-dashboard" element={
               <MerchantProtectedRoute><MerchantDashboard /></MerchantProtectedRoute>
             } />
@@ -267,14 +290,41 @@ const App = () => (
             <Route path="/merchant-payouts" element={
               <MerchantProtectedRoute><MerchantPayouts /></MerchantProtectedRoute>
             } />
-            <Route path="/merchant-checkout" element={
-              <MerchantProtectedRoute><MerchantCheckout /></MerchantProtectedRoute>
+            <Route path="/payment-links" element={
+              <MerchantProtectedRoute><PaymentLinks /></MerchantProtectedRoute>
             } />
-            <Route path="/merchant-checkout/create" element={
-              <MerchantProtectedRoute><MerchantCheckoutCreate /></MerchantProtectedRoute>
+            <Route path="/payment-links/create" element={
+              <MerchantProtectedRoute><PaymentLinksCreate /></MerchantProtectedRoute>
             } />
-            <Route path="/merchant-checkout/:linkId" element={
-              <MerchantProtectedRoute><MerchantCheckoutDetails /></MerchantProtectedRoute>
+            <Route path="/payment-links/:linkId" element={
+              <MerchantProtectedRoute><PaymentLinksDetails /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration" element={
+              <MerchantProtectedRoute><IntegrationDashboard /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/api-keys" element={
+              <MerchantProtectedRoute><IntegrationApiKeys /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/webhooks" element={
+              <MerchantProtectedRoute><IntegrationWebhooks /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/sessions" element={
+              <MerchantProtectedRoute><IntegrationSessions /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/sessions/:sessionId" element={
+              <MerchantProtectedRoute><IntegrationSessionDetails /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/logs" element={
+              <MerchantProtectedRoute><IntegrationLogs /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/test" element={
+              <MerchantProtectedRoute><IntegrationTest /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant/integration/developers" element={
+              <MerchantProtectedRoute><IntegrationDevelopers /></MerchantProtectedRoute>
+            } />
+            <Route path="/admin/integrations" element={
+              <MerchantProtectedRoute><AdminIntegrations /></MerchantProtectedRoute>
             } />
             <Route path="/merchant-bank-account" element={
               <MerchantProtectedRoute><MerchantBankAccount /></MerchantProtectedRoute>
@@ -312,6 +362,31 @@ const App = () => (
             <Route path="/merchant-settings" element={
               <MerchantProtectedRoute><MerchantSettings /></MerchantProtectedRoute>
             } />
+            <Route path="/merchant-transactions" element={
+              <MerchantProtectedRoute><MerchantTransactions /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-shipments" element={
+              <MerchantProtectedRoute><MerchantShipments /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-shipments/:orderId" element={
+              <MerchantProtectedRoute><MerchantShipmentDetail /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-customers" element={
+              <MerchantProtectedRoute><MerchantCustomers /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-products" element={
+              <MerchantProtectedRoute><MerchantProducts /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-products/:productId" element={
+              <MerchantProtectedRoute><MerchantProductDetail /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-transactions/:transactionId" element={
+              <MerchantProtectedRoute><MerchantTransactionDetail /></MerchantProtectedRoute>
+            } />
+            <Route path="/merchant-analytics" element={
+              <MerchantProtectedRoute><MerchantAnalytics /></MerchantProtectedRoute>
+            } />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

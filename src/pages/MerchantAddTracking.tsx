@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 import { FullPageLoading, ButtonSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Select,
@@ -163,15 +164,12 @@ export default function MerchantAddTracking() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border safe-top">
-        <div className="flex items-center h-14 px-4">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-muted rounded-full touch-target">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground ml-2">Add Tracking</h1>
-        </div>
-      </header>
+      <div className="px-4 py-5 sm:px-6">
+        <MerchantPageHeader
+          title="Add Tracking"
+          back={{ fallback: '/merchant-orders', label: 'Back to Orders' }}
+        />
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">

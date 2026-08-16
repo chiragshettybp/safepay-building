@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useMerchantAuth } from '@/contexts/MerchantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from '@/lib/toast';
-import { ArrowLeft, IndianRupee, PlusCircle, Ticket, X } from 'lucide-react';
+import { IndianRupee, PlusCircle, Ticket, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge';
 import { LoadingSpinner, ButtonSpinner } from '@/components/shared/LoadingSpinner';
+import { MerchantPageHeader } from '@/components/merchant/MerchantPageHeader';
 
 interface Ticket {
   id: string;
@@ -36,7 +37,6 @@ const ticketCategories = ['General', 'Payment Issue', 'Refund Request', 'Dispute
 
 export default function MerchantSupport() {
   const { merchant, user } = useMerchantAuth();
-  const navigate = useNavigate();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -150,21 +150,18 @@ export default function MerchantSupport() {
 
   return (
     <div className="mobile-page">
-      <header className="sticky-header bg-card">
-        <div className="sticky-header-content px-4 sm:px-6">
-          <button onClick={() => navigate('/merchant-dashboard')} className="back-btn">
-            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-semibold text-foreground">Help & Support</h1>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Merchant support tickets</p>
-          </div>
-          <Button size="sm" onClick={() => setShowForm(true)} className="h-8 text-xs px-3 rounded-lg shrink-0">
-            <PlusCircle className="h-3.5 w-3.5 mr-1" />
-            New
-          </Button>
-        </div>
-      </header>
+      <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <MerchantPageHeader
+          title="Help & Support"
+          subtitle="Merchant support tickets"
+          actions={
+            <Button size="sm" onClick={() => setShowForm(true)} className="h-8 text-xs px-3 rounded-lg shrink-0">
+              <PlusCircle className="h-3.5 w-3.5 mr-1" />
+              New
+            </Button>
+          }
+        />
+      </div>
 
       <main className="max-w-2xl mx-auto mobile-section pb-24 space-y-4">
         {/* Quick actions */}
